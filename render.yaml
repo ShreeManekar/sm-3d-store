@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: sm-3d-frontend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: node backend/server.js
+    envVars:
+      - key: PYTHON_BACKEND_URL
+        value: ""
+    autoDeploy: true
