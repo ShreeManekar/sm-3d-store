@@ -7,5 +7,5 @@ services:
     startCommand: node backend/server.js
     envVars:
       - key: PYTHON_BACKEND_URL
-        value: ""
+        value: "https://sm-3d-backend.onrender.com"
     autoDeploy: true
