@@ -7,3 +7,4 @@ dist.zip
 coverage
 cypress/videos
 cypress/screenshots
+*.tsbuildinfo

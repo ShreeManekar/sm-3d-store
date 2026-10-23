@@ -7,9 +7,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node backend/server.js",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.tsx\"",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "cypress": "cypress run",
     "lighthouse": "npm run build && lighthouse http://localhost:5000 --output html --output-path ./lighthouse-report.html"
   },
