@@ -2,9 +2,13 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useCart, ProductItem } from '../context/CartContext';
+import StlViewer from '../components/StlViewer';
 
 export interface Product extends ProductItem {
   dimensions: string;
+  stlUrl?: string;
+  colors?: string[];
+  material?: string;
 }
 
 export const PRODUCTS: Product[] = [
@@ -16,6 +20,7 @@ export const PRODUCTS: Product[] = [
     description: 'Print-in-place flexible crystal dragon with moving articulated segments.',
     image: '/assets/images/product_dragon_1786179208256.webp',
     dimensions: '150 × 45 × 30 mm',
+    stlUrl: '/assets/models/sample_dragon.stl',
   },
   {
     id: 'prod_2',
@@ -25,6 +30,7 @@ export const PRODUCTS: Product[] = [
     description: 'Precision 5:1 planetary reduction gear toy with ultra-smooth rotation.',
     image: '/assets/images/product_gearbox_1786179220985.webp',
     dimensions: '75 × 75 × 22 mm',
+    stlUrl: '/assets/models/sample_gearbox.stl',
   },
   {
     id: 'prod_3',
@@ -53,6 +59,7 @@ const Shop: React.FC = () => {
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [active3dProduct, setActive3dProduct] = useState<Product | null>(null);
 
   const searchQuery = searchParams.get('search') || '';
 
@@ -72,6 +79,9 @@ const Shop: React.FC = () => {
             description: p.description || '',
             image: p.image || p.images?.[0] || '/assets/images/hero_3d_printer_1786179196218.webp',
             dimensions: typeof p.dimensions === 'string' ? p.dimensions : '100 × 100 × 100 mm',
+            stlUrl: p.stlUrl || (p.id === 'prod_1' ? '/assets/models/sample_dragon.stl' : p.id === 'prod_2' ? '/assets/models/sample_gearbox.stl' : ''),
+            material: p.material || 'PLA',
+            colors: p.colors || [],
           }));
           setProducts(loaded);
         }
@@ -229,11 +239,28 @@ const Shop: React.FC = () => {
                         alt={product.name}
                         className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition duration-500"
                         loading="lazy"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/assets/images/product_dragon_1786179208256.webp';
+                        }}
                       />
                       {qtyInCart > 0 && (
                         <span className="absolute top-4 right-4 bg-cyan-500 text-gray-950 text-xs font-extrabold px-2 py-1 rounded-full shadow-lg">
                           {qtyInCart} in cart
                         </span>
+                      )}
+
+                      {/* 3D Model Badge */}
+                      {product.stlUrl && (
+                        <button
+                          onClick={() => setActive3dProduct(product)}
+                          className="absolute bottom-3 left-3 bg-gray-900/90 hover:bg-cyan-500 hover:text-black text-cyan-400 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-cyan-500/40 shadow-lg backdrop-blur flex items-center gap-1.5 transition"
+                          title="Open Interactive 3D Model View"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                          </svg>
+                          3D View
+                        </button>
                       )}
                     </div>
                     <div className="p-5">
@@ -268,6 +295,45 @@ const Shop: React.FC = () => {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* 3D Model Inspection Modal */}
+        {active3dProduct && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+            <div className="bg-gray-900 border border-cyan-500/40 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+              <div className="p-4 border-b border-gray-800 flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-white text-base flex items-center gap-2">
+                    <span className="text-cyan-400">⚡</span> {active3dProduct.name}
+                  </h3>
+                  <p className="text-xs text-gray-400">{active3dProduct.category} • {active3dProduct.dimensions}</p>
+                </div>
+                <button
+                  onClick={() => setActive3dProduct(null)}
+                  className="text-gray-400 hover:text-white p-1"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-4">
+                <StlViewer stlUrl={active3dProduct.stlUrl || '/assets/models/sample_dragon.stl'} height={380} />
+              </div>
+
+              <div className="p-4 bg-gray-950/80 border-t border-gray-800 flex items-center justify-between">
+                <span className="text-xl font-extrabold text-cyan-400">₹{active3dProduct.price}</span>
+                <button
+                  onClick={() => {
+                    handleAddToCart(active3dProduct, false);
+                    setActive3dProduct(null);
+                  }}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-xs shadow-lg shadow-cyan-500/20 hover:from-cyan-400 hover:to-blue-500 transition"
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

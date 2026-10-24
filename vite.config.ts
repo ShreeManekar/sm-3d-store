@@ -5,7 +5,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    // Proxy /api/* to backend (placeholder – will be replaced after host selection)
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
@@ -16,5 +15,15 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    chunkSizeWarningLimit: 700,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          three: ['three'],
+          xlsx: ['xlsx'],
+          vendor: ['react', 'react-dom', 'react-router-dom', 'axios'],
+        },
+      },
+    },
   },
 });

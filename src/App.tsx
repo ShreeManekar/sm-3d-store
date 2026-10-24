@@ -5,15 +5,19 @@ import Shop from './pages/Shop';
 import CustomPrint from './pages/CustomPrint';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
+import Account from './pages/Account';
 import Admin from './pages/Admin';
 import EditAdmin from './pages/EditAdmin';
 import NotFound from './pages/NotFound';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
+import { WhatsAppFloat } from './components/WhatsAppFloat';
 import { CartProvider } from './context/CartContext';
+import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 /**
- * Handles legacy hash-based URLs (e.g. #/shop, #!/shop, #!/custom-print)
+ * Handles legacy hash-based URLs (e.g. #/shop, #!/shop, #!/custom-print, #/account, #/admin)
  * and seamlessly redirects them to HTML5 pushState routes.
  */
 const HashRedirectHandler: React.FC = () => {
@@ -35,28 +39,35 @@ const HashRedirectHandler: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <CartProvider>
-      <Router>
-        <HashRedirectHandler />
-        <div className="flex flex-col min-h-screen bg-[#090d16] text-white">
-          <Header />
-          <main className="flex-1">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/shop/:id" element={<Navigate to="/shop" replace />} />
-              <Route path="/custom-print" element={<CustomPrint />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/admin/edit/:id" element={<EditAdmin />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
-      </Router>
-    </CartProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <CartProvider>
+          <Router>
+            <HashRedirectHandler />
+            <div className="flex flex-col min-h-screen bg-[#090d16] dark:bg-[#090d16] light:bg-[#f5f5f7] text-white dark:text-white light:text-gray-900 transition-colors">
+              <Header />
+              <main className="flex-1">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/shop" element={<Shop />} />
+                  <Route path="/shop/:id" element={<Navigate to="/shop" replace />} />
+                  <Route path="/custom-print" element={<CustomPrint />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/account" element={<Account />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/admin/edit/:id" element={<EditAdmin />} />
+                  <Route path="/admin-login" element={<Navigate to="/account?tab=admin" replace />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
+              <WhatsAppFloat />
+              <Footer />
+            </div>
+          </Router>
+        </CartProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

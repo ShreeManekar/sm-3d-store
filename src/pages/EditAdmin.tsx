@@ -1,77 +1,120 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 export const EditAdmin: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { getAdminHeaders, isAdmin } = useAuth();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', email: '', role: 'admin' });
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    street: '',
+    city: '',
+    state: '',
+    pincode: '',
+    password: '',
+    role: 'admin',
+  });
 
   useEffect(() => {
     if (!id) return;
+    const headers = getAdminHeaders();
+
     axios
-      .get(`/api/users/${id}`)
+      .get('/api/users', { headers })
       .then((res) => {
-        const { name, email, role } = res.data;
-        setForm({ name: name || '', email: email || '', role: role || 'admin' });
-        setLoading(false);
+        if (Array.isArray(res.data)) {
+          const user = res.data.find((u: any) => u.id === id);
+          if (user) {
+            setForm({
+              name: user.name || '',
+              email: user.email || '',
+              phone: user.phone || '',
+              street: user.street || '',
+              city: user.city || '',
+              state: user.state || '',
+              pincode: user.pincode || '',
+              password: '',
+              role: user.role || 'admin',
+            });
+            setLoading(false);
+            return;
+          }
+        }
+        throw new Error('User not found');
       })
       .catch(() => {
-        // Fallback for standalone/demo execution
+        // Fallback for demo/usr_admin
         if (id === 'usr_admin') {
           setForm({
             name: 'Admin',
             email: 'shreemanekar0@gmail.com',
-            role: 'admin',
-          });
-        } else {
-          setForm({
-            name: 'Administrator',
-            email: 'admin@example.com',
+            phone: '+919284118601',
+            street: 'Chandrapur',
+            city: 'Chandrapur',
+            state: 'Maharashtra',
+            pincode: '442401',
+            password: '',
             role: 'admin',
           });
         }
         setLoading(false);
       });
-  }, [id]);
+  }, [id, getAdminHeaders]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id) return;
-    axios
-      .put(`/api/users/${id}`, form)
-      .then(() => {
+    setError(null);
+    setSuccess(null);
+
+    const headers = getAdminHeaders();
+    try {
+      const payload: any = { ...form };
+      if (!payload.password) {
+        delete payload.password;
+      }
+      await axios.put(`/api/users/${id}`, payload, { headers });
+      setSuccess('Administrator profile updated successfully!');
+      setTimeout(() => {
         navigate('/admin');
-      })
-      .catch(() => {
-        // If API fails in static environment, still redirect gracefully
-        navigate('/admin');
-      });
+      }, 800);
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || 'Failed to update admin profile');
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-white py-10">
-      <div className="max-w-xl mx-auto px-4 sm:px-6">
+    <div className="min-h-screen bg-[#090d16] text-white py-10 px-4 sm:px-6">
+      <div className="max-w-xl mx-auto space-y-6">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-gray-400 mb-6" aria-label="Breadcrumb">
+        <nav className="flex items-center gap-2 text-xs text-gray-400" aria-label="Breadcrumb">
           <Link to="/" className="hover:text-cyan-400 transition">Home</Link>
           <span>/</span>
           <Link to="/admin" className="hover:text-cyan-400 transition">Admin Portal</Link>
           <span>/</span>
-          <span className="text-cyan-400 font-medium">Edit Admin User</span>
+          <span className="text-cyan-400 font-medium">Edit Administrator</span>
         </nav>
 
-        <div className="p-6 sm:p-8 rounded-2xl bg-gray-900 border border-gray-800 shadow-2xl">
+        <div className="p-6 sm:p-8 rounded-3xl bg-gray-900 border border-purple-500/30 shadow-2xl">
           <div className="mb-6">
-            <span className="text-cyan-400 font-bold text-xs uppercase tracking-wider">Account Settings</span>
-            <h1 className="text-2xl font-extrabold text-white mt-1">Edit Admin User</h1>
-            <p className="text-gray-400 text-xs mt-1">User Identifier: <span className="font-mono text-cyan-300">{id}</span></p>
+            <span className="text-purple-400 font-bold text-xs uppercase tracking-wider">Access Control</span>
+            <h1 className="text-2xl font-extrabold text-white mt-1">Edit Administrator Details</h1>
+            <p className="text-gray-400 text-xs mt-1">
+              Account Identifier: <span className="font-mono text-cyan-300">{id}</span>
+            </p>
           </div>
 
           {error && (
@@ -80,43 +123,103 @@ export const EditAdmin: React.FC = () => {
             </div>
           )}
 
+          {success && (
+            <div className="mb-4 p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs">
+              {success}
+            </div>
+          )}
+
           {loading ? (
             <div className="py-8 text-center text-gray-400 text-sm">
               Loading user details...
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1.5">Full Name</label>
+                <label className="block font-semibold text-gray-300 mb-1">Full Name</label>
                 <input
                   name="name"
                   value={form.name}
                   onChange={handleChange}
-                  className="w-full bg-gray-950 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-400"
                   required
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1.5">Email Address</label>
-                <input
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  className="w-full bg-gray-950 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-cyan-400"
-                  required
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-gray-300 mb-1">Email Address</label>
+                  <input
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-400"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-gray-300 mb-1">Phone Number</label>
+                  <input
+                    name="phone"
+                    value={form.phone}
+                    onChange={handleChange}
+                    className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-400"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1.5">Role</label>
+                <label className="block font-semibold text-gray-300 mb-1">Street Address</label>
                 <input
-                  name="role"
-                  value={form.role}
+                  name="street"
+                  value={form.street}
                   onChange={handleChange}
-                  className="w-full bg-gray-950 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-cyan-400"
-                  required
+                  className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block font-semibold text-gray-300 mb-1">City</label>
+                  <input
+                    name="city"
+                    value={form.city}
+                    onChange={handleChange}
+                    className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-400"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-gray-300 mb-1">State</label>
+                  <input
+                    name="state"
+                    value={form.state}
+                    onChange={handleChange}
+                    className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-400"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-gray-300 mb-1">Pincode</label>
+                  <input
+                    name="pincode"
+                    value={form.pincode}
+                    onChange={handleChange}
+                    className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-gray-300 mb-1">
+                  New Password (leave blank to keep current)
+                </label>
+                <input
+                  name="password"
+                  type="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-400"
                 />
               </div>
 
@@ -129,9 +232,9 @@ export const EditAdmin: React.FC = () => {
                 </Link>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md shadow-cyan-500/20 transition"
+                  className="px-6 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-500/20 transition"
                 >
-                  Save Changes
+                  Save Administrator Details
                 </button>
               </div>
             </form>
@@ -141,5 +244,4 @@ export const EditAdmin: React.FC = () => {
     </div>
   );
 };
-
 export default EditAdmin;

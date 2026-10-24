@@ -20,7 +20,7 @@ export const Footer: React.FC = () => (
         <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-3">Shop & Services</h4>
         <ul className="space-y-2 text-sm">
           <li><Link to="/shop" className="hover:text-cyan-400 transition">Shop Catalog</Link></li>
-          <li><Link to="/custom-print" className="hover:text-cyan-400 transition">Custom 3D Printing</Link></li>
+          <li><Link to="/custom-print" className="hover:text-cyan-400 transition">Custom 3D Printing Quote</Link></li>
           <li><Link to="/cart" className="hover:text-cyan-400 transition">Shopping Cart</Link></li>
         </ul>
       </div>
@@ -30,14 +30,15 @@ export const Footer: React.FC = () => (
         <ul className="space-y-2 text-sm text-gray-400">
           <li>Max Build: 160 × 160 × 160 mm</li>
           <li>Layer Height: 0.12 - 0.28 mm</li>
-          <li>Materials: PLA+, PETG, ABS</li>
+          <li>Materials: PLA, PETG, ABS, CF-PETG</li>
         </ul>
       </div>
 
       <div>
-        <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-3">Portal</h4>
+        <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-3">Portals & Security</h4>
         <ul className="space-y-2 text-sm">
-          <li><Link to="/admin" className="hover:text-cyan-400 transition">Admin Login & Directory</Link></li>
+          <li><Link to="/account" className="hover:text-cyan-400 transition">My Account Portal</Link></li>
+          <li><Link to="/admin" className="hover:text-purple-400 transition">Admin Portal</Link></li>
           <li><Link to="/checkout" className="hover:text-cyan-400 transition">Instant Checkout</Link></li>
         </ul>
       </div>
@@ -47,3 +48,5 @@ export const Footer: React.FC = () => (
     </div>
   </footer>
 );
+
+export default Footer;
