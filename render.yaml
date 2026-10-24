@@ -5,7 +5,4 @@ services:
     plan: free
     buildCommand: npm install && npm run build
     startCommand: node backend/server.js
-    envVars:
-      - key: PYTHON_BACKEND_URL
-        value: "https://sm-3d-backend.onrender.com"
     autoDeploy: true

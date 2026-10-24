@@ -9,7 +9,7 @@
     "start": "node backend/server.js",
     "lint": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.tsx\"",
-    "test": "jest --passWithNoTests",
+    "test": "jest --passWithNoTests && node backend/test_api_endpoints.js",
     "cypress": "cypress run",
     "lighthouse": "npm run build && lighthouse http://localhost:5000 --output html --output-path ./lighthouse-report.html"
   },
