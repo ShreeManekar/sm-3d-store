@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 
 export const Header: React.FC = () => {
   const [query, setQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { totalItems } = useCart();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       navigate(`/shop?search=${encodeURIComponent(query.trim())}`);
+      setMobileMenuOpen(false);
     }
   };
 
@@ -48,22 +51,40 @@ export const Header: React.FC = () => {
             <Link to="/custom-print" className="px-3 py-1.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/20 transition">
               Request Custom 3D Print
             </Link>
-            <Link to="/cart" className="relative text-gray-300 hover:text-cyan-400 transition">
+            <Link
+              to="/cart"
+              className="relative p-2 text-gray-300 hover:text-cyan-400 transition"
+              aria-label={`Shopping Cart with ${totalItems} items`}
+            >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-[11px] font-bold rounded-full min-w-[20px] h-5 px-1.5 flex items-center justify-center shadow-lg shadow-cyan-500/50">
+                  {totalItems > 99 ? '99+' : totalItems}
+                </span>
+              )}
             </Link>
             <Link to="/admin" className="text-gray-400 hover:text-white transition text-xs border border-gray-700 px-2.5 py-1 rounded">
               Admin
             </Link>
           </nav>
 
-          {/* Mobile hamburger */}
+          {/* Mobile hamburger & cart icon */}
           <div className="flex md:hidden items-center gap-3">
-            <Link to="/cart" className="text-gray-300 hover:text-cyan-400">
+            <Link
+              to="/cart"
+              className="relative p-1.5 text-gray-300 hover:text-cyan-400 transition"
+              aria-label={`Shopping Cart with ${totalItems} items`}
+            >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center shadow-lg shadow-cyan-500/50">
+                  {totalItems > 99 ? '99+' : totalItems}
+                </span>
+              )}
             </Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -89,8 +110,8 @@ export const Header: React.FC = () => {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search..."
-                className="w-full bg-gray-900 text-sm text-gray-200 pl-9 pr-3 py-2 rounded-lg border border-gray-700"
+                placeholder="Search 3D prints..."
+                className="w-full bg-gray-900 text-sm text-gray-200 pl-9 pr-3 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-cyan-400"
               />
               <svg className="w-4 h-4 text-gray-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -99,7 +120,15 @@ export const Header: React.FC = () => {
             <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-gray-300 hover:text-cyan-400">Home</Link>
             <Link to="/shop" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-gray-300 hover:text-cyan-400">Shop All Products</Link>
             <Link to="/custom-print" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-cyan-400 font-medium">Request Custom 3D Print</Link>
-            <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-gray-400">Admin Portal</Link>
+            <Link to="/cart" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between py-1.5 text-gray-300 hover:text-cyan-400">
+              <span>Shopping Cart</span>
+              {totalItems > 0 && (
+                <span className="bg-cyan-500/20 text-cyan-400 text-xs font-bold px-2 py-0.5 rounded-full border border-cyan-500/30">
+                  {totalItems} {totalItems === 1 ? 'item' : 'items'}
+                </span>
+              )}
+            </Link>
+            <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-gray-400 hover:text-white">Admin Portal</Link>
           </div>
         )}
       </div>

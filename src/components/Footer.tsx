@@ -5,12 +5,12 @@ export const Footer: React.FC = () => (
   <footer className="bg-gray-950 border-t border-gray-900 text-gray-400 py-10 mt-auto">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
       <div>
-        <div className="flex items-center gap-2 font-bold text-xl text-white mb-3">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white text-sm">
+        <Link to="/" className="inline-flex items-center gap-2 font-bold text-xl text-white mb-3 hover:text-cyan-400 transition">
+          <span className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white text-sm shadow-md shadow-cyan-500/20">
             3D
           </span>
           <span>SM <span className="text-cyan-400">3D</span></span>
-        </div>
+        </Link>
         <p className="text-sm text-gray-400">
           Precision additive manufacturing & on-demand custom 3D printing up to 160mm build volume.
         </p>
@@ -38,6 +38,7 @@ export const Footer: React.FC = () => (
         <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-3">Portal</h4>
         <ul className="space-y-2 text-sm">
           <li><Link to="/admin" className="hover:text-cyan-400 transition">Admin Login & Directory</Link></li>
+          <li><Link to="/checkout" className="hover:text-cyan-400 transition">Instant Checkout</Link></li>
         </ul>
       </div>
     </div>

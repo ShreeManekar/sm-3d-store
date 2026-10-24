@@ -1,7 +1,55 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
+
+const FEATURED_PRODUCTS = [
+  {
+    id: 'prod_1',
+    name: 'Articulated Crystal Dragon',
+    price: 749,
+    category: 'Art & Figures',
+    description: 'Flexible print-in-place dragon with moving articulated joints.',
+    image: '/assets/images/product_dragon_1786179208256.webp',
+    dimensions: '150 × 45 × 30 mm'
+  },
+  {
+    id: 'prod_2',
+    name: 'Planetary Gearbox Toy',
+    price: 399,
+    category: 'Engineering & Gadgets',
+    description: 'Mechanical desk fidget with smooth 5:1 gear reduction.',
+    image: '/assets/images/product_gearbox_1786179220985.webp',
+    dimensions: '75 × 75 × 22 mm'
+  },
+  {
+    id: 'prod_3',
+    name: 'Geometric Hex Planter',
+    price: 449,
+    category: 'Home & Decor',
+    description: 'Modern succulent pot with hidden internal drainage reservoir.',
+    image: '/assets/images/product_planter_1786179235105.webp',
+    dimensions: '90 × 90 × 85 mm'
+  },
+  {
+    id: 'prod_4',
+    name: 'Minimalist Headphone Stand',
+    price: 699,
+    category: 'Desk Accessories',
+    description: 'Ergonomic curved desk stand with cable organizer channel.',
+    image: '/assets/images/product_headphone_stand_1786179253396.webp',
+    dimensions: '140 × 120 × 240 mm'
+  }
+];
 
 const Home: React.FC = () => {
+  const { addToCart } = useCart();
+  const navigate = useNavigate();
+
+  const handleAddToCart = (product: typeof FEATURED_PRODUCTS[0]) => {
+    addToCart(product, 1);
+    navigate('/cart');
+  };
+
   return (
     <div className="min-h-screen bg-[#090d16] text-white">
       {/* Hero Section */}
@@ -114,61 +162,44 @@ const Home: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="group rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-cyan-500/50 transition duration-300">
-              <div className="h-48 overflow-hidden bg-gray-950 flex items-center justify-center">
-                <img src="/assets/images/product_dragon_1786179208256.webp" alt="Articulated Crystal Dragon" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-              </div>
-              <div className="p-4">
-                <h3 className="font-bold text-white mb-1">Articulated Crystal Dragon</h3>
-                <p className="text-sm text-gray-400 mb-3">Flexible print-in-place dragon with moving joints.</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-cyan-400">₹749</span>
-                  <Link to="/shop" className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-800 hover:bg-cyan-500 hover:text-gray-950 transition">View</Link>
+            {FEATURED_PRODUCTS.map((product) => (
+              <div
+                key={product.id}
+                className="group rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-cyan-500/50 transition duration-300 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="h-48 overflow-hidden bg-gray-950 flex items-center justify-center p-2">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition duration-500"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <div className="text-xs font-semibold text-cyan-400 mb-1">{product.category}</div>
+                    <h3 className="font-bold text-white mb-1">{product.name}</h3>
+                    <p className="text-sm text-gray-400 mb-3">{product.description}</p>
+                  </div>
+                </div>
+                <div className="p-4 pt-0 border-t border-gray-800/80 flex items-center justify-between mt-3">
+                  <span className="text-lg font-bold text-cyan-400">₹{product.price}</span>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to="/shop"
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-400 hover:text-white transition"
+                    >
+                      Details
+                    </Link>
+                    <button
+                      onClick={() => handleAddToCart(product)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md shadow-cyan-500/20 transition"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div className="group rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-cyan-500/50 transition duration-300">
-              <div className="h-48 overflow-hidden bg-gray-950 flex items-center justify-center">
-                <img src="/assets/images/product_gearbox_1786179220985.webp" alt="Planetary Gearbox Fidget" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-              </div>
-              <div className="p-4">
-                <h3 className="font-bold text-white mb-1">Planetary Gearbox Toy</h3>
-                <p className="text-sm text-gray-400 mb-3">Mechanical desk fidget with smooth gear reduction.</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-cyan-400">₹399</span>
-                  <Link to="/shop" className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-800 hover:bg-cyan-500 hover:text-gray-950 transition">View</Link>
-                </div>
-              </div>
-            </div>
-
-            <div className="group rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-cyan-500/50 transition duration-300">
-              <div className="h-48 overflow-hidden bg-gray-950 flex items-center justify-center">
-                <img src="/assets/images/product_planter_1786179235105.webp" alt="Geometric Hex Planter" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-              </div>
-              <div className="p-4">
-                <h3 className="font-bold text-white mb-1">Geometric Hex Planter</h3>
-                <p className="text-sm text-gray-400 mb-3">Modern succulent pot with internal drainage reservoir.</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-cyan-400">₹449</span>
-                  <Link to="/shop" className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-800 hover:bg-cyan-500 hover:text-gray-950 transition">View</Link>
-                </div>
-              </div>
-            </div>
-
-            <div className="group rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-cyan-500/50 transition duration-300">
-              <div className="h-48 overflow-hidden bg-gray-950 flex items-center justify-center">
-                <img src="/assets/images/product_headphone_stand_1786179253396.webp" alt="Minimalist Headphone Stand" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-              </div>
-              <div className="p-4">
-                <h3 className="font-bold text-white mb-1">Minimalist Headphone Stand</h3>
-                <p className="text-sm text-gray-400 mb-3">Ergonomic curved desk stand with cable organizer.</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-cyan-400">₹699</span>
-                  <Link to="/shop" className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-800 hover:bg-cyan-500 hover:text-gray-950 transition">View</Link>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>

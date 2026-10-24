@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const CustomPrint: React.FC = () => {
   const [material, setMaterial] = useState('PLA');
@@ -15,6 +16,13 @@ const CustomPrint: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#090d16] text-white py-12">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-2 text-xs text-gray-400 mb-6" aria-label="Breadcrumb">
+          <Link to="/" className="hover:text-cyan-400 transition">Home</Link>
+          <span>/</span>
+          <span className="text-cyan-400 font-medium">Custom Print</span>
+        </nav>
+
         <div className="text-center mb-8">
           <span className="inline-block py-1 px-3 rounded-full text-xs font-bold tracking-wider uppercase bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 mb-3">
             On-Demand Manufacturing
@@ -26,7 +34,7 @@ const CustomPrint: React.FC = () => {
         </div>
 
         {submitted ? (
-          <div className="rounded-2xl border border-cyan-500/40 bg-gray-900 p-8 text-center shadow-xl">
+          <div className="rounded-2xl border border-cyan-500/40 bg-gray-900 p-8 sm:p-10 text-center shadow-xl">
             <div className="w-16 h-16 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -34,14 +42,28 @@ const CustomPrint: React.FC = () => {
             </div>
             <h3 className="text-2xl font-bold text-white mb-2">Quote Request Submitted!</h3>
             <p className="text-gray-300 text-sm max-w-md mx-auto mb-6">
-              Our engineering team is calculating slicing parameters and filament consumption. We will contact you shortly with confirmation.
+              Our engineering team is calculating slicing parameters and filament consumption for your {material} request at {infill}% infill. We will contact you shortly with confirmation.
             </p>
-            <button
-              onClick={() => setSubmitted(false)}
-              className="px-6 py-2.5 rounded-xl bg-cyan-500 text-gray-950 font-bold hover:bg-cyan-400 transition"
-            >
-              Submit Another Print Request
-            </button>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <button
+                onClick={() => setSubmitted(false)}
+                className="px-6 py-2.5 rounded-xl bg-cyan-500 text-gray-950 font-bold hover:bg-cyan-400 transition"
+              >
+                Submit Another Print Request
+              </button>
+              <Link
+                to="/shop"
+                className="px-6 py-2.5 rounded-xl bg-gray-800 text-white font-semibold hover:bg-gray-700 transition"
+              >
+                Browse Ready-Made Prints
+              </Link>
+              <Link
+                to="/"
+                className="px-6 py-2.5 rounded-xl border border-gray-700 text-gray-300 hover:text-white transition"
+              >
+                Return to Home
+              </Link>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="rounded-2xl border border-gray-800 bg-gray-900/80 backdrop-blur p-6 sm:p-8 space-y-6 shadow-2xl">
