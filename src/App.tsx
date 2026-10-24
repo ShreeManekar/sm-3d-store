@@ -44,13 +44,14 @@ const App: React.FC = () => {
         <CartProvider>
           <Router>
             <HashRedirectHandler />
-            <div className="flex flex-col min-h-screen bg-[#090d16] dark:bg-[#090d16] light:bg-[#f5f5f7] text-white dark:text-white light:text-gray-900 transition-colors">
+            <div className="flex flex-col min-h-screen bg-[#f5f5f7] dark:bg-[#090d16] text-gray-900 dark:text-white transition-colors duration-200">
               <Header />
               <main className="flex-1">
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/shop" element={<Shop />} />
                   <Route path="/shop/:id" element={<Navigate to="/shop" replace />} />
+                  <Route path="/product/:id" element={<Navigate to="/shop" replace />} />
                   <Route path="/custom-print" element={<CustomPrint />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />

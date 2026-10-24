@@ -97,120 +97,120 @@ export const EditAdmin: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-white py-10 px-4 sm:px-6">
+    <div className="min-h-screen bg-transparent text-inherit py-10 px-4 sm:px-6">
       <div className="max-w-xl mx-auto space-y-6">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-gray-400" aria-label="Breadcrumb">
-          <Link to="/" className="hover:text-cyan-400 transition">Home</Link>
+        <nav className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400" aria-label="Breadcrumb">
+          <Link to="/" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition">Home</Link>
           <span>/</span>
-          <Link to="/admin" className="hover:text-cyan-400 transition">Admin Portal</Link>
+          <Link to="/admin" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition">Admin Portal</Link>
           <span>/</span>
-          <span className="text-cyan-400 font-medium">Edit Administrator</span>
+          <span className="text-cyan-600 dark:text-cyan-400 font-medium">Edit Administrator</span>
         </nav>
 
-        <div className="p-6 sm:p-8 rounded-3xl bg-gray-900 border border-purple-500/30 shadow-2xl">
+        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-purple-500/30 shadow-xl">
           <div className="mb-6">
-            <span className="text-purple-400 font-bold text-xs uppercase tracking-wider">Access Control</span>
-            <h1 className="text-2xl font-extrabold text-white mt-1">Edit Administrator Details</h1>
-            <p className="text-gray-400 text-xs mt-1">
-              Account Identifier: <span className="font-mono text-cyan-300">{id}</span>
+            <span className="text-purple-600 dark:text-purple-400 font-bold text-xs uppercase tracking-wider">Access Control</span>
+            <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">Edit Administrator Details</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
+              Account Identifier: <span className="font-mono text-cyan-600 dark:text-cyan-300">{id}</span>
             </p>
           </div>
 
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-red-950/60 border border-red-500/40 text-red-300 text-xs">
+            <div className="mb-4 p-3 rounded-xl bg-red-100 dark:bg-red-950/60 border border-red-300 dark:border-red-500/40 text-red-700 dark:text-red-300 text-xs">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="mb-4 p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs">
+            <div className="mb-4 p-3 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-xs">
               {success}
             </div>
           )}
 
           {loading ? (
-            <div className="py-8 text-center text-gray-400 text-sm">
+            <div className="py-8 text-center text-gray-500 dark:text-gray-400 text-sm">
               Loading user details...
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-gray-300 mb-1">Full Name</label>
+                <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
                 <input
                   name="name"
                   value={form.name}
                   onChange={handleChange}
-                  className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-400"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:border-purple-500"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-gray-300 mb-1">Email Address</label>
+                  <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
                   <input
                     name="email"
                     type="email"
                     value={form.email}
                     onChange={handleChange}
-                    className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-400"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:border-purple-500"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-gray-300 mb-1">Phone Number</label>
+                  <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
                   <input
                     name="phone"
                     value={form.phone}
                     onChange={handleChange}
-                    className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-400"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:border-purple-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-gray-300 mb-1">Street Address</label>
+                <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Street Address</label>
                 <input
                   name="street"
                   value={form.street}
                   onChange={handleChange}
-                  className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-400"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:border-purple-500"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-semibold text-gray-300 mb-1">City</label>
+                  <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">City</label>
                   <input
                     name="city"
                     value={form.city}
                     onChange={handleChange}
-                    className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-400"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:border-purple-500"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-gray-300 mb-1">State</label>
+                  <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">State</label>
                   <input
                     name="state"
                     value={form.state}
                     onChange={handleChange}
-                    className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-400"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:border-purple-500"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-gray-300 mb-1">Pincode</label>
+                  <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Pincode</label>
                   <input
                     name="pincode"
                     value={form.pincode}
                     onChange={handleChange}
-                    className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-400"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:border-purple-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-gray-300 mb-1">
+                <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
                   New Password (leave blank to keep current)
                 </label>
                 <input
@@ -219,14 +219,14 @@ export const EditAdmin: React.FC = () => {
                   value={form.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-400"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:border-purple-500"
                 />
               </div>
 
-              <div className="pt-4 flex items-center justify-between border-t border-gray-800">
+              <div className="pt-4 flex items-center justify-between border-t border-gray-200 dark:border-gray-800">
                 <Link
                   to="/admin"
-                  className="px-4 py-2 rounded-xl text-xs font-medium text-gray-400 hover:text-white transition"
+                  className="px-4 py-2 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
                 >
                   Cancel
                 </Link>

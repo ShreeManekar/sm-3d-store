@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import StlViewer, { ModelDimensions } from '../components/StlViewer';
 
 export const CustomPrint: React.FC = () => {
-  const { currentUser, isLoggedIn } = useAuth();
+  const { currentUser } = useAuth();
 
   // File & 3D state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -24,7 +24,6 @@ export const CustomPrint: React.FC = () => {
   const [material, setMaterial] = useState('PLA');
   const [color, setColor] = useState('Pure White');
   const [infill, setInfill] = useState(20);
-  const [quality, setQuality] = useState('Standard (0.20mm)');
   const [description, setDescription] = useState('');
 
   // Contact info
@@ -92,7 +91,7 @@ export const CustomPrint: React.FC = () => {
 
     const cleanPhone = userPhone.replace(/\D/g, '').slice(-10);
     if (cleanPhone.length !== 10) {
-      setError('Please provide a valid 10-digit mobile number for WhatsApp project updates.');
+      setError('Please provide a valid 10-digit mobile number for WhatsApp updates.');
       return;
     }
 
@@ -105,15 +104,19 @@ export const CustomPrint: React.FC = () => {
 
     try {
       let fileUrl = '';
-      // If a file was selected, upload it via /api/upload
-      if (selectedFile && fileBuffer) {
+      // If a file was selected, upload via /api/upload using native FileReader.readAsDataURL
+      if (selectedFile) {
         try {
-          const base64 = btoa(
-            new Uint8Array(fileBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-          );
+          const fileDataUri = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(selectedFile);
+          });
+
           const uploadRes = await axios.post('/api/upload', {
             filename: selectedFile.name,
-            fileData: `data:model/stl;base64,${base64}`,
+            fileData: fileDataUri,
           });
           fileUrl = uploadRes.data?.fileUrl || '';
         } catch (uploadErr) {
@@ -140,7 +143,7 @@ export const CustomPrint: React.FC = () => {
       };
 
       const res = await axios.post('/api/custom-orders', payload);
-      setSubmittedOrder(res.data?.order || payload);
+      setSubmittedOrder(res.data?.order || { id: `CUST-${Date.now().toString().slice(-4)}`, ...payload });
     } catch (err: any) {
       setError(err.response?.data?.error || err.message || 'Failed to submit custom print order');
     } finally {
@@ -149,39 +152,39 @@ export const CustomPrint: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-white py-10 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 bg-transparent text-inherit">
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-gray-400" aria-label="Breadcrumb">
-          <Link to="/" className="hover:text-cyan-400 transition">Home</Link>
+        <nav className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400" aria-label="Breadcrumb">
+          <Link to="/" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition">Home</Link>
           <span>/</span>
-          <span className="text-cyan-400 font-medium">Custom 3D Print Request</span>
+          <span className="text-cyan-600 dark:text-cyan-400 font-medium">Custom 3D Print Request</span>
         </nav>
 
         {/* Header Title */}
         <div className="text-center max-w-2xl mx-auto">
-          <span className="inline-block py-1 px-3 rounded-full text-xs font-bold tracking-wider uppercase bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 mb-3">
+          <span className="inline-block py-1 px-3 rounded-full text-xs font-bold tracking-wider uppercase bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 mb-3">
             Interactive On-Demand Additive Manufacturing
           </span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white">Request Custom 3D Print</h1>
-          <p className="text-gray-400 text-xs sm:text-sm mt-2">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">Request Custom 3D Print</h1>
+          <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mt-2">
             Upload your STL model for automated build volume verification (up to 160×160×160mm), real-time 3D inspection, and fast quote dispatch.
           </p>
         </div>
 
         {submittedOrder ? (
-          <div className="rounded-3xl border border-cyan-500/40 bg-gray-900/90 p-8 sm:p-12 text-center shadow-2xl backdrop-blur max-w-2xl mx-auto">
-            <div className="w-16 h-16 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center mx-auto mb-4 border border-cyan-500/40">
+          <div className="rounded-3xl border border-cyan-500/40 bg-white dark:bg-gray-900/90 p-8 sm:p-12 text-center shadow-2xl backdrop-blur max-w-2xl mx-auto text-gray-900 dark:text-white">
+            <div className="w-16 h-16 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mx-auto mb-4 border border-cyan-500/40">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <span className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest">
+            <span className="text-xs font-mono font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">
               Request ID: {submittedOrder.id || 'ORD-REQ'}
             </span>
-            <h2 className="text-2xl font-extrabold text-white mt-1 mb-2">Quote Request Submitted!</h2>
-            <p className="text-gray-300 text-xs sm:text-sm max-w-md mx-auto mb-6">
-              Our engineering team is slicing your model in <strong className="text-cyan-400">{submittedOrder.desiredMaterial}</strong> ({submittedOrder.desiredColor}) at <strong className="text-cyan-400">{submittedOrder.infillDensity}</strong> infill. We will notify you at <strong className="text-white">{submittedOrder.userEmail}</strong> and WhatsApp with your quote.
+            <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mt-1 mb-2">Quote Request Submitted!</h2>
+            <p className="text-gray-600 dark:text-gray-300 text-xs sm:text-sm max-w-md mx-auto mb-6">
+              Our engineering team is slicing your model in <strong className="text-cyan-600 dark:text-cyan-400">{submittedOrder.desiredMaterial}</strong> ({submittedOrder.desiredColor}) at <strong className="text-cyan-600 dark:text-cyan-400">{submittedOrder.infillDensity}</strong> infill. We will notify you at <strong className="text-gray-900 dark:text-white">{submittedOrder.userEmail}</strong> and WhatsApp with your quote.
             </p>
 
             <div className="flex flex-wrap justify-center gap-3">
@@ -193,7 +196,7 @@ export const CustomPrint: React.FC = () => {
               </Link>
               <button
                 onClick={() => { setSubmittedOrder(null); setSelectedFile(null); setFileBuffer(null); }}
-                className="px-5 py-2.5 rounded-xl bg-gray-800 text-gray-300 hover:text-white text-xs font-medium border border-gray-700 transition"
+                className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white text-xs font-medium border border-gray-300 dark:border-gray-700 transition"
               >
                 Submit Another Model
               </button>
@@ -203,15 +206,15 @@ export const CustomPrint: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left Column: 3D STL Viewer & Upload */}
             <div className="lg:col-span-7 space-y-4">
-              <div className="rounded-3xl border border-gray-800 bg-gray-900/80 p-5 shadow-2xl backdrop-blur">
+              <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/80 p-5 shadow-2xl backdrop-blur text-gray-900 dark:text-white">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
-                    <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                    <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
                       Interactive 3D Preview (Three.js)
                     </h3>
                   </div>
-                  <span className="text-[11px] text-gray-400">Drag to rotate • Wheel to zoom</span>
+                  <span className="text-[11px] text-gray-500 dark:text-gray-400">Drag to rotate • Wheel to zoom</span>
                 </div>
 
                 {/* 3D STL Viewer Canvas */}
@@ -234,9 +237,9 @@ export const CustomPrint: React.FC = () => {
                   />
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gray-700 hover:border-cyan-500/60 rounded-2xl p-5 text-center cursor-pointer transition bg-gray-950/60 hover:bg-gray-950"
+                    className="border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-cyan-500/60 rounded-2xl p-5 text-center cursor-pointer transition bg-gray-50 dark:bg-gray-950/60 hover:bg-gray-100 dark:hover:bg-gray-950"
                   >
-                    <div className="flex items-center justify-center gap-2 text-cyan-400 text-xs font-bold">
+                    <div className="flex items-center justify-center gap-2 text-cyan-600 dark:text-cyan-400 text-xs font-bold">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                       </svg>
@@ -249,19 +252,19 @@ export const CustomPrint: React.FC = () => {
                 </div>
 
                 {/* Quick Model Sample Selector */}
-                <div className="flex items-center gap-2 mt-3 text-xs text-gray-400">
+                <div className="flex items-center gap-2 mt-3 text-xs text-gray-500 dark:text-gray-400">
                   <span>Load Sample Models:</span>
                   <button
                     type="button"
                     onClick={() => { setSelectedFile(null); setFileBuffer(null); setSampleUrl('/assets/models/sample_dragon.stl'); }}
-                    className="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-cyan-400 font-medium text-[11px]"
+                    className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-cyan-600 dark:text-cyan-400 font-medium text-[11px]"
                   >
                     Crystal Dragon
                   </button>
                   <button
                     type="button"
                     onClick={() => { setSelectedFile(null); setFileBuffer(null); setSampleUrl('/assets/models/sample_gearbox.stl'); }}
-                    className="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-purple-400 font-medium text-[11px]"
+                    className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-purple-600 dark:text-purple-400 font-medium text-[11px]"
                   >
                     Planetary Gearbox
                   </button>
@@ -271,14 +274,14 @@ export const CustomPrint: React.FC = () => {
 
             {/* Right Column: Custom Print Configuration Form */}
             <div className="lg:col-span-5">
-              <form onSubmit={handleSubmit} className="rounded-3xl border border-gray-800 bg-gray-900/90 backdrop-blur p-6 space-y-4 shadow-2xl text-xs">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider pb-2 border-b border-gray-800">
+              <form onSubmit={handleSubmit} className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/90 backdrop-blur p-6 space-y-4 shadow-2xl text-xs text-gray-900 dark:text-white">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider pb-2 border-b border-gray-200 dark:border-gray-800">
                   Print Specs & Custom Quote
                 </h3>
 
                 {error && (
-                  <div className="p-3 bg-red-950/40 border border-red-500/40 text-red-300 rounded-xl flex items-center gap-2">
-                    <svg className="w-4 h-4 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="p-3 bg-red-100 dark:bg-red-950/40 border border-red-300 dark:border-red-500/40 text-red-700 dark:text-red-300 rounded-xl flex items-center gap-2">
+                    <svg className="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span>{error}</span>
@@ -288,11 +291,11 @@ export const CustomPrint: React.FC = () => {
                 {/* Dimensions (Auto-filled by STL or Manual) */}
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <label className="font-semibold text-gray-300">Dimensions (mm)</label>
+                    <label className="font-semibold text-gray-700 dark:text-gray-300">Dimensions (mm)</label>
                     {exceedsLimit ? (
-                      <span className="text-[10px] text-amber-400 font-bold">⚠️ Exceeds 160mm build plate</span>
+                      <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">⚠️ Exceeds 160mm build plate</span>
                     ) : (
-                      <span className="text-[10px] text-emerald-400 font-bold">✓ Within 160mm limit</span>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">✓ Within 160mm limit</span>
                     )}
                   </div>
                   <div className="grid grid-cols-3 gap-2">
@@ -303,7 +306,7 @@ export const CustomPrint: React.FC = () => {
                         min="1"
                         value={dimL}
                         onChange={(e) => handleDimensionChange(parseFloat(e.target.value) || 1, dimW, dimH)}
-                        className="w-full bg-gray-950 border border-gray-700 rounded-xl px-2.5 py-1.5 text-white font-mono"
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-2.5 py-1.5 text-gray-900 dark:text-white font-mono focus:outline-none focus:border-cyan-400"
                       />
                     </div>
                     <div>
@@ -313,7 +316,7 @@ export const CustomPrint: React.FC = () => {
                         min="1"
                         value={dimW}
                         onChange={(e) => handleDimensionChange(dimL, parseFloat(e.target.value) || 1, dimH)}
-                        className="w-full bg-gray-950 border border-gray-700 rounded-xl px-2.5 py-1.5 text-white font-mono"
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-2.5 py-1.5 text-gray-900 dark:text-white font-mono focus:outline-none focus:border-cyan-400"
                       />
                     </div>
                     <div>
@@ -323,7 +326,7 @@ export const CustomPrint: React.FC = () => {
                         min="1"
                         value={dimH}
                         onChange={(e) => handleDimensionChange(dimL, dimW, parseFloat(e.target.value) || 1)}
-                        className="w-full bg-gray-950 border border-gray-700 rounded-xl px-2.5 py-1.5 text-white font-mono"
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-2.5 py-1.5 text-gray-900 dark:text-white font-mono focus:outline-none focus:border-cyan-400"
                       />
                     </div>
                   </div>
@@ -331,9 +334,9 @@ export const CustomPrint: React.FC = () => {
 
                 {/* Multi-part assembly option */}
                 {exceedsLimit && (
-                  <div className="p-3 bg-amber-950/30 border border-amber-500/30 rounded-xl text-amber-300 space-y-1.5">
+                  <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-500/30 rounded-xl text-amber-800 dark:text-amber-300 space-y-1.5">
                     <div className="font-bold">Multi-Part Assembly Recommendation</div>
-                    <p className="text-[11px] text-gray-300">
+                    <p className="text-[11px] text-gray-600 dark:text-gray-300">
                       Since one or more dimensions exceed the 160mm single-print build volume, our technicians will intelligently split the geometry into modular interlocking components.
                     </p>
                     <label className="flex items-center gap-2 pt-1 cursor-pointer">
@@ -341,9 +344,9 @@ export const CustomPrint: React.FC = () => {
                         type="checkbox"
                         checked={autoSplit}
                         onChange={(e) => setAutoSplit(e.target.checked)}
-                        className="rounded border-gray-700 bg-gray-950 text-cyan-500"
+                        className="rounded border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 text-cyan-500"
                       />
-                      <span className="text-white font-medium text-[11px]">Enable smart multi-part split</span>
+                      <span className="text-gray-800 dark:text-white font-medium text-[11px]">Enable smart multi-part split</span>
                     </label>
                   </div>
                 )}
@@ -351,11 +354,11 @@ export const CustomPrint: React.FC = () => {
                 {/* Material & Color */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-semibold text-gray-300 mb-1">Material</label>
+                    <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Material</label>
                     <select
                       value={material}
                       onChange={(e) => setMaterial(e.target.value)}
-                      className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-2 text-white"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
                     >
                       <option value="PLA">PLA (Standard / Detailed)</option>
                       <option value="PETG">PETG (High Strength)</option>
@@ -364,11 +367,11 @@ export const CustomPrint: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block font-semibold text-gray-300 mb-1">Color</label>
+                    <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Color</label>
                     <select
                       value={color}
                       onChange={(e) => setColor(e.target.value)}
-                      className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-2 text-white"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
                     >
                       <option value="Pure White">Pure White</option>
                       <option value="Matte Black">Matte Black</option>
@@ -382,7 +385,7 @@ export const CustomPrint: React.FC = () => {
                 {/* Infill Density slider */}
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <span className="font-semibold text-gray-300">Infill Density: {infill}%</span>
+                    <span className="font-semibold text-gray-700 dark:text-gray-300">Infill Density: {infill}%</span>
                     <span className="text-[10px] text-gray-500">{infill >= 40 ? 'Heavy Duty' : 'Standard'}</span>
                   </div>
                   <input
@@ -392,25 +395,25 @@ export const CustomPrint: React.FC = () => {
                     step="5"
                     value={infill}
                     onChange={(e) => setInfill(Number(e.target.value))}
-                    className="w-full accent-cyan-400 cursor-pointer"
+                    className="w-full accent-cyan-500 cursor-pointer"
                   />
                 </div>
 
                 {/* Special Notes */}
                 <div>
-                  <label className="block font-semibold text-gray-300 mb-1">Project Notes / Instructions</label>
+                  <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Project Notes / Instructions</label>
                   <textarea
                     rows={2}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Specify tolerances, threads, or special assembly requirements..."
-                    className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-2 text-white"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
                   />
                 </div>
 
                 {/* Customer Contact Details */}
-                <div className="pt-2 border-t border-gray-800 space-y-2.5">
-                  <span className="font-bold text-gray-300 uppercase tracking-wider text-[11px] block">
+                <div className="pt-2 border-t border-gray-200 dark:border-gray-800 space-y-2.5">
+                  <span className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-[11px] block">
                     Contact for Quote Delivery
                   </span>
 
@@ -421,7 +424,7 @@ export const CustomPrint: React.FC = () => {
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
                       placeholder="Your Full Name"
-                      className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-2 text-white"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
                     />
                   </div>
 
@@ -432,7 +435,7 @@ export const CustomPrint: React.FC = () => {
                       value={userEmail}
                       onChange={(e) => setUserEmail(e.target.value)}
                       placeholder="Email Address"
-                      className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-2 text-white"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
                     />
                     <input
                       type="tel"
@@ -441,7 +444,7 @@ export const CustomPrint: React.FC = () => {
                       value={userPhone}
                       onChange={(e) => setUserPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                       placeholder="10-digit WhatsApp #"
-                      className="w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-2 text-white"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
                     />
                   </div>
                 </div>

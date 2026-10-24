@@ -90,17 +90,17 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-[#090d16]/95 dark:bg-[#090d16]/95 light:bg-white/95 backdrop-blur border-b border-gray-800 dark:border-gray-800 light:border-gray-200 text-white dark:text-white light:text-gray-900 transition-colors">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#090d16]/95 backdrop-blur border-b border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 font-bold text-xl tracking-tight">
+            <Link to="/" className="flex items-center gap-2 font-bold text-xl tracking-tight text-gray-900 dark:text-white">
               <span className="w-9 h-9 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
               </span>
-              <span>SM <span className="text-cyan-400 font-extrabold">3D</span></span>
+              <span>SM <span className="text-cyan-500 dark:text-cyan-400 font-extrabold">3D</span></span>
             </Link>
 
             {/* Global Search Bar with Live Autocomplete */}
@@ -112,7 +112,7 @@ export const Header: React.FC = () => {
                   onChange={(e) => setQuery(e.target.value)}
                   onFocus={() => { if (suggestions.length > 0) setShowDropdown(true); }}
                   placeholder="Search 3D prints, materials, models..."
-                  className="w-full bg-gray-900/90 dark:bg-gray-900/90 light:bg-gray-100 text-sm text-gray-200 dark:text-gray-200 light:text-gray-900 pl-10 pr-4 py-2 rounded-full border border-gray-700 dark:border-gray-700 light:border-gray-300 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition"
+                  className="w-full bg-gray-100 dark:bg-gray-900/90 text-sm text-gray-900 dark:text-gray-200 pl-10 pr-4 py-2 rounded-full border border-gray-300 dark:border-gray-700 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition"
                 />
                 <svg className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -121,31 +121,31 @@ export const Header: React.FC = () => {
 
               {/* Autocomplete Dropdown */}
               {showDropdown && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-[#111726] border border-gray-700 rounded-2xl shadow-2xl overflow-hidden z-50 divide-y divide-gray-800">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#111726] border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden z-50 divide-y divide-gray-100 dark:divide-gray-800">
                   {suggestions.map((p) => (
                     <div
                       key={p.id}
                       onClick={() => handleSelectProduct(p.name)}
-                      className="p-3 flex items-center gap-3 hover:bg-gray-800/60 cursor-pointer transition"
+                      className="p-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800/60 cursor-pointer transition"
                     >
                       <img
                         src={p.image || '/assets/images/product_dragon_1786179208256.webp'}
                         alt={p.name}
-                        className="w-10 h-10 object-cover rounded-lg border border-gray-700"
+                        className="w-10 h-10 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = '/assets/images/product_dragon_1786179208256.webp';
                         }}
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs font-bold text-white truncate">{p.name}</div>
-                        <div className="text-[10px] text-gray-400">{p.category}</div>
+                        <div className="text-xs font-bold text-gray-900 dark:text-white truncate">{p.name}</div>
+                        <div className="text-[10px] text-gray-500 dark:text-gray-400">{p.category}</div>
                       </div>
-                      <div className="text-xs font-extrabold text-cyan-400">₹{p.price}</div>
+                      <div className="text-xs font-extrabold text-cyan-600 dark:text-cyan-400">₹{p.price}</div>
                     </div>
                   ))}
                   <div
                     onClick={handleSearchSubmit}
-                    className="p-2 text-center text-[11px] text-cyan-400 font-semibold hover:bg-gray-800/80 cursor-pointer"
+                    className="p-2 text-center text-[11px] text-cyan-600 dark:text-cyan-400 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800/80 cursor-pointer"
                   >
                     View all matching results for "{query}" →
                   </div>
@@ -155,11 +155,11 @@ export const Header: React.FC = () => {
 
             {/* Desktop Actions & Navigation */}
             <nav className="hidden md:flex items-center space-x-5 text-sm font-medium">
-              <Link to="/" className="text-gray-300 hover:text-cyan-400 transition">Home</Link>
-              <Link to="/shop" className="text-gray-300 hover:text-cyan-400 transition">Shop All</Link>
+              <Link to="/" className="text-gray-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition">Home</Link>
+              <Link to="/shop" className="text-gray-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition">Shop All</Link>
               <Link
                 to="/custom-print"
-                className="px-3.5 py-1.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/20 transition text-xs font-semibold"
+                className="px-3.5 py-1.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 transition text-xs font-semibold"
               >
                 Request Custom 3D Print
               </Link>
@@ -167,7 +167,7 @@ export const Header: React.FC = () => {
               {/* Theme Toggle Button */}
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800/60 transition border border-gray-700/60"
+                className="p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/60 transition border border-gray-300 dark:border-gray-700/60"
                 title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
                 aria-label="Toggle theme mode"
               >
@@ -185,7 +185,7 @@ export const Header: React.FC = () => {
               {/* Shopping Cart Button */}
               <Link
                 to="/cart"
-                className="relative p-2 text-gray-300 hover:text-cyan-400 transition"
+                className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition"
                 aria-label={`Shopping Cart with ${totalItems} items`}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,7 +201,7 @@ export const Header: React.FC = () => {
               {/* User Profile Button */}
               <button
                 onClick={handleProfileClick}
-                className="flex items-center gap-2 p-1.5 rounded-full hover:bg-gray-800/60 transition"
+                className="flex items-center gap-2 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800/60 transition"
                 title={isLoggedIn ? `Logged in as ${currentUser?.name} (${currentUser?.role})` : 'Sign In / Account Portal'}
                 aria-label="User account"
               >
@@ -214,7 +214,7 @@ export const Header: React.FC = () => {
                     {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
                   </div>
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-gray-300 hover:text-white hover:border-cyan-400 transition">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:border-cyan-400 transition">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
@@ -227,8 +227,8 @@ export const Header: React.FC = () => {
                 to="/admin"
                 className={`text-xs px-2.5 py-1.5 rounded-lg border transition flex items-center gap-1.5 ${
                   isAdmin
-                    ? 'border-purple-500/40 bg-purple-950/30 text-purple-300 font-semibold'
-                    : 'border-gray-700 text-gray-400 hover:text-white'
+                    ? 'border-purple-500/40 bg-purple-100 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 font-semibold'
+                    : 'border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -242,7 +242,7 @@ export const Header: React.FC = () => {
             <div className="flex md:hidden items-center gap-2">
               <button
                 onClick={toggleTheme}
-                className="p-1.5 text-gray-300 hover:text-white"
+                className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                 aria-label="Toggle theme"
               >
                 {theme === 'dark' ? (
@@ -258,7 +258,7 @@ export const Header: React.FC = () => {
 
               <button
                 onClick={handleProfileClick}
-                className="p-1.5 text-gray-300 hover:text-white"
+                className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                 aria-label="User account"
               >
                 {isLoggedIn ? (
@@ -274,7 +274,7 @@ export const Header: React.FC = () => {
 
               <Link
                 to="/cart"
-                className="relative p-1.5 text-gray-300 hover:text-cyan-400 transition"
+                className="relative p-1.5 text-gray-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition"
                 aria-label={`Shopping Cart with ${totalItems} items`}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -289,7 +289,7 @@ export const Header: React.FC = () => {
 
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 text-gray-400 hover:text-white focus:outline-none"
+                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white focus:outline-none"
                 aria-label="Toggle menu"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -305,34 +305,34 @@ export const Header: React.FC = () => {
 
           {/* Mobile dropdown menu */}
           {mobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-gray-800 space-y-3">
+            <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-800 space-y-3 bg-white dark:bg-[#090d16] px-2 rounded-b-2xl">
               <form onSubmit={handleSearchSubmit} className="relative mb-3">
                 <input
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search 3D prints..."
-                  className="w-full bg-gray-900 text-sm text-gray-200 pl-9 pr-3 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-gray-100 dark:bg-gray-900 text-sm text-gray-900 dark:text-gray-200 pl-9 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 focus:outline-none focus:border-cyan-400"
                 />
                 <svg className="w-4 h-4 text-gray-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </form>
-              <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-gray-300 hover:text-cyan-400">Home</Link>
-              <Link to="/shop" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-gray-300 hover:text-cyan-400">Shop All Products</Link>
-              <Link to="/custom-print" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-cyan-400 font-medium">Request Custom 3D Print</Link>
-              <Link to="/account" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-gray-300 hover:text-cyan-400">
+              <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-gray-700 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400">Home</Link>
+              <Link to="/shop" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-gray-700 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400">Shop All Products</Link>
+              <Link to="/custom-print" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-cyan-600 dark:text-cyan-400 font-medium">Request Custom 3D Print</Link>
+              <Link to="/account" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-gray-700 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400">
                 {isLoggedIn ? `My Account (${currentUser?.name})` : 'Sign In / Register'}
               </Link>
-              <Link to="/cart" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between py-1.5 text-gray-300 hover:text-cyan-400">
+              <Link to="/cart" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between py-1.5 text-gray-700 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400">
                 <span>Shopping Cart</span>
                 {totalItems > 0 && (
-                  <span className="bg-cyan-500/20 text-cyan-400 text-xs font-bold px-2 py-0.5 rounded-full border border-cyan-500/30">
+                  <span className="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-xs font-bold px-2 py-0.5 rounded-full border border-cyan-500/30">
                     {totalItems} items
                   </span>
                 )}
               </Link>
-              <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-purple-400 hover:text-white font-medium">Admin Portal</Link>
+              <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-purple-600 dark:text-purple-400 hover:underline font-medium">Admin Portal</Link>
             </div>
           )}
         </div>

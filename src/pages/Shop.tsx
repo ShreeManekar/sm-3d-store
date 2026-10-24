@@ -139,7 +139,7 @@ const Shop: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-white py-10">
+    <div className="min-h-screen bg-transparent text-inherit py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Toast Alert */}
         {toastMessage && (
@@ -159,26 +159,26 @@ const Shop: React.FC = () => {
 
         {/* Header & Breadcrumb */}
         <div className="mb-8">
-          <nav className="flex items-center gap-2 text-xs text-gray-400 mb-3" aria-label="Breadcrumb">
-            <Link to="/" className="hover:text-cyan-400 transition">Home</Link>
+          <nav className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-3" aria-label="Breadcrumb">
+            <Link to="/" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition">Home</Link>
             <span>/</span>
-            <span className="text-cyan-400 font-medium">Shop Catalog</span>
+            <span className="text-cyan-600 dark:text-cyan-400 font-medium">Shop Catalog</span>
           </nav>
-          <span className="text-cyan-400 font-semibold text-sm uppercase tracking-wider">Catalog</span>
-          <h1 className="text-3xl font-extrabold text-white mt-1">Shop Ready-Made 3D Prints</h1>
-          <p className="text-gray-400 text-sm mt-1">
+          <span className="text-cyan-600 dark:text-cyan-400 font-semibold text-sm uppercase tracking-wider">Catalog</span>
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">Shop Ready-Made 3D Prints</h1>
+          <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
             Precision printed on tuned additive manufacturing hardware using high-grade filaments up to 160mm build volume.
           </p>
         </div>
 
         {/* Search Query Pill */}
         {searchQuery && (
-          <div className="mb-6 flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-4 py-2 text-sm max-w-fit">
-            <span className="text-gray-400">Search results for:</span>
-            <span className="text-cyan-400 font-semibold">"{searchQuery}"</span>
+          <div className="mb-6 flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2 text-sm max-w-fit shadow-sm">
+            <span className="text-gray-600 dark:text-gray-400">Search results for:</span>
+            <span className="text-cyan-600 dark:text-cyan-400 font-semibold">"{searchQuery}"</span>
             <button
               onClick={clearSearch}
-              className="ml-2 text-gray-500 hover:text-white p-1 rounded-full hover:bg-gray-800"
+              className="ml-2 text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-white p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
               title="Clear search"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,7 +197,7 @@ const Shop: React.FC = () => {
               className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
                 selectedCategory === category
                   ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/20'
-                  : 'bg-gray-900 border border-gray-800 text-gray-300 hover:border-gray-700 hover:text-white'
+                  : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700 hover:text-cyan-600 dark:hover:text-white shadow-sm'
               }`}
             >
               {category}
@@ -207,18 +207,18 @@ const Shop: React.FC = () => {
 
         {/* Product Grid */}
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-16 bg-gray-900/40 rounded-2xl border border-gray-800">
-            <svg className="w-12 h-12 text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center py-16 bg-white dark:bg-gray-900/40 rounded-2xl border border-gray-200 dark:border-gray-800">
+            <svg className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h3 className="text-lg font-bold text-white mb-1">No products found</h3>
-            <p className="text-gray-400 text-sm mb-4">Try clearing your search query or selecting a different category.</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">No products found</h3>
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">Try clearing your search query or selecting a different category.</p>
             <button
               onClick={() => {
                 clearSearch();
                 setSelectedCategory('All');
               }}
-              className="px-4 py-2 rounded-xl text-sm font-semibold bg-gray-800 hover:bg-gray-700 text-cyan-400 transition"
+              className="px-4 py-2 rounded-xl text-sm font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-cyan-600 dark:text-cyan-400 transition"
             >
               Reset Filters
             </button>
@@ -230,10 +230,10 @@ const Shop: React.FC = () => {
               return (
                 <div
                   key={product.id}
-                  className="group rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-cyan-500/50 transition duration-300 flex flex-col justify-between shadow-lg"
+                  className="group rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden hover:border-cyan-500/50 transition duration-300 flex flex-col justify-between shadow-md dark:shadow-lg"
                 >
                   <div>
-                    <div className="h-56 overflow-hidden bg-gray-950 flex items-center justify-center p-2 relative">
+                    <div className="h-56 overflow-hidden bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-2 relative">
                       <img
                         src={product.image}
                         alt={product.name}
@@ -253,7 +253,7 @@ const Shop: React.FC = () => {
                       {product.stlUrl && (
                         <button
                           onClick={() => setActive3dProduct(product)}
-                          className="absolute bottom-3 left-3 bg-gray-900/90 hover:bg-cyan-500 hover:text-black text-cyan-400 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-cyan-500/40 shadow-lg backdrop-blur flex items-center gap-1.5 transition"
+                          className="absolute bottom-3 left-3 bg-white/90 dark:bg-gray-900/90 hover:bg-cyan-500 hover:text-black text-cyan-600 dark:text-cyan-400 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-gray-200 dark:border-cyan-500/40 shadow-lg backdrop-blur flex items-center gap-1.5 transition"
                           title="Open Interactive 3D Model View"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,20 +264,20 @@ const Shop: React.FC = () => {
                       )}
                     </div>
                     <div className="p-5">
-                      <div className="text-xs font-semibold text-cyan-400 mb-1">{product.category}</div>
-                      <h3 className="font-bold text-lg text-white mb-2">{product.name}</h3>
-                      <p className="text-sm text-gray-400 mb-3">{product.description}</p>
+                      <div className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 mb-1">{product.category}</div>
+                      <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-2">{product.name}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{product.description}</p>
                       <div className="text-xs text-gray-500">Dimensions: {product.dimensions}</div>
                     </div>
                   </div>
 
-                  <div className="p-5 pt-0 border-t border-gray-800/80 flex items-center justify-between mt-4">
-                    <span className="text-xl font-extrabold text-cyan-400">₹{product.price}</span>
+                  <div className="p-5 pt-0 border-t border-gray-100 dark:border-gray-800/80 flex items-center justify-between mt-4">
+                    <span className="text-xl font-extrabold text-cyan-600 dark:text-cyan-400">₹{product.price}</span>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleAddToCart(product, false)}
                         title="Add to cart and keep shopping"
-                        className="px-2.5 py-2 rounded-xl text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-cyan-300 border border-cyan-500/30 transition transform active:scale-95 flex items-center gap-1"
+                        className="px-2.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-cyan-700 dark:text-cyan-300 border border-gray-200 dark:border-cyan-500/30 transition transform active:scale-95 flex items-center gap-1"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -301,28 +301,28 @@ const Shop: React.FC = () => {
         {/* 3D Model Inspection Modal */}
         {active3dProduct && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-            <div className="bg-gray-900 border border-cyan-500/40 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col">
-              <div className="p-4 border-b border-gray-800 flex items-center justify-between">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-cyan-500/40 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
                 <div>
-                  <h3 className="font-bold text-white text-base flex items-center gap-2">
-                    <span className="text-cyan-400">⚡</span> {active3dProduct.name}
+                  <h3 className="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
+                    <span className="text-cyan-600 dark:text-cyan-400">⚡</span> {active3dProduct.name}
                   </h3>
-                  <p className="text-xs text-gray-400">{active3dProduct.category} • {active3dProduct.dimensions}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{active3dProduct.category} • {active3dProduct.dimensions}</p>
                 </div>
                 <button
                   onClick={() => setActive3dProduct(null)}
-                  className="text-gray-400 hover:text-white p-1"
+                  className="text-gray-400 hover:text-gray-700 dark:hover:text-white p-1"
                 >
                   ✕
                 </button>
               </div>
 
-              <div className="p-4">
+              <div className="p-4 bg-gray-50 dark:bg-transparent">
                 <StlViewer stlUrl={active3dProduct.stlUrl || '/assets/models/sample_dragon.stl'} height={380} />
               </div>
 
-              <div className="p-4 bg-gray-950/80 border-t border-gray-800 flex items-center justify-between">
-                <span className="text-xl font-extrabold text-cyan-400">₹{active3dProduct.price}</span>
+              <div className="p-4 bg-gray-50 dark:bg-gray-950/80 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                <span className="text-xl font-extrabold text-cyan-600 dark:text-cyan-400">₹{active3dProduct.price}</span>
                 <button
                   onClick={() => {
                     handleAddToCart(active3dProduct, false);
