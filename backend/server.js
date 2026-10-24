@@ -842,6 +842,17 @@ app.delete('/api/orders/:id', (req, res) => {
   res.json({ message: 'Order deleted' });
 });
 
+app.delete('/api/users/:id', (req, res) => {
+  if (!verifyAdminAccess(req)) return res.status(401).json({ error: 'Unauthorized: Admin token required' });
+  const db = loadDb();
+  const user = (db.users || []).find(u => u.id === req.params.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  if (user.role === 'admin') return res.status(403).json({ error: 'Restricted: Administrator accounts cannot be deleted' });
+  db.users = (db.users || []).filter(u => u.id !== req.params.id);
+  saveDb(db);
+  res.json({ message: 'Customer account deleted' });
+});
+
 // ── SPA Catch-all ───────────────────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, '../dist/index.html'));

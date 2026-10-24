@@ -277,6 +277,45 @@ export const Admin: React.FC = () => {
     }
   };
 
+  // Customer Store Order deletion
+  const handleDeleteOrder = async (id: string, customerName?: string) => {
+    if (!window.confirm(`Are you sure you want to delete order ${id}${customerName ? ` for ${customerName}` : ''}? This action cannot be undone.`)) return;
+    const headers = getAdminHeaders();
+    try {
+      await axios.delete(`/api/orders/${id}`, { headers });
+      setOrders(prev => prev.filter(o => o.id !== id));
+      showToast(`Order ${id} deleted successfully`);
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to delete customer order');
+    }
+  };
+
+  // Custom Print Order deletion
+  const handleDeleteCustomOrder = async (id: string, customerName?: string) => {
+    if (!window.confirm(`Are you sure you want to delete custom print quote ${id}${customerName ? ` for ${customerName}` : ''}? This action cannot be undone.`)) return;
+    const headers = getAdminHeaders();
+    try {
+      await axios.delete(`/api/custom-orders/${id}`, { headers });
+      setCustomOrders(prev => prev.filter(c => c.id !== id));
+      showToast(`Custom order ${id} deleted successfully`);
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to delete custom order');
+    }
+  };
+
+  // Customer Account deletion
+  const handleDeleteUser = async (id: string, userName?: string) => {
+    if (!window.confirm(`Are you sure you want to delete customer account ${userName || id}? This action cannot be undone.`)) return;
+    const headers = getAdminHeaders();
+    try {
+      await axios.delete(`/api/users/${id}`, { headers });
+      setUsers(prev => prev.filter(u => u.id !== id));
+      showToast(`Customer account deleted successfully`);
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to delete customer account');
+    }
+  };
+
   // Export Orders to Excel (xlsx)
   const handleExportOrdersToExcel = () => {
     if (orders.length === 0) {
@@ -927,18 +966,30 @@ export const Admin: React.FC = () => {
                         >
                           Set Quote
                         </button>
-                        <select
-                          value={co.status}
-                          onChange={(e) => handleUpdateCustomStatus(co.id, e.target.value)}
-                          className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-[10px] rounded px-1.5 py-0.5 focus:outline-none"
-                        >
-                          <option value="Requested">Requested</option>
-                          <option value="Quoted">Quoted</option>
-                          <option value="In Production">In Production</option>
-                          <option value="Printed">Printed</option>
-                          <option value="Shipped">Shipped</option>
-                          <option value="Completed">Completed</option>
-                        </select>
+                        <div className="flex items-center gap-1">
+                          <select
+                            value={co.status}
+                            onChange={(e) => handleUpdateCustomStatus(co.id, e.target.value)}
+                            className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-[10px] rounded px-1.5 py-0.5 focus:outline-none"
+                          >
+                            <option value="Requested">Requested</option>
+                            <option value="Quoted">Quoted</option>
+                            <option value="In Production">In Production</option>
+                            <option value="Printed">Printed</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Completed">Completed</option>
+                          </select>
+                          <button
+                            onClick={() => handleDeleteCustomOrder(co.id, co.userName)}
+                            title="Delete Custom Print Quote"
+                            className="p-1 text-red-500 hover:text-red-700 dark:hover:text-red-400 rounded hover:bg-red-50 dark:hover:bg-red-950/40 transition"
+                            aria-label={`Delete custom order ${co.id}`}
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -978,6 +1029,7 @@ export const Admin: React.FC = () => {
                     <th className="p-3.5">Total (₹)</th>
                     <th className="p-3.5">Payment</th>
                     <th className="p-3.5">Fulfillment Status</th>
+                    <th className="p-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800 text-gray-700 dark:text-gray-300">
@@ -1024,6 +1076,18 @@ export const Admin: React.FC = () => {
                           <option value="Shipped">Shipped</option>
                           <option value="Delivered">Delivered</option>
                         </select>
+                      </td>
+                      <td className="p-3.5 text-right">
+                        <button
+                          onClick={() => handleDeleteOrder(ord.id, ord.userName)}
+                          title="Delete Order & Customer Data"
+                          className="p-1.5 text-red-500 hover:text-red-700 dark:hover:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition inline-flex items-center justify-center border border-transparent hover:border-red-200 dark:hover:border-red-800"
+                          aria-label={`Delete order ${ord.id}`}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -1084,7 +1148,17 @@ export const Admin: React.FC = () => {
                             Edit Admin
                           </Link>
                         ) : (
-                          <span className="text-gray-500 text-[11px]">Customer View</span>
+                          <button
+                            onClick={() => handleDeleteUser(u.id, u.name)}
+                            title="Delete Customer Account"
+                            className="px-2 py-1 text-red-500 hover:text-red-700 dark:hover:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition inline-flex items-center gap-1 text-[11px] font-medium border border-transparent hover:border-red-200 dark:hover:border-red-800"
+                            aria-label={`Delete customer ${u.name}`}
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Delete
+                          </button>
                         )}
                       </td>
                     </tr>

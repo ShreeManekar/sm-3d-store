@@ -127,6 +127,21 @@ async function runTests() {
   });
   assert(custOrder.status === 201, 'POST /api/custom-orders creates custom order (201)');
 
+  console.log('\n--- 9. Delete Customer Store Order & Data ---');
+  const orderId = newOrder.data.order.id;
+  const delOrder = await testEndpoint('DELETE', `/api/orders/${orderId}`, null, { 'Authorization': `Bearer ${adminToken}` });
+  assert(delOrder.status === 200, `DELETE /api/orders/${orderId} deletes order (200 OK)`);
+
+  console.log('\n--- 10. Delete Custom Print Order ---');
+  const customId = custOrder.data.order.id;
+  const delCustom = await testEndpoint('DELETE', `/api/custom-orders/${customId}`, null, { 'Authorization': `Bearer ${adminToken}` });
+  assert(delCustom.status === 200, `DELETE /api/custom-orders/${customId} deletes custom order (200 OK)`);
+
+  console.log('\n--- 11. Delete Customer Account ---');
+  const userId = reg.data.user.id;
+  const delUser = await testEndpoint('DELETE', `/api/users/${userId}`, null, { 'Authorization': `Bearer ${adminToken}` });
+  assert(delUser.status === 200, `DELETE /api/users/${userId} deletes customer account (200 OK)`);
+
   console.log(`\n========================================`);
   console.log(`Summary: ${passed} Passed, ${failed} Failed`);
   console.log(`========================================\n`);
