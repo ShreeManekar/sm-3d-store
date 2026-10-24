@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+import axios from 'axios';
+import { useCart, ProductItem } from '../context/CartContext';
 
-const FEATURED_PRODUCTS = [
+const DEFAULT_FEATURED: ProductItem[] = [
   {
     id: 'prod_1',
     name: 'Articulated Crystal Dragon',
@@ -10,7 +11,7 @@ const FEATURED_PRODUCTS = [
     category: 'Art & Figures',
     description: 'Flexible print-in-place dragon with moving articulated joints.',
     image: '/assets/images/product_dragon_1786179208256.webp',
-    dimensions: '150 × 45 × 30 mm'
+    dimensions: '150 × 45 × 30 mm',
   },
   {
     id: 'prod_2',
@@ -19,7 +20,7 @@ const FEATURED_PRODUCTS = [
     category: 'Engineering & Gadgets',
     description: 'Mechanical desk fidget with smooth 5:1 gear reduction.',
     image: '/assets/images/product_gearbox_1786179220985.webp',
-    dimensions: '75 × 75 × 22 mm'
+    dimensions: '75 × 75 × 22 mm',
   },
   {
     id: 'prod_3',
@@ -28,7 +29,7 @@ const FEATURED_PRODUCTS = [
     category: 'Home & Decor',
     description: 'Modern succulent pot with hidden internal drainage reservoir.',
     image: '/assets/images/product_planter_1786179235105.webp',
-    dimensions: '90 × 90 × 85 mm'
+    dimensions: '90 × 90 × 85 mm',
   },
   {
     id: 'prod_4',
@@ -37,21 +38,77 @@ const FEATURED_PRODUCTS = [
     category: 'Desk Accessories',
     description: 'Ergonomic curved desk stand with cable organizer channel.',
     image: '/assets/images/product_headphone_stand_1786179253396.webp',
-    dimensions: '140 × 120 × 240 mm'
-  }
+    dimensions: '140 × 120 × 240 mm',
+  },
 ];
 
 const Home: React.FC = () => {
-  const { addToCart } = useCart();
+  const { addToCart, items } = useCart();
   const navigate = useNavigate();
+  const [featuredProducts, setFeaturedProducts] = useState<ProductItem[]>(DEFAULT_FEATURED);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const handleAddToCart = (product: typeof FEATURED_PRODUCTS[0]) => {
+  useEffect(() => {
+    let isMounted = true;
+    axios
+      .get('/api/products')
+      .then((res) => {
+        if (!isMounted) return;
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          const loaded: ProductItem[] = res.data.slice(0, 4).map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            price: Number(p.price) || 0,
+            category: p.category || 'General',
+            description: p.description || '',
+            image: p.image || p.images?.[0] || '/assets/images/hero_3d_printer_1786179196218.webp',
+            dimensions: typeof p.dimensions === 'string' ? p.dimensions : '100 × 100 × 100 mm',
+          }));
+          setFeaturedProducts(loaded);
+        }
+      })
+      .catch(() => {
+        // Fallback to DEFAULT_FEATURED
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleAddToCart = (product: ProductItem, goToCart: boolean = true) => {
     addToCart(product, 1);
-    navigate('/cart');
+    if (goToCart) {
+      navigate('/cart');
+    } else {
+      setToastMessage(`Added "${product.name}" to cart!`);
+      setTimeout(() => setToastMessage(null), 3500);
+    }
+  };
+
+  const getItemQuantityInCart = (productId: string) => {
+    const item = items.find((i) => i.id === productId);
+    return item ? item.quantity : 0;
   };
 
   return (
     <div className="min-h-screen bg-[#090d16] text-white">
+      {/* Toast Alert */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-cyan-400/40 animate-fade-in">
+          <svg className="w-5 h-5 text-cyan-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <span className="text-sm font-semibold">{toastMessage}</span>
+          <Link
+            to="/cart"
+            className="ml-2 text-xs font-bold underline hover:text-cyan-200 uppercase tracking-wider"
+          >
+            View Cart &rarr;
+          </Link>
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -162,44 +219,57 @@ const Home: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {FEATURED_PRODUCTS.map((product) => (
-              <div
-                key={product.id}
-                className="group rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-cyan-500/50 transition duration-300 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="h-48 overflow-hidden bg-gray-950 flex items-center justify-center p-2">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition duration-500"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <div className="text-xs font-semibold text-cyan-400 mb-1">{product.category}</div>
-                    <h3 className="font-bold text-white mb-1">{product.name}</h3>
-                    <p className="text-sm text-gray-400 mb-3">{product.description}</p>
+            {featuredProducts.map((product) => {
+              const qtyInCart = getItemQuantityInCart(product.id);
+              return (
+                <div
+                  key={product.id}
+                  className="group rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-cyan-500/50 transition duration-300 flex flex-col justify-between shadow-lg"
+                >
+                  <Link to="/shop" className="block focus:outline-none">
+                    <div className="h-48 overflow-hidden bg-gray-950 flex items-center justify-center p-2 relative">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition duration-500"
+                      />
+                      {qtyInCart > 0 && (
+                        <span className="absolute top-3 right-3 bg-cyan-500 text-gray-950 text-xs font-extrabold px-2 py-0.5 rounded-full shadow-lg">
+                          {qtyInCart} in cart
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <div className="text-xs font-semibold text-cyan-400 mb-1">{product.category}</div>
+                      <h3 className="font-bold text-white mb-1 group-hover:text-cyan-300 transition">{product.name}</h3>
+                      <p className="text-sm text-gray-400 mb-2 line-clamp-2">{product.description}</p>
+                    </div>
+                  </Link>
+
+                  <div className="p-4 pt-0 border-t border-gray-800/80 flex items-center justify-between mt-2">
+                    <span className="text-lg font-bold text-cyan-400">₹{product.price}</span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => handleAddToCart(product, false)}
+                        title="Add to cart"
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-cyan-300 border border-cyan-500/30 transition transform active:scale-95 flex items-center gap-1"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Add</span>
+                      </button>
+                      <button
+                        onClick={() => handleAddToCart(product, true)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md shadow-cyan-500/20 transition transform active:scale-95"
+                      >
+                        Add to Cart &rarr;
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="p-4 pt-0 border-t border-gray-800/80 flex items-center justify-between mt-3">
-                  <span className="text-lg font-bold text-cyan-400">₹{product.price}</span>
-                  <div className="flex items-center gap-2">
-                    <Link
-                      to="/shop"
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-400 hover:text-white transition"
-                    >
-                      Details
-                    </Link>
-                    <button
-                      onClick={() => handleAddToCart(product)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md shadow-cyan-500/20 transition"
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { useCart, CartItem } from '../context/CartContext';
 
 interface OrderConfirmationData {
@@ -54,10 +55,34 @@ const Checkout: React.FC = () => {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const orderId = `SM3D-${Math.floor(100000 + Math.random() * 900000)}`;
-      const fullAddress = `${formData.street}, ${formData.city}, ${formData.state || ''} - ${formData.pincode}, India`;
+    const fullAddress = `${formData.street}, ${formData.city}, ${formData.state || ''} - ${formData.pincode}, India`;
+    const fallbackOrderId = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
+    const orderPayload = {
+      userId: 'guest',
+      userName: formData.name.trim(),
+      userEmail: formData.email.trim(),
+      userPhone: formData.phone.trim(),
+      shippingAddress: {
+        street: formData.street.trim(),
+        city: formData.city.trim(),
+        state: formData.state.trim(),
+        pincode: formData.pincode.trim(),
+      },
+      items: items.map((i) => ({
+        productId: i.id,
+        name: i.name,
+        quantity: i.quantity,
+        price: i.price,
+      })),
+      subtotal: totalPrice,
+      shippingFee,
+      total: finalTotal,
+      paymentMethod: formData.paymentMethod,
+      orderNotes: formData.notes.trim(),
+    };
+
+    const finalizeOrder = (orderId: string) => {
       const orderData: OrderConfirmationData = {
         orderId,
         customerName: formData.name.trim(),
@@ -81,7 +106,18 @@ const Checkout: React.FC = () => {
       setConfirmedOrder(orderData);
       clearCart();
       setIsSubmitting(false);
-    }, 400);
+    };
+
+    axios
+      .post('/api/orders', orderPayload)
+      .then((res) => {
+        const backendOrderId = res.data?.order?.id || fallbackOrderId;
+        finalizeOrder(backendOrderId);
+      })
+      .catch(() => {
+        // Offline / static hosting fallback
+        finalizeOrder(fallbackOrderId);
+      });
   };
 
   // If order was placed, show confirmation screen
@@ -421,20 +457,27 @@ const Checkout: React.FC = () => {
               {/* Items List */}
               <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
                 {items.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3">
+                  <Link
+                    key={item.id}
+                    to="/cart"
+                    className="flex items-center gap-3 p-1.5 rounded-lg hover:bg-gray-800/60 transition group"
+                    title="Click to edit in Cart"
+                  >
                     <img
                       src={item.image}
                       alt={item.name}
                       className="w-12 h-12 object-cover rounded-lg bg-gray-950 border border-gray-800 flex-shrink-0"
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-semibold text-white truncate">{item.name}</div>
+                      <div className="text-xs font-semibold text-white truncate group-hover:text-cyan-300 transition">
+                        {item.name}
+                      </div>
                       <div className="text-[11px] text-gray-400">Qty: {item.quantity} × ₹{item.price}</div>
                     </div>
                     <div className="text-xs font-bold text-cyan-400">
                       ₹{item.price * item.quantity}
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
 

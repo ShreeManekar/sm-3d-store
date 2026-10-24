@@ -20,7 +20,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onAddToCart,
 }) => (
   <div className="group rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-cyan-500/50 transition duration-300 flex flex-col justify-between">
-    <div>
+    <Link to="/shop" className="block focus:outline-none">
       <div className="h-48 overflow-hidden bg-gray-950 flex items-center justify-center p-2">
         <img
           src={imageUrl}
@@ -33,12 +33,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {category && (
           <div className="text-xs font-semibold text-cyan-400 mb-1">{category}</div>
         )}
-        <h3 className="font-bold text-white mb-1">{name}</h3>
+        <h3 className="font-bold text-white mb-1 hover:text-cyan-300 transition">{name}</h3>
         {description && (
           <p className="text-sm text-gray-400 mb-3">{description}</p>
         )}
       </div>
-    </div>
+    </Link>
     <div className="p-4 pt-0 border-t border-gray-800/80 flex items-center justify-between mt-3">
       <span className="text-lg font-bold text-cyan-400">₹{price}</span>
       <div className="flex items-center gap-2">

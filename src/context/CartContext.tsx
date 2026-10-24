@@ -1,4 +1,16 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import cartLogic from './cartLogic.cjs';
+
+const {
+  CART_STORAGE_KEY,
+  FREE_SHIPPING_THRESHOLD,
+  STANDARD_SHIPPING_FEE,
+  calculateCartTotals,
+  sanitizeCartItems,
+  cartReducer,
+} = cartLogic;
+
+export { CART_STORAGE_KEY, FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE, calculateCartTotals };
 
 export interface ProductItem {
   id: string;
@@ -27,29 +39,6 @@ export interface CartContextType {
   finalTotal: number;
 }
 
-export const CART_STORAGE_KEY = 'sm3d_cart_items';
-export const FREE_SHIPPING_THRESHOLD = 500;
-export const STANDARD_SHIPPING_FEE = 99;
-
-export function calculateCartTotals(items: CartItem[]): {
-  totalItems: number;
-  totalPrice: number;
-  shippingFee: number;
-  finalTotal: number;
-} {
-  const totalItems = items.reduce((sum, item) => sum + (item.quantity > 0 ? item.quantity : 0), 0);
-  const totalPrice = items.reduce((sum, item) => sum + (item.quantity > 0 ? item.price * item.quantity : 0), 0);
-  const shippingFee = totalPrice === 0 || totalPrice >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
-  const finalTotal = totalPrice + shippingFee;
-
-  return {
-    totalItems,
-    totalPrice,
-    shippingFee,
-    finalTotal,
-  };
-}
-
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -59,9 +48,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const stored = localStorage.getItem(CART_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          return parsed.filter(item => item && typeof item.id === 'string' && typeof item.price === 'number');
-        }
+        return sanitizeCartItems(parsed) as CartItem[];
       }
     } catch (e) {
       console.warn('Failed to parse cart items from localStorage:', e);
@@ -69,6 +56,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return [];
   });
 
+  // Persist to localStorage whenever cart items change
   useEffect(() => {
     try {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
@@ -77,42 +65,57 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [items]);
 
-  const addToCart = (product: ProductItem, quantity: number = 1) => {
-    if (quantity <= 0) return;
-    setItems((prevItems) => {
-      const existingIndex = prevItems.findIndex((item) => item.id === product.id);
-      if (existingIndex > -1) {
-        const updated = [...prevItems];
-        updated[existingIndex] = {
-          ...updated[existingIndex],
-          quantity: updated[existingIndex].quantity + quantity,
-        };
-        return updated;
-      } else {
-        return [...prevItems, { ...product, quantity }];
+  // Sync state across browser tabs via storage event listener
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === CART_STORAGE_KEY && e.newValue) {
+        try {
+          const remoteItems = JSON.parse(e.newValue);
+          setItems(sanitizeCartItems(remoteItems) as CartItem[]);
+        } catch (err) {
+          console.warn('Error syncing cart across tabs:', err);
+        }
+      } else if (e.key === CART_STORAGE_KEY && !e.newValue) {
+        setItems([]);
       }
-    });
-  };
+    };
 
-  const removeFromCart = (id: string) => {
-    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
-  };
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
-  const updateQuantity = (id: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(id);
-      return;
-    }
+  const addToCart = useCallback((product: ProductItem, quantity: number = 1) => {
     setItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, quantity } : item
-      )
+      cartReducer(prevItems, {
+        type: 'ADD_ITEM',
+        payload: { product, quantity },
+      }) as CartItem[]
     );
-  };
+  }, []);
 
-  const clearCart = () => {
-    setItems([]);
-  };
+  const removeFromCart = useCallback((id: string) => {
+    setItems((prevItems) =>
+      cartReducer(prevItems, {
+        type: 'REMOVE_ITEM',
+        payload: { id },
+      }) as CartItem[]
+    );
+  }, []);
+
+  const updateQuantity = useCallback((id: string, quantity: number) => {
+    setItems((prevItems) =>
+      cartReducer(prevItems, {
+        type: 'UPDATE_QUANTITY',
+        payload: { id, quantity },
+      }) as CartItem[]
+    );
+  }, []);
+
+  const clearCart = useCallback(() => {
+    setItems((prevItems) => cartReducer(prevItems, { type: 'CLEAR_CART' }) as CartItem[]);
+  }, []);
 
   const { totalItems, totalPrice, shippingFee, finalTotal } = calculateCartTotals(items);
 

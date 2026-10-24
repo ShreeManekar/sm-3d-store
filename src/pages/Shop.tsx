@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 import { useCart, ProductItem } from '../context/CartContext';
 
 export interface Product extends ProductItem {
@@ -14,7 +15,7 @@ export const PRODUCTS: Product[] = [
     category: 'Art & Figures',
     description: 'Print-in-place flexible crystal dragon with moving articulated segments.',
     image: '/assets/images/product_dragon_1786179208256.webp',
-    dimensions: '150 × 45 × 30 mm'
+    dimensions: '150 × 45 × 30 mm',
   },
   {
     id: 'prod_2',
@@ -23,7 +24,7 @@ export const PRODUCTS: Product[] = [
     category: 'Engineering & Gadgets',
     description: 'Precision 5:1 planetary reduction gear toy with ultra-smooth rotation.',
     image: '/assets/images/product_gearbox_1786179220985.webp',
-    dimensions: '75 × 75 × 22 mm'
+    dimensions: '75 × 75 × 22 mm',
   },
   {
     id: 'prod_3',
@@ -32,7 +33,7 @@ export const PRODUCTS: Product[] = [
     category: 'Home & Decor',
     description: 'Modern geometric succulent pot with hidden internal water drainage tray.',
     image: '/assets/images/product_planter_1786179235105.webp',
-    dimensions: '90 × 90 × 85 mm'
+    dimensions: '90 × 90 × 85 mm',
   },
   {
     id: 'prod_4',
@@ -41,23 +42,59 @@ export const PRODUCTS: Product[] = [
     category: 'Desk Accessories',
     description: 'Curved ergonomic headphone holder with base cable management.',
     image: '/assets/images/product_headphone_stand_1786179253396.webp',
-    dimensions: '140 × 120 × 240 mm'
-  }
+    dimensions: '140 × 120 × 240 mm',
+  },
 ];
-
-const CATEGORIES = ['All', 'Art & Figures', 'Engineering & Gadgets', 'Home & Decor', 'Desk Accessories'];
 
 const Shop: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { addToCart, items } = useCart();
+  const [products, setProducts] = useState<Product[]>(PRODUCTS);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const searchQuery = searchParams.get('search') || '';
 
+  // Synchronize catalog with backend database if accessible
+  useEffect(() => {
+    let isMounted = true;
+    axios
+      .get('/api/products')
+      .then((res) => {
+        if (!isMounted) return;
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          const loaded: Product[] = res.data.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            price: Number(p.price) || 0,
+            category: p.category || 'General',
+            description: p.description || '',
+            image: p.image || p.images?.[0] || '/assets/images/hero_3d_printer_1786179196218.webp',
+            dimensions: typeof p.dimensions === 'string' ? p.dimensions : '100 × 100 × 100 mm',
+          }));
+          setProducts(loaded);
+        }
+      })
+      .catch(() => {
+        // Retain fallback PRODUCTS
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const categories = useMemo(() => {
+    const set = new Set<string>(['All']);
+    products.forEach((p) => {
+      if (p.category) set.add(p.category);
+    });
+    return Array.from(set);
+  }, [products]);
+
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((product) => {
+    return products.filter((product) => {
       const matchesSearch =
         !searchQuery.trim() ||
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -69,7 +106,7 @@ const Shop: React.FC = () => {
 
       return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [products, searchQuery, selectedCategory]);
 
   const handleAddToCart = (product: Product, goToCart: boolean = true) => {
     addToCart(product, 1);
@@ -110,8 +147,13 @@ const Shop: React.FC = () => {
           </div>
         )}
 
-        {/* Header */}
+        {/* Header & Breadcrumb */}
         <div className="mb-8">
+          <nav className="flex items-center gap-2 text-xs text-gray-400 mb-3" aria-label="Breadcrumb">
+            <Link to="/" className="hover:text-cyan-400 transition">Home</Link>
+            <span>/</span>
+            <span className="text-cyan-400 font-medium">Shop Catalog</span>
+          </nav>
           <span className="text-cyan-400 font-semibold text-sm uppercase tracking-wider">Catalog</span>
           <h1 className="text-3xl font-extrabold text-white mt-1">Shop Ready-Made 3D Prints</h1>
           <p className="text-gray-400 text-sm mt-1">
@@ -138,7 +180,7 @@ const Shop: React.FC = () => {
 
         {/* Category Filter Pills */}
         <div className="flex flex-wrap gap-2 mb-8">
-          {CATEGORIES.map((category) => (
+          {categories.map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
@@ -178,7 +220,7 @@ const Shop: React.FC = () => {
               return (
                 <div
                   key={product.id}
-                  className="group rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-cyan-500/50 transition duration-300 flex flex-col justify-between"
+                  className="group rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-cyan-500/50 transition duration-300 flex flex-col justify-between shadow-lg"
                 >
                   <div>
                     <div className="h-56 overflow-hidden bg-gray-950 flex items-center justify-center p-2 relative">
@@ -206,10 +248,20 @@ const Shop: React.FC = () => {
                     <span className="text-xl font-extrabold text-cyan-400">₹{product.price}</span>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => handleAddToCart(product, true)}
-                        className="px-4 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md shadow-cyan-500/20 transition transform active:scale-95"
+                        onClick={() => handleAddToCart(product, false)}
+                        title="Add to cart and keep shopping"
+                        className="px-2.5 py-2 rounded-xl text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-cyan-300 border border-cyan-500/30 transition transform active:scale-95 flex items-center gap-1"
                       >
-                        Add to Cart
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Add</span>
+                      </button>
+                      <button
+                        onClick={() => handleAddToCart(product, true)}
+                        className="px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md shadow-cyan-500/20 transition transform active:scale-95"
+                      >
+                        Add to Cart &rarr;
                       </button>
                     </div>
                   </div>

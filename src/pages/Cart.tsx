@@ -113,22 +113,30 @@ const Cart: React.FC = () => {
                   >
                     {/* Product info + image */}
                     <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gray-950 border border-gray-800 overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
+                      <Link
+                        to="/shop"
+                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gray-950 border border-gray-800 overflow-hidden flex-shrink-0 flex items-center justify-center p-1 hover:border-cyan-400 transition"
+                        title="View in Shop"
+                      >
                         <img
                           src={item.image}
                           alt={item.name}
                           className="w-full h-full object-cover rounded-lg"
                         />
-                      </div>
+                      </Link>
                       <div className="min-w-0 flex-1">
                         {item.category && (
                           <span className="text-[11px] font-semibold text-cyan-400 uppercase tracking-wider block mb-1">
                             {item.category}
                           </span>
                         )}
-                        <h3 className="font-bold text-white text-base truncate mb-1">
+                        <Link
+                          to="/shop"
+                          className="font-bold text-white text-base truncate block mb-1 hover:text-cyan-300 transition"
+                          title="View in Shop"
+                        >
                           {item.name}
-                        </h3>
+                        </Link>
                         {item.dimensions && (
                           <div className="text-xs text-gray-500 mb-1">
                             Dimensions: {item.dimensions}
@@ -155,9 +163,10 @@ const Cart: React.FC = () => {
                           {item.quantity}
                         </span>
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="px-3 py-1 text-gray-400 hover:text-white hover:bg-gray-800 transition text-sm font-bold"
+                          onClick={() => updateQuantity(item.id, Math.min(99, item.quantity + 1))}
+                          className="px-3 py-1 text-gray-400 hover:text-white hover:bg-gray-800 transition text-sm font-bold disabled:opacity-40"
                           aria-label={`Increase quantity of ${item.name}`}
+                          disabled={item.quantity >= 99}
                         >
                           +
                         </button>
