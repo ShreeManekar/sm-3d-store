@@ -31,9 +31,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [regState, setRegState] = useState('');
   const [regPassword, setRegPassword] = useState('');
 
-  // Admin states
-  const [adminEmail, setAdminEmail] = useState('shreemanekar0@gmail.com');
-  const [adminPassword, setAdminPassword] = useState('SM3dAdmin@9284');
+  // Admin states (empty by default for security)
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
 
   // Status
   const [loading, setLoading] = useState(false);

@@ -318,27 +318,155 @@ function saveDb(data) {
   }
 }
 
-function isRateLimited(identifier) {
-  const now = Date.now() / 1000;
-  const record = FAILED_LOGINS[identifier];
-  if (!record) return false;
-  if (now - record.timestamp > 120) {
-    FAILED_LOGINS[identifier] = { count: 0, timestamp: now };
+// ── Advanced Security Shields: SQL Injection & Brute Force Defense ─────────
+const BRUTE_FORCE_STORE = new Map();
+const GLOBAL_IP_REQUESTS = new Map();
+
+function getClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) return String(forwarded).split(',')[0].trim();
+  return req.socket?.remoteAddress || req.ip || '127.0.0.1';
+}
+
+function safeCompare(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+function checkBruteForceLock(key) {
+  const now = Date.now();
+  const record = BRUTE_FORCE_STORE.get(key);
+  if (!record) return { locked: false, remainingAttempts: 5 };
+
+  if (record.lockedUntil && now < record.lockedUntil) {
+    const remainingSec = Math.ceil((record.lockedUntil - now) / 1000);
+    return { locked: true, remainingSec };
+  }
+
+  // Reset if window has elapsed
+  if (now - record.lastAttempt > 15 * 60 * 1000) {
+    BRUTE_FORCE_STORE.delete(key);
+    return { locked: false, remainingAttempts: 5 };
+  }
+
+  const remainingAttempts = Math.max(0, 5 - record.attempts);
+  return { locked: false, remainingAttempts };
+}
+
+function recordFailedAuth(key) {
+  const now = Date.now();
+  const record = BRUTE_FORCE_STORE.get(key) || { attempts: 0, lockedUntil: 0, lastAttempt: now };
+  record.attempts += 1;
+  record.lastAttempt = now;
+
+  if (record.attempts >= 5) {
+    record.lockedUntil = now + (15 * 60 * 1000); // 15 minute lock
+    console.warn(`[SECURITY FIREWALL] Brute-force lockout triggered for: [${key}]. Access locked for 15 minutes.`);
+  }
+  BRUTE_FORCE_STORE.set(key, record);
+}
+
+function clearAuthFailures(key) {
+  BRUTE_FORCE_STORE.delete(key);
+}
+
+// SQL & Exploit Injection Detection Patterns
+const SQL_INJECTION_PATTERNS = [
+  /(\b(UNION(\s+ALL)?)\s+SELECT\b)/i,
+  /(\bSELECT\b[\s\S]+\bFROM\b)/i,
+  /(\bINSERT\s+INTO\b[\s\S]+\bVALUES\b)/i,
+  /(\bDELETE\s+FROM\b)/i,
+  /(\bUPDATE\b[\s\S]+\bSET\b)/i,
+  /(\bDROP\s+(TABLE|DATABASE|VIEW|COLUMN|INDEX)\b)/i,
+  /(\bALTER\s+TABLE\b)/i,
+  /(\bEXEC(\s|\()+)/i,
+  /(\bxp_cmdshell\b)/i,
+  /(;\s*--)/i,
+  /(--\s*($|\n))/m,
+  /(\/\*[\s\S]*?\*\/)/,
+  /(\bOR\b\s+['"\d\w]+\s*=\s*['"\d\w]+)/i,
+  /(\bAND\b\s+['"\d\w]+\s*=\s*['"\d\w]+)/i,
+  /('\s*OR\s*')/i,
+  /(\bWAITFOR\s+DELAY\b)/i,
+  /(\bBENCHMARK\s*\()/i,
+  /(\bPG_SLEEP\s*\()/i,
+  /(admin'\s*--)/i,
+  /(';.*--)/i
+];
+
+function containsSqlInjection(value) {
+  if (value === null || value === undefined) return false;
+  if (typeof value === 'string') {
+    for (const pattern of SQL_INJECTION_PATTERNS) {
+      if (pattern.test(value)) return true;
+    }
     return false;
   }
-  return record.count >= 5;
+  if (Array.isArray(value)) {
+    return value.some(item => containsSqlInjection(item));
+  }
+  if (typeof value === 'object') {
+    for (const key of Object.keys(value)) {
+      if (key.startsWith('$') || key.includes('__proto__') || key.includes('constructor')) return true;
+      if (containsSqlInjection(key)) return true;
+      if (containsSqlInjection(value[key])) return true;
+    }
+  }
+  return false;
 }
 
-function recordFailedLogin(identifier) {
-  const now = Date.now() / 1000;
-  const record = FAILED_LOGINS[identifier] || { count: 0, timestamp: now };
-  record.count += 1;
-  record.timestamp = now;
-  FAILED_LOGINS[identifier] = record;
+function sqlInjectionShield(req, res, next) {
+  if (req.path.startsWith('/assets') || req.path.startsWith('/uploads')) {
+    return next();
+  }
+
+  if (containsSqlInjection(req.query) || containsSqlInjection(req.params)) {
+    console.warn(`[SECURITY FIREWALL] Blocked SQL Injection attack in query/params from IP: ${getClientIp(req)} on ${req.method} ${req.originalUrl}`);
+    return res.status(403).json({
+      error: 'Security Alert: Malicious SQL / Command injection payload detected and blocked by server firewall.'
+    });
+  }
+
+  if (req.body && typeof req.body === 'object') {
+    const payloadCopy = { ...req.body };
+    if (req.path === '/api/upload') delete payloadCopy.fileData; // base64 binary payload
+    if (containsSqlInjection(payloadCopy)) {
+      console.warn(`[SECURITY FIREWALL] Blocked SQL Injection attack in request payload from IP: ${getClientIp(req)} on ${req.method} ${req.originalUrl}`);
+      return res.status(403).json({
+        error: 'Security Alert: Malicious SQL / Command injection payload detected in request body and blocked by server firewall.'
+      });
+    }
+  }
+
+  next();
 }
 
-function clearFailedLogin(identifier) {
-  delete FAILED_LOGINS[identifier];
+function globalRateLimiter(req, res, next) {
+  if (req.path.startsWith('/assets') || req.path.startsWith('/uploads')) {
+    return next();
+  }
+  const ip = getClientIp(req);
+  const now = Date.now();
+  const record = GLOBAL_IP_REQUESTS.get(ip) || { count: 0, windowStart: now };
+
+  if (now - record.windowStart > 60 * 1000) {
+    record.count = 1;
+    record.windowStart = now;
+  } else {
+    record.count += 1;
+  }
+  GLOBAL_IP_REQUESTS.set(ip, record);
+
+  if (record.count > 200) {
+    res.setHeader('Retry-After', '60');
+    return res.status(429).json({
+      error: 'Rate limit exceeded: Too many requests from this IP. Please wait a minute before retrying.'
+    });
+  }
+  next();
 }
 
 function verifyAdminAccess(req) {
@@ -361,6 +489,22 @@ function stripSensitive(user) {
 
 // ── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '15mb' }));
+
+// Global Rate Limiter & DDoS Mitigation
+app.use(globalRateLimiter);
+
+// SQL Injection & Command Exploit Firewall
+app.use(sqlInjectionShield);
+
+// Security Headers (OWASP Hardening)
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  next();
+});
 
 // CORS
 app.use((req, res, next) => {
@@ -491,12 +635,30 @@ app.post('/api/auth/register', (req, res) => {
   res.status(201).json({ message: 'Registration successful', user: stripSensitive(newUser) });
 });
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   const body = req.body || {};
   const identifier = (body.email || '').trim().toLowerCase();
   const password = body.password || '';
 
-  if (isRateLimited(identifier)) return res.status(429).json({ error: 'Too many failed attempts. Please try again in 2 minutes.' });
+  const clientIp = getClientIp(req);
+  const ipKey = `ip:${clientIp}`;
+  const idKey = `user:${identifier}`;
+
+  const ipCheck = checkBruteForceLock(ipKey);
+  if (ipCheck.locked) {
+    res.setHeader('Retry-After', String(ipCheck.remainingSec));
+    return res.status(429).json({
+      error: `Brute-force protection: Too many failed login attempts from this IP address. Access temporarily locked for ${ipCheck.remainingSec} seconds.`
+    });
+  }
+
+  const idCheck = checkBruteForceLock(idKey);
+  if (idCheck.locked) {
+    res.setHeader('Retry-After', String(idCheck.remainingSec));
+    return res.status(429).json({
+      error: `Brute-force protection: Too many failed login attempts for this account. Access temporarily locked for ${idCheck.remainingSec} seconds.`
+    });
+  }
 
   const phoneDigits = identifier.replace(/\D/g, '');
   const normPhone = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : phoneDigits;
@@ -514,49 +676,77 @@ app.post('/api/auth/login', (req, res) => {
   }
 
   if (!user) {
-    recordFailedLogin(identifier);
+    recordFailedAuth(ipKey);
+    recordFailedAuth(idKey);
+    await new Promise(r => setTimeout(r, 100));
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
   const { hash: h } = hashPassword(password, user.salt);
-  const isValid = (h === user.passwordHash) || (user.role === 'admin' && password === MASTER_ADMIN_PASSWORD);
+  const isValid = safeCompare(h, user.passwordHash) || (user.role === 'admin' && safeCompare(password, MASTER_ADMIN_PASSWORD));
   if (!isValid) {
-    recordFailedLogin(identifier);
+    recordFailedAuth(ipKey);
+    recordFailedAuth(idKey);
+    await new Promise(r => setTimeout(r, 100));
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
-  clearFailedLogin(identifier);
+  clearAuthFailures(ipKey);
+  clearAuthFailures(idKey);
   res.json({ message: 'Login successful', user: stripSensitive(user), token: `token_${user.id}_${Math.floor(Date.now() / 1000)}` });
 });
 
-app.post('/api/auth/admin-login', (req, res) => {
+app.post('/api/auth/admin-login', async (req, res) => {
   const body = req.body || {};
   const identifier = (body.email || '').trim().toLowerCase();
   const password = body.password || '';
 
-  if (isRateLimited(identifier)) return res.status(429).json({ error: 'Too many failed admin attempts. Locked out for 2 minutes.' });
+  const clientIp = getClientIp(req);
+  const ipKey = `ip:${clientIp}`;
+  const idKey = `admin:${identifier}`;
+
+  const ipCheck = checkBruteForceLock(ipKey);
+  if (ipCheck.locked) {
+    res.setHeader('Retry-After', String(ipCheck.remainingSec));
+    return res.status(429).json({
+      error: `Brute-force protection: Too many failed admin attempts from this IP address. Access temporarily locked for ${ipCheck.remainingSec} seconds.`
+    });
+  }
+
+  const idCheck = checkBruteForceLock(idKey);
+  if (idCheck.locked) {
+    res.setHeader('Retry-After', String(idCheck.remainingSec));
+    return res.status(429).json({
+      error: `Brute-force protection: Too many failed admin attempts for this account. Access temporarily locked for ${idCheck.remainingSec} seconds.`
+    });
+  }
 
   const db = loadDb();
   const user = (db.users || []).find(u => u.email === identifier && u.role === 'admin');
   if (!user) {
-    recordFailedLogin(identifier);
+    recordFailedAuth(ipKey);
+    recordFailedAuth(idKey);
+    await new Promise(r => setTimeout(r, 100));
     return res.status(403).json({ error: 'Invalid admin credentials or non-admin account' });
   }
 
   const { hash: h } = hashPassword(password, user.salt);
-  const isValid = (h === user.passwordHash) || (password === MASTER_ADMIN_PASSWORD);
+  const isValid = safeCompare(h, user.passwordHash) || safeCompare(password, MASTER_ADMIN_PASSWORD);
   if (!isValid) {
-    recordFailedLogin(identifier);
+    recordFailedAuth(ipKey);
+    recordFailedAuth(idKey);
+    await new Promise(r => setTimeout(r, 100));
     return res.status(401).json({ error: 'Invalid admin credentials' });
   }
 
   // Update stored hash if using master password
-  if (password === MASTER_ADMIN_PASSWORD && h !== user.passwordHash) {
+  if (password === MASTER_ADMIN_PASSWORD && !safeCompare(h, user.passwordHash)) {
     user.passwordHash = h;
     saveDb(db);
   }
 
-  clearFailedLogin(identifier);
+  clearAuthFailures(ipKey);
+  clearAuthFailures(idKey);
   const admToken = `admintoken_${user.id}_${crypto.randomBytes(16).toString('hex')}`;
   ACTIVE_ADMIN_TOKENS.add(admToken);
   res.json({ message: 'Admin login successful', user: stripSensitive(user), adminToken: admToken });

@@ -142,6 +142,30 @@ async function runTests() {
   const delUser = await testEndpoint('DELETE', `/api/users/${userId}`, null, { 'Authorization': `Bearer ${adminToken}` });
   assert(delUser.status === 200, `DELETE /api/users/${userId} deletes customer account (200 OK)`);
 
+  console.log('\n--- 12. SQL Injection Firewall Defense ---');
+  const sqlPayload1 = await testEndpoint('GET', "/api/products?q=' OR '1'='1'");
+  assert(sqlPayload1.status === 403, "GET /api/products?q=' OR '1'='1' blocked by SQL injection shield (403 Forbidden)");
+
+  const sqlPayload2 = await testEndpoint('POST', '/api/auth/login', {
+    email: "admin' UNION SELECT * FROM users--",
+    password: 'password'
+  });
+  assert(sqlPayload2.status === 403, 'POST /api/auth/login with SQL injection payload blocked (403 Forbidden)');
+
+  console.log('\n--- 13. Brute-Force & Credential Stuffing Lockout ---');
+  const bruteEmail = `brute_${Date.now()}@test.com`;
+  let lastStatus = 0;
+  for (let i = 0; i < 6; i++) {
+    const res = await testEndpoint('POST', '/api/auth/login', { email: bruteEmail, password: 'wrongpassword' }, { 'x-forwarded-for': '198.51.100.99' });
+    lastStatus = res.status;
+  }
+  assert(lastStatus === 429, 'Repeated failed login attempts trigger brute-force lockout (429 Too Many Requests)');
+
+  console.log('\n--- 14. OWASP Security Headers ---');
+  const secCheck = await testEndpoint('GET', '/api/health');
+  assert(secCheck.headers['x-content-type-options'] === 'nosniff', 'Header X-Content-Type-Options: nosniff is enforced');
+  assert(secCheck.headers['x-frame-options'] === 'SAMEORIGIN', 'Header X-Frame-Options: SAMEORIGIN is enforced');
+
   console.log(`\n========================================`);
   console.log(`Summary: ${passed} Passed, ${failed} Failed`);
   console.log(`========================================\n`);

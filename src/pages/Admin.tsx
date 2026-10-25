@@ -129,9 +129,9 @@ export const Admin: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Admin Login States if not authenticated
-  const [adminEmailInput, setAdminEmailInput] = useState('shreemanekar0@gmail.com');
-  const [adminPasswordInput, setAdminPasswordInput] = useState('SM3dAdmin@9284');
+  // Admin Login States if not authenticated (empty by default for security)
+  const [adminEmailInput, setAdminEmailInput] = useState('');
+  const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginLoading, setLoginLoading] = useState(false);
 
@@ -762,6 +762,8 @@ export const Admin: React.FC = () => {
               <input
                 type="email"
                 required
+                autoComplete="off"
+                placeholder="Enter administrator email address"
                 value={adminEmailInput}
                 onChange={(e) => setAdminEmailInput(e.target.value)}
                 className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400"
@@ -773,6 +775,8 @@ export const Admin: React.FC = () => {
               <input
                 type="password"
                 required
+                autoComplete="new-password"
+                placeholder="Enter master admin password"
                 value={adminPasswordInput}
                 onChange={(e) => setAdminPasswordInput(e.target.value)}
                 className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-purple-400"

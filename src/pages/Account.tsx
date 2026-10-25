@@ -63,8 +63,8 @@ export const Account: React.FC = () => {
   const [pincode, setPincode] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
-  const [adminEmail, setAdminEmail] = useState('shreemanekar0@gmail.com');
-  const [adminPassword, setAdminPassword] = useState('SM3dAdmin@9284');
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
 
   // Loading & error
   const [authLoading, setAuthLoading] = useState(false);
