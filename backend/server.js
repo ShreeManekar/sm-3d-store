@@ -419,7 +419,7 @@ function containsSqlInjection(value) {
 }
 
 function sqlInjectionShield(req, res, next) {
-  if (req.path.startsWith('/assets') || req.path.startsWith('/uploads')) {
+  if (req.path.startsWith('/assets') || req.path.startsWith('/uploads') || req.path === '/api/upload') {
     return next();
   }
 
@@ -488,7 +488,8 @@ function stripSensitive(user) {
 }
 
 // ── Middleware ───────────────────────────────────────────────────────────────
-app.use(express.json({ limit: '15mb' }));
+app.use(express.json({ limit: '150mb' }));
+app.use(express.urlencoded({ limit: '150mb', extended: true }));
 
 // Global Rate Limiter & DDoS Mitigation
 app.use(globalRateLimiter);
@@ -890,30 +891,69 @@ app.post('/api/orders', (req, res) => {
 
 app.post('/api/upload', (req, res) => {
   const body = req.body || {};
-  const filename = body.filename || `upload_${Date.now()}.png`;
+  const filename = body.filename || `upload_${Date.now()}.stl`;
   const fileData = body.fileData || '';
 
-  // Sanitize filename
-  let safeName = path.basename(filename).replace(/[^a-zA-Z0-9._-]/g, '_');
-  const ALLOWED_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.svg', '.stl', '.3mf', '.obj'];
-  let ext = path.extname(safeName).toLowerCase();
-  if (!ext || !ALLOWED_EXTS.includes(ext)) {
-    ext = '.png';
-    safeName = path.parse(safeName).name + ext;
+  if (!fileData) {
+    return res.status(400).json({ error: 'No file data provided in upload request.' });
   }
 
-  const buffer = (fileData.startsWith('data:') && fileData.includes(';base64,'))
-    ? Buffer.from(fileData.split(';base64,')[1], 'base64')
-    : Buffer.from(fileData, 'utf-8');
+  // Sanitize filename & preserve valid 3D/image extensions
+  let safeName = path.basename(filename).replace(/[^a-zA-Z0-9._-]/g, '_');
+  const ALLOWED_EXTS = ['.stl', '.3mf', '.obj', '.png', '.jpg', '.jpeg', '.webp', '.svg', '.step', '.stp'];
+  let ext = path.extname(safeName).toLowerCase();
+  if (!ext || !ALLOWED_EXTS.includes(ext)) {
+    // Check if original filename had a valid extension
+    const origExt = path.extname(filename).toLowerCase();
+    if (ALLOWED_EXTS.includes(origExt)) {
+      ext = origExt;
+      safeName = path.parse(safeName).name + ext;
+    } else {
+      ext = '.stl';
+      safeName = path.parse(safeName).name + ext;
+    }
+  }
+
+  // Decode buffer safely supporting Data URLs and raw base64
+  let buffer;
+  try {
+    if (Buffer.isBuffer(fileData)) {
+      buffer = fileData;
+    } else if (typeof fileData === 'string' && fileData.includes(';base64,')) {
+      buffer = Buffer.from(fileData.split(';base64,')[1], 'base64');
+    } else if (typeof fileData === 'string') {
+      buffer = Buffer.from(fileData, 'base64');
+    } else {
+      buffer = Buffer.from(String(fileData), 'utf-8');
+    }
+  } catch (decodeErr) {
+    return res.status(400).json({ error: 'Failed to decode uploaded file data: ' + decodeErr.message });
+  }
+
+  // Enforce 100MB maximum capacity limit
+  const MAX_UPLOAD_BYTES = 100 * 1024 * 1024; // 100MB
+  if (buffer.length > MAX_UPLOAD_BYTES) {
+    const sizeMb = (buffer.length / (1024 * 1024)).toFixed(1);
+    return res.status(413).json({
+      error: `File size (${sizeMb} MB) exceeds the maximum upload capacity limit of 100 MB.`
+    });
+  }
 
   try {
     [PUBLIC_UPLOADS, DIST_UPLOADS, ROOT_UPLOADS].forEach(dir => {
       try {
         fs.mkdirSync(dir, { recursive: true });
         fs.writeFileSync(path.join(dir, safeName), buffer);
-      } catch (_) {}
+      } catch (err) {
+        console.warn(`Write to directory ${dir} failed:`, err.message);
+      }
     });
-    res.json({ message: 'File uploaded successfully', fileUrl: `/uploads/${safeName}` });
+    res.json({
+      message: 'File uploaded successfully',
+      fileUrl: `/uploads/${safeName}`,
+      filename: safeName,
+      size: buffer.length
+    });
   } catch (e) {
     res.status(500).json({ error: 'Upload failed: ' + e.message });
   }
@@ -1060,6 +1100,19 @@ app.delete('/api/users/:id', (req, res) => {
   db.users = (db.users || []).filter(u => u.id !== req.params.id);
   saveDb(db);
   res.json({ message: 'Customer account deleted' });
+});
+
+// ── Global Error Handling (Payload size & JSON parsing) ─────────────────────
+app.use((err, req, res, next) => {
+  if (err && (err.type === 'entity.too.large' || err.status === 413)) {
+    return res.status(413).json({
+      error: 'Upload Payload Too Large: The file exceeds the maximum 100MB upload capacity limit supported by SM 3D.'
+    });
+  }
+  if (err && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ error: 'Malformed JSON payload: ' + err.message });
+  }
+  next(err);
 });
 
 // ── SPA Catch-all ───────────────────────────────────────────────────────────

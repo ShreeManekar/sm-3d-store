@@ -166,6 +166,39 @@ async function runTests() {
   assert(secCheck.headers['x-content-type-options'] === 'nosniff', 'Header X-Content-Type-Options: nosniff is enforced');
   assert(secCheck.headers['x-frame-options'] === 'SAMEORIGIN', 'Header X-Frame-Options: SAMEORIGIN is enforced');
 
+  console.log('\n--- 15. 3D Model Upload (.stl, .3mf) & 100MB Capacity Limits ---');
+  // STL Upload
+  const dummyStl = "data:application/sla;base64," + Buffer.from("solid test\nfacet normal 0 0 0\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\nendsolid test").toString('base64');
+  const uploadStl = await testEndpoint('POST', '/api/upload', {
+    filename: 'precision_bracket.stl',
+    fileData: dummyStl
+  });
+  assert(uploadStl.status === 200 && uploadStl.data.fileUrl.endsWith('.stl'), 'POST /api/upload successfully processes .stl models (200 OK)');
+
+  // 3MF Upload
+  const dummy3mf = "data:model/3mf;base64," + Buffer.from("PK\x03\x04dummy3mfdata").toString('base64');
+  const upload3mf = await testEndpoint('POST', '/api/upload', {
+    filename: 'mechanical_assembly.3mf',
+    fileData: dummy3mf
+  });
+  assert(upload3mf.status === 200 && upload3mf.data.fileUrl.endsWith('.3mf'), 'POST /api/upload successfully processes .3mf packages (200 OK)');
+
+  // Large upload (20MB file which failed previously under 15MB limit)
+  const large20MbBase64 = "data:application/octet-stream;base64," + Buffer.alloc(20 * 1024 * 1024, 0x41).toString('base64');
+  const uploadLarge = await testEndpoint('POST', '/api/upload', {
+    filename: 'high_res_sculpture_20mb.stl',
+    fileData: large20MbBase64
+  });
+  assert(uploadLarge.status === 200, 'POST /api/upload accepts large 20MB 3D files (exceeds previous 15MB limit, 200 OK)');
+
+  // Upload exceeding 100MB capacity limit
+  const over100MbBase64 = "data:application/octet-stream;base64," + Buffer.alloc(101 * 1024 * 1024, 0x41).toString('base64');
+  const uploadExcess = await testEndpoint('POST', '/api/upload', {
+    filename: 'giant_model_101mb.stl',
+    fileData: over100MbBase64
+  });
+  assert(uploadExcess.status === 413, 'POST /api/upload rejects files exceeding 100MB capacity limit with HTTP 413');
+
   console.log(`\n========================================`);
   console.log(`Summary: ${passed} Passed, ${failed} Failed`);
   console.log(`========================================\n`);

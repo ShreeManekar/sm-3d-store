@@ -33,6 +33,7 @@ export const CustomPrint: React.FC = () => {
 
   // Submission
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [submittedOrder, setSubmittedOrder] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,7 +57,7 @@ export const CustomPrint: React.FC = () => {
     }
   };
 
-  // Handle file upload (strictly .stl and .3mf files)
+  // Handle file upload (strictly .stl and .3mf files up to 100MB)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -64,6 +65,12 @@ export const CustomPrint: React.FC = () => {
     const lower = file.name.toLowerCase();
     if (!lower.endsWith('.stl') && !lower.endsWith('.3mf')) {
       alert('Only .stl and .3mf 3D model files are accepted. Please choose a valid file.');
+      return;
+    }
+
+    const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+    if (file.size > MAX_SIZE) {
+      alert(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the maximum allowed 100MB capacity. Please select a model file under 100MB.`);
       return;
     }
 
@@ -102,27 +109,32 @@ export const CustomPrint: React.FC = () => {
     }
 
     setLoading(true);
+    setUploadProgress(null);
 
     try {
       let fileUrl = '';
-      // If a file was selected, upload via /api/upload using native FileReader.readAsDataURL
+      // If a file was selected, upload via /api/upload with progress tracking
       if (selectedFile) {
-        try {
-          const fileDataUri = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(selectedFile);
-          });
+        setUploadProgress(0);
+        const fileDataUri = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(selectedFile);
+        });
 
-          const uploadRes = await axios.post('/api/upload', {
-            filename: selectedFile.name,
-            fileData: fileDataUri,
-          });
-          fileUrl = uploadRes.data?.fileUrl || '';
-        } catch (uploadErr) {
-          console.warn('File upload fallback:', uploadErr);
-        }
+        const uploadRes = await axios.post('/api/upload', {
+          filename: selectedFile.name,
+          fileData: fileDataUri,
+        }, {
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              setUploadProgress(percent);
+            }
+          }
+        });
+        fileUrl = uploadRes.data?.fileUrl || '';
       }
 
       const payload = {
@@ -149,6 +161,7 @@ export const CustomPrint: React.FC = () => {
       setError(err.response?.data?.error || err.message || 'Failed to submit custom print order');
     } finally {
       setLoading(false);
+      setUploadProgress(null);
     }
   };
 
@@ -241,13 +254,19 @@ export const CustomPrint: React.FC = () => {
                     className="border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-cyan-500/60 rounded-2xl p-5 text-center cursor-pointer transition bg-gray-50 dark:bg-gray-950/60 hover:bg-gray-100 dark:hover:bg-gray-950"
                   >
                     <div className="flex items-center justify-center gap-2 text-cyan-600 dark:text-cyan-400 text-xs font-bold">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                       </svg>
-                      {selectedFile ? `Selected: ${selectedFile.name}` : 'Click to Upload 3D Model File (.stl or .3mf only)'}
+                      {selectedFile ? (
+                        <span className="truncate">
+                          Selected: <strong className="text-gray-900 dark:text-white">{selectedFile.name}</strong> ({((selectedFile.size || 0) / (1024 * 1024)).toFixed(1)} MB / 100MB max)
+                        </span>
+                      ) : (
+                        'Click to Upload 3D Model File (.stl or .3mf up to 100MB)'
+                      )}
                     </div>
                     <p className="text-[11px] text-gray-500 mt-1">
-                      Max build volume 160×160×160mm. Automatically detects dimensions & bounds. Accepts .stl and .3mf.
+                      Max build volume 160×160×160mm. Automatically detects dimensions & bounds. Capacity expanded up to 100MB.
                     </p>
                   </div>
                 </div>
@@ -456,7 +475,10 @@ export const CustomPrint: React.FC = () => {
                   className="w-full py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-lg shadow-cyan-500/25 transition flex items-center justify-center gap-2 mt-2"
                 >
                   {loading ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>{uploadProgress !== null ? `Uploading 3D Model (${uploadProgress}%)...` : 'Submitting Request...'}</span>
+                    </div>
                   ) : (
                     <>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

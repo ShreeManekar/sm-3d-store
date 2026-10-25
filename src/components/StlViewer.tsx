@@ -1,5 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
+// @ts-ignore
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
+// @ts-ignore
+import { ThreeMFLoader } from 'three/examples/jsm/loaders/3MFLoader.js';
 
 export interface ModelDimensions {
   length: number;
@@ -16,6 +20,12 @@ interface StlViewerProps {
   onDimensionsCalculated?: (dims: ModelDimensions) => void;
   showBuildVolume?: boolean;
 }
+
+export const is3mfBuffer = (buffer: ArrayBuffer): boolean => {
+  if (!buffer || buffer.byteLength < 4) return false;
+  const b = new Uint8Array(buffer, 0, 4);
+  return b[0] === 0x50 && b[1] === 0x4B && (b[2] === 0x03 || b[2] === 0x05) && (b[3] === 0x04 || b[3] === 0x06);
+};
 
 export const parseStlBuffer = (buffer: ArrayBuffer): THREE.BufferGeometry => {
   if (!buffer || buffer.byteLength < 84) {
@@ -122,7 +132,71 @@ export const StlViewer: React.FC<StlViewerProps> = ({
     try {
       setLoading(true);
       setError(null);
-      const geometry = parseStlBuffer(buffer);
+
+      // Clean existing children
+      if (modelGroupRef.current) {
+        while (modelGroupRef.current.children.length > 0) {
+          const child = modelGroupRef.current.children[0] as any;
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) child.material.forEach((m: any) => m.dispose());
+            else child.material.dispose();
+          }
+          modelGroupRef.current.remove(child);
+        }
+      }
+
+      // Check if file is 3MF format
+      if (is3mfBuffer(buffer)) {
+        const loader = new ThreeMFLoader();
+        const group = loader.parse(buffer) as THREE.Group;
+
+        // Measure bounding box dimensions of 3MF group
+        const bbox = new THREE.Box3().setFromObject(group);
+        const rawLen = Math.round(Math.abs(bbox.max.x - bbox.min.x));
+        const rawWid = Math.round(Math.abs(bbox.max.y - bbox.min.y));
+        const rawHgt = Math.round(Math.abs(bbox.max.z - bbox.min.z));
+
+        const exceeds = rawLen > maxBuildDimension || rawWid > maxBuildDimension || rawHgt > maxBuildDimension;
+        const dims: ModelDimensions = {
+          length: Math.max(1, rawLen),
+          width: Math.max(1, rawWid),
+          height: Math.max(1, rawHgt),
+          exceedsLimit: exceeds,
+        };
+        setDimensions(dims);
+        if (onDimensionsCalculated) {
+          onDimensionsCalculated(dims);
+        }
+
+        // Center group at origin
+        const center = new THREE.Vector3();
+        bbox.getCenter(center);
+        group.position.sub(center);
+
+        // Normalize scale for viewport display
+        const sphere = new THREE.Sphere();
+        bbox.getBoundingSphere(sphere);
+        const radius = sphere.radius || 30;
+        const targetRadius = 26;
+        const autoScale = radius > 0 ? targetRadius / radius : 1;
+        group.scale.set(autoScale, autoScale, autoScale);
+
+        if (modelGroupRef.current) {
+          modelGroupRef.current.add(group);
+        }
+        setLoading(false);
+        return;
+      }
+
+      // STL format parsing (binary or ASCII)
+      let geometry: THREE.BufferGeometry;
+      try {
+        const stlLoader = new STLLoader();
+        geometry = stlLoader.parse(buffer);
+      } catch (_) {
+        geometry = parseStlBuffer(buffer);
+      }
 
       // Measure original bounding box dimensions before scaling
       geometry.computeBoundingBox();
@@ -153,18 +227,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
       const autoScale = radius > 0 ? targetRadius / radius : 1;
       geometry.scale(autoScale, autoScale, autoScale);
 
-      // Clean existing children
       if (modelGroupRef.current) {
-        while (modelGroupRef.current.children.length > 0) {
-          const child = modelGroupRef.current.children[0] as any;
-          if (child.geometry) child.geometry.dispose();
-          if (child.material) {
-            if (Array.isArray(child.material)) child.material.forEach((m: any) => m.dispose());
-            else child.material.dispose();
-          }
-          modelGroupRef.current.remove(child);
-        }
-
         const material = new THREE.MeshPhongMaterial({
           color: new THREE.Color(meshColor),
           specular: 0xffffff,
@@ -190,8 +253,8 @@ export const StlViewer: React.FC<StlViewerProps> = ({
 
       setLoading(false);
     } catch (err: any) {
-      console.error('Error loading STL:', err);
-      setError(err.message || 'Failed to parse STL geometry');
+      console.error('Error loading 3D model:', err);
+      setError(err.message || 'Failed to parse 3D model file');
       setLoading(false);
     }
   }, [maxBuildDimension, meshColor, onDimensionsCalculated, wireframe]);
@@ -414,7 +477,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
           <p className="text-xs font-bold">{error}</p>
-          <p className="text-[11px] text-gray-400 mt-1">Please provide a valid binary or ASCII .stl file.</p>
+          <p className="text-[11px] text-gray-400 mt-1">Please provide a valid .stl or .3mf 3D model file (up to 100MB supported).</p>
         </div>
       )}
 

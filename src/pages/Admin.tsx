@@ -153,7 +153,9 @@ export const Admin: React.FC = () => {
 
   // Uploading and filament states
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [imgUploadProgress, setImgUploadProgress] = useState<number | null>(null);
   const [uploadingStl, setUploadingStl] = useState(false);
+  const [stlUploadProgress, setStlUploadProgress] = useState<number | null>(null);
   const [uploadingQr, setUploadingQr] = useState(false);
   const [showAddFilamentModal, setShowAddFilamentModal] = useState(false);
   const [newFilamentName, setNewFilamentName] = useState('');
@@ -264,11 +266,23 @@ export const Admin: React.FC = () => {
     );
   };
 
-  // Image Upload Handler
+  // Image & 3D Model Upload Handler (accepts images, .stl, and .3mf up to 100MB)
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+    if (file.size > MAX_SIZE) {
+      alert(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds 100MB limit. Please choose a file under 100MB.`);
+      e.target.value = '';
+      return;
+    }
+
+    const lower = file.name.toLowerCase();
+    const is3d = lower.endsWith('.stl') || lower.endsWith('.3mf');
     setUploadingImage(true);
+    setImgUploadProgress(0);
+
     const reader = new FileReader();
     reader.onload = async () => {
       try {
@@ -276,28 +290,43 @@ export const Admin: React.FC = () => {
         const res = await axios.post('/api/upload', {
           filename: file.name,
           fileData: base64,
+        }, {
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              setImgUploadProgress(percent);
+            }
+          }
         });
         const url = res.data.fileUrl;
-        setEditingProduct((prev) =>
-          prev
-            ? {
-                ...prev,
-                image: url,
-                images: [url, ...(prev.images || []).filter((u) => u !== url)],
-              }
-            : null
-        );
-        showToast('Image uploaded successfully');
+        setEditingProduct((prev) => {
+          if (!prev) return null;
+          if (is3d) {
+            return {
+              ...prev,
+              stlUrl: url,
+              image: prev.image || url,
+            };
+          }
+          return {
+            ...prev,
+            image: url,
+            images: [url, ...(prev.images || []).filter((u) => u !== url)],
+          };
+        });
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+        showToast(is3d ? `3D Model uploaded: ${file.name} (${sizeMb} MB)` : `Image uploaded: ${file.name}`);
       } catch (err: any) {
-        alert(err.response?.data?.error || 'Failed to upload image');
+        alert(err.response?.data?.error || 'Failed to upload file');
       } finally {
         setUploadingImage(false);
+        setImgUploadProgress(null);
       }
     };
     reader.readAsDataURL(file);
   };
 
-  // 3D Model (.stl, .3mf only) Upload Handler
+  // 3D Model (.stl, .3mf only up to 100MB) Upload Handler
   const handleStlUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -307,7 +336,16 @@ export const Admin: React.FC = () => {
       e.target.value = '';
       return;
     }
+
+    const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+    if (file.size > MAX_SIZE) {
+      alert(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds 100MB limit. Please upload a file under 100MB.`);
+      e.target.value = '';
+      return;
+    }
+
     setUploadingStl(true);
+    setStlUploadProgress(0);
     const reader = new FileReader();
     reader.onload = async () => {
       try {
@@ -315,6 +353,13 @@ export const Admin: React.FC = () => {
         const res = await axios.post('/api/upload', {
           filename: file.name,
           fileData: base64,
+        }, {
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              setStlUploadProgress(percent);
+            }
+          }
         });
         const url = res.data.fileUrl;
         setEditingProduct((prev) =>
@@ -325,11 +370,13 @@ export const Admin: React.FC = () => {
               }
             : null
         );
-        showToast('3D Model uploaded successfully (.stl / .3mf)');
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+        showToast(`3D Model uploaded successfully: ${file.name} (${sizeMb} MB)`);
       } catch (err: any) {
         alert(err.response?.data?.error || 'Failed to upload 3D model');
       } finally {
         setUploadingStl(false);
+        setStlUploadProgress(null);
       }
     };
     reader.readAsDataURL(file);
@@ -2156,10 +2203,10 @@ export const Admin: React.FC = () => {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                       </svg>
-                      <span>{uploadingImage ? 'Uploading Image...' : 'Upload Image File'}</span>
+                      <span>{uploadingImage ? (imgUploadProgress !== null ? `Uploading (${imgUploadProgress}%)...` : 'Uploading...') : 'Upload Image / 3D Model File'}</span>
                       <input
                         type="file"
-                        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                        accept="image/png,image/jpeg,image/webp,image/svg+xml,.stl,.3mf"
                         className="hidden"
                         onChange={handleImageUpload}
                         disabled={uploadingImage}
@@ -2181,7 +2228,7 @@ export const Admin: React.FC = () => {
               <div className="p-3.5 rounded-2xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/40 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <label className="font-semibold text-gray-800 dark:text-gray-200 text-xs flex items-center gap-1.5">
-                    <span className="text-purple-600 dark:text-purple-400">⚡</span> 3D Model Attachment (.stl, .3mf only)
+                    <span className="text-purple-600 dark:text-purple-400">⚡</span> 3D Model Attachment (.stl, .3mf only — up to 100MB)
                   </label>
                   {editingProduct.stlUrl && (
                     <button
@@ -2210,7 +2257,7 @@ export const Admin: React.FC = () => {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
-                    <span>{uploadingStl ? 'Uploading Model...' : 'Upload 3D Model (.stl, .3mf)'}</span>
+                    <span>{uploadingStl ? (stlUploadProgress !== null ? `Uploading (${stlUploadProgress}%)...` : 'Uploading Model...') : 'Upload 3D Model (.stl, .3mf)'}</span>
                     <input
                       type="file"
                       accept=".stl,.3mf"
@@ -2229,7 +2276,7 @@ export const Admin: React.FC = () => {
                   />
                 </div>
                 <p className="text-[10px] text-gray-500 dark:text-gray-400">
-                  Strictly accepts <strong className="text-gray-700 dark:text-gray-300">.stl</strong> and <strong className="text-gray-700 dark:text-gray-300">.3mf</strong> formats for interactive 3D WebGL rendering.
+                  Strictly accepts <strong className="text-gray-700 dark:text-gray-300">.stl</strong> and <strong className="text-gray-700 dark:text-gray-300">.3mf</strong> formats up to 100MB for interactive 3D WebGL rendering.
                 </p>
               </div>
 
