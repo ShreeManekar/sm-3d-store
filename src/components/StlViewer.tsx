@@ -4,6 +4,8 @@ import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 // @ts-ignore
 import { ThreeMFLoader } from 'three/examples/jsm/loaders/3MFLoader.js';
+// @ts-ignore
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 export interface ModelDimensions {
   length: number;
@@ -97,6 +99,45 @@ export const parseStlBuffer = (buffer: ArrayBuffer): THREE.BufferGeometry => {
   return geometry;
 };
 
+/**
+ * Aligns a geometry to standard 3D printer bed coordinates:
+ * 1. Converts CAD Z-up to Three.js Y-up (-90° around X axis)
+ * 2. Centers the model horizontally on the plate at (X = 0, Z = 0)
+ * 3. Positions the bottom of the bounding box flush on top of the build plate surface (Y = 0)
+ */
+export const alignGeometryToBuildPlate = (geometry: THREE.BufferGeometry): THREE.Box3 => {
+  geometry.rotateX(-Math.PI / 2);
+  geometry.computeVertexNormals();
+  geometry.computeBoundingBox();
+  const bbox = geometry.boundingBox || new THREE.Box3();
+  const centerX = (bbox.min.x + bbox.max.x) / 2;
+  const bottomY = bbox.min.y;
+  const centerZ = (bbox.min.z + bbox.max.z) / 2;
+  geometry.translate(-centerX, -bottomY, -centerZ);
+  geometry.computeBoundingBox();
+  return geometry.boundingBox || new THREE.Box3();
+};
+
+/**
+ * Aligns a 3MF Object3D / Group to standard 3D printer bed coordinates:
+ * 1. Converts CAD Z-up to Three.js Y-up (-90° around X axis)
+ * 2. Centers horizontally at (X = 0, Z = 0)
+ * 3. Positions bottom flush on the build plate surface (Y = 0)
+ */
+export const alignObjectToBuildPlate = (object: THREE.Object3D): THREE.Box3 => {
+  object.rotation.x = -Math.PI / 2;
+  object.updateMatrixWorld(true);
+  const bbox = new THREE.Box3().setFromObject(object);
+  const centerX = (bbox.min.x + bbox.max.x) / 2;
+  const bottomY = bbox.min.y;
+  const centerZ = (bbox.min.z + bbox.max.z) / 2;
+  object.position.x -= centerX;
+  object.position.y -= bottomY;
+  object.position.z -= centerZ;
+  object.updateMatrixWorld(true);
+  return new THREE.Box3().setFromObject(object);
+};
+
 export const StlViewer: React.FC<StlViewerProps> = ({
   stlUrl,
   fileBuffer,
@@ -119,14 +160,8 @@ export const StlViewer: React.FC<StlViewerProps> = ({
   const meshRef = useRef<THREE.Mesh | null>(null);
   const wireframeMeshRef = useRef<THREE.LineSegments | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const controlsRef = useRef<OrbitControls | null>(null);
   const animFrameId = useRef<number | null>(null);
-  const isDragging = useRef<boolean>(false);
-  const prevMousePos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-
-  const autoRotateRef = useRef<boolean>(autoRotate);
-  useEffect(() => {
-    autoRotateRef.current = autoRotate;
-  }, [autoRotate]);
 
   const loadGeometry = useCallback(async (buffer: ArrayBuffer) => {
     try {
@@ -151,17 +186,20 @@ export const StlViewer: React.FC<StlViewerProps> = ({
         const loader = new ThreeMFLoader();
         const group = loader.parse(buffer) as THREE.Group;
 
-        // Measure bounding box dimensions of 3MF group
-        const bbox = new THREE.Box3().setFromObject(group);
-        const rawLen = Math.round(Math.abs(bbox.max.x - bbox.min.x));
-        const rawWid = Math.round(Math.abs(bbox.max.y - bbox.min.y));
-        const rawHgt = Math.round(Math.abs(bbox.max.z - bbox.min.z));
+        // Align 3MF group to build plate:
+        // 1. Convert CAD Z-up to Three.js Y-up (-90° around X axis)
+        // 2. Center horizontally on plate at (X = 0, Z = 0)
+        // 3. Position bottom flush on top of build plate surface (Y = 0)
+        const finalBox = alignObjectToBuildPlate(group);
+        const lenX = Math.round(Math.abs(finalBox.max.x - finalBox.min.x));
+        const hgtY = Math.round(Math.abs(finalBox.max.y - finalBox.min.y));
+        const widZ = Math.round(Math.abs(finalBox.max.z - finalBox.min.z));
 
-        const exceeds = rawLen > maxBuildDimension || rawWid > maxBuildDimension || rawHgt > maxBuildDimension;
+        const exceeds = lenX > maxBuildDimension || widZ > maxBuildDimension || hgtY > maxBuildDimension;
         const dims: ModelDimensions = {
-          length: Math.max(1, rawLen),
-          width: Math.max(1, rawWid),
-          height: Math.max(1, rawHgt),
+          length: Math.max(1, lenX),
+          width: Math.max(1, widZ),
+          height: Math.max(1, hgtY),
           exceedsLimit: exceeds,
         };
         setDimensions(dims);
@@ -169,18 +207,12 @@ export const StlViewer: React.FC<StlViewerProps> = ({
           onDimensionsCalculated(dims);
         }
 
-        // Center group at origin
-        const center = new THREE.Vector3();
-        bbox.getCenter(center);
-        group.position.sub(center);
-
-        // Normalize scale for viewport display
-        const sphere = new THREE.Sphere();
-        bbox.getBoundingSphere(sphere);
-        const radius = sphere.radius || 30;
-        const targetRadius = 26;
-        const autoScale = radius > 0 ? targetRadius / radius : 1;
-        group.scale.set(autoScale, autoScale, autoScale);
+        // Harmonize OrbitControls target with model height
+        if (controlsRef.current) {
+          const targetY = Math.max(15, Math.min(hgtY / 2, (maxBuildDimension || 160) * 0.45));
+          controlsRef.current.target.set(0, targetY, 0);
+          controlsRef.current.update();
+        }
 
         if (modelGroupRef.current) {
           modelGroupRef.current.add(group);
@@ -198,18 +230,20 @@ export const StlViewer: React.FC<StlViewerProps> = ({
         geometry = parseStlBuffer(buffer);
       }
 
-      // Measure original bounding box dimensions before scaling
-      geometry.computeBoundingBox();
-      const bbox = geometry.boundingBox || new THREE.Box3();
-      const rawLen = Math.round(Math.abs(bbox.max.x - bbox.min.x));
-      const rawWid = Math.round(Math.abs(bbox.max.y - bbox.min.y));
-      const rawHgt = Math.round(Math.abs(bbox.max.z - bbox.min.z));
+      // Align geometry to build plate:
+      // 1. Convert CAD Z-up to Three.js Y-up (-90° around X axis)
+      // 2. Center horizontally on plate at (X = 0, Z = 0)
+      // 3. Position bottom flush on top of build plate surface (Y = 0)
+      const finalBox = alignGeometryToBuildPlate(geometry);
+      const lenX = Math.round(Math.abs(finalBox.max.x - finalBox.min.x));
+      const hgtY = Math.round(Math.abs(finalBox.max.y - finalBox.min.y));
+      const widZ = Math.round(Math.abs(finalBox.max.z - finalBox.min.z));
 
-      const exceeds = rawLen > maxBuildDimension || rawWid > maxBuildDimension || rawHgt > maxBuildDimension;
+      const exceeds = lenX > maxBuildDimension || widZ > maxBuildDimension || hgtY > maxBuildDimension;
       const dims: ModelDimensions = {
-        length: Math.max(1, rawLen),
-        width: Math.max(1, rawWid),
-        height: Math.max(1, rawHgt),
+        length: Math.max(1, lenX),
+        width: Math.max(1, widZ),
+        height: Math.max(1, hgtY),
         exceedsLimit: exceeds,
       };
       setDimensions(dims);
@@ -217,15 +251,12 @@ export const StlViewer: React.FC<StlViewerProps> = ({
         onDimensionsCalculated(dims);
       }
 
-      // Center geometry at origin
-      geometry.center();
-
-      // Normalize scale for comfortable viewport display (target radius ~28 units)
-      geometry.computeBoundingSphere();
-      const radius = geometry.boundingSphere?.radius || 30;
-      const targetRadius = 26;
-      const autoScale = radius > 0 ? targetRadius / radius : 1;
-      geometry.scale(autoScale, autoScale, autoScale);
+      // Harmonize OrbitControls target with model height
+      if (controlsRef.current) {
+        const targetY = Math.max(15, Math.min(hgtY / 2, (maxBuildDimension || 160) * 0.45));
+        controlsRef.current.target.set(0, targetY, 0);
+        controlsRef.current.update();
+      }
 
       if (modelGroupRef.current) {
         const material = new THREE.MeshPhongMaterial({
@@ -259,34 +290,63 @@ export const StlViewer: React.FC<StlViewerProps> = ({
     }
   }, [maxBuildDimension, meshColor, onDimensionsCalculated, wireframe]);
 
-  // Handle color change
+  // Handle color change across mesh and group
   useEffect(() => {
     if (meshRef.current) {
       (meshRef.current.material as THREE.MeshPhongMaterial).color.set(meshColor);
     }
+    if (modelGroupRef.current) {
+      modelGroupRef.current.traverse((child: any) => {
+        if (child.isMesh && child.material && !child.isLineSegments) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach((m: any) => {
+              if (m.color) m.color.set(meshColor);
+            });
+          } else if (child.material.color) {
+            child.material.color.set(meshColor);
+          }
+        }
+      });
+    }
   }, [meshColor]);
 
-  // Handle wireframe toggle
+  // Handle wireframe toggle across mesh and group
   useEffect(() => {
     if (wireframeMeshRef.current) {
       wireframeMeshRef.current.visible = wireframe;
     }
+    if (modelGroupRef.current) {
+      modelGroupRef.current.traverse((child: any) => {
+        if (child.isLineSegments && child !== wireframeMeshRef.current) {
+          child.visible = wireframe;
+        } else if (child.isMesh && child !== meshRef.current && child.material) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach((m: any) => {
+              m.wireframe = wireframe;
+            });
+          } else {
+            child.material.wireframe = wireframe;
+          }
+        }
+      });
+    }
   }, [wireframe]);
 
-  // Setup Three scene
+  // Setup Three.js scene, build plate grid, build volume cage, and OrbitControls
   useEffect(() => {
     if (!mountRef.current) return;
     const container = mountRef.current;
     const width = container.clientWidth || 400;
     const hNum = typeof height === 'number' ? height : parseInt(String(height)) || 360;
+    const bedSize = maxBuildDimension || 160;
 
     const scene = new THREE.Scene();
     sceneRef.current = scene;
     scene.background = new THREE.Color(0x050811);
 
-    const camera = new THREE.PerspectiveCamera(45, width / hNum, 0.1, 1000);
-    camera.position.set(0, 35, 75);
-    camera.lookAt(0, 0, 0);
+    const camera = new THREE.PerspectiveCamera(45, width / hNum, 1, 3000);
+    // Harmonized elevated view of the 160mm printer bed
+    camera.position.set(0, bedSize * 0.85, bedSize * 1.5);
     cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -296,97 +356,81 @@ export const StlViewer: React.FC<StlViewerProps> = ({
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
+    // OrbitControls for smooth, professional camera inspection
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.enableZoom = true;
+    controls.enableRotate = true;
+    controls.enablePan = true;
+    controls.autoRotate = autoRotate;
+    controls.autoRotateSpeed = 2.0;
+    // Target is centered on the print bed in the lower third of build volume
+    controls.target.set(0, 40, 0);
+    controls.maxPolarAngle = Math.PI / 2 + 0.1; // allows viewing slightly below bed edge
+    controls.minDistance = 25;
+    controls.maxDistance = 800;
+    controlsRef.current = controls;
+
     // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
     scene.add(ambientLight);
 
-    const dirLight1 = new THREE.DirectionalLight(0x00f0ff, 1.0);
-    dirLight1.position.set(50, 80, 50);
+    const dirLight1 = new THREE.DirectionalLight(0x00f0ff, 1.2);
+    dirLight1.position.set(bedSize * 0.5, bedSize, bedSize * 0.6);
     scene.add(dirLight1);
 
-    const dirLight2 = new THREE.DirectionalLight(0x8a2be2, 0.7);
-    dirLight2.position.set(-50, -40, -50);
+    const dirLight2 = new THREE.DirectionalLight(0x8a2be2, 0.85);
+    dirLight2.position.set(-bedSize * 0.5, bedSize * 0.6, -bedSize * 0.6);
     scene.add(dirLight2);
 
-    // Build volume plate (160mm grid representation scaled to scene units)
+    const dirLight3 = new THREE.DirectionalLight(0xffffff, 0.35);
+    dirLight3.position.set(0, -bedSize * 0.3, 0);
+    scene.add(dirLight3);
+
+    // Build volume plate (160x160mm grid representation with 160x160x160mm box)
     if (showBuildVolume) {
-      const grid = new THREE.GridHelper(52, 16, 0x00f0ff, 0x1e293b);
-      grid.position.y = -18;
+      // 1. Grid helper representing the 160x160mm printer bed surface at Y = 0
+      const grid = new THREE.GridHelper(bedSize, 16, 0x00f0ff, 0x1e293b);
+      grid.position.set(0, 0, 0);
       scene.add(grid);
 
-      // Build volume box outline
-      const boxGeo = new THREE.BoxGeometry(52, 52, 52);
+      // 2. Translucent build plate surface directly beneath grid
+      const bedGeo = new THREE.PlaneGeometry(bedSize, bedSize);
+      const bedMat = new THREE.MeshBasicMaterial({
+        color: 0x070c18,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.75,
+        depthWrite: false,
+      });
+      const bedPlane = new THREE.Mesh(bedGeo, bedMat);
+      bedPlane.rotation.x = -Math.PI / 2;
+      bedPlane.position.set(0, -0.05, 0);
+      scene.add(bedPlane);
+
+      // 3. Build volume box outline (160x160x160mm) resting flush on plate at Y = 0
+      const boxGeo = new THREE.BoxGeometry(bedSize, bedSize, bedSize);
       const wireBoxGeo = new THREE.WireframeGeometry(boxGeo);
-      const boxMat = new THREE.LineBasicMaterial({ color: 0x334155, transparent: true, opacity: 0.3 });
+      const boxMat = new THREE.LineBasicMaterial({
+        color: 0x00f0ff,
+        transparent: true,
+        opacity: 0.16,
+      });
       const wireBox = new THREE.LineSegments(wireBoxGeo, boxMat);
-      wireBox.position.y = 8;
+      wireBox.position.set(0, bedSize / 2, 0);
       scene.add(wireBox);
     }
 
     const modelGroup = new THREE.Group();
+    modelGroup.position.set(0, 0, 0);
     scene.add(modelGroup);
     modelGroupRef.current = modelGroup;
 
-    // Mouse drag interaction
-    const onMouseDown = (e: MouseEvent) => {
-      isDragging.current = true;
-      prevMousePos.current = { x: e.clientX, y: e.clientY };
-    };
-
-    const onMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current || !modelGroupRef.current) return;
-      const dx = e.clientX - prevMousePos.current.x;
-      const dy = e.clientY - prevMousePos.current.y;
-      modelGroupRef.current.rotation.y += dx * 0.01;
-      modelGroupRef.current.rotation.x += dy * 0.01;
-      prevMousePos.current = { x: e.clientX, y: e.clientY };
-    };
-
-    const onMouseUp = () => {
-      isDragging.current = false;
-    };
-
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      if (!cameraRef.current) return;
-      const zoomDelta = e.deltaY * 0.05;
-      cameraRef.current.position.z = Math.max(30, Math.min(180, cameraRef.current.position.z + zoomDelta));
-    };
-
-    // Touch support for mobile
-    const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length === 1) {
-        isDragging.current = true;
-        prevMousePos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      }
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (!isDragging.current || !modelGroupRef.current || e.touches.length !== 1) return;
-      const dx = e.touches[0].clientX - prevMousePos.current.x;
-      const dy = e.touches[0].clientY - prevMousePos.current.y;
-      modelGroupRef.current.rotation.y += dx * 0.015;
-      modelGroupRef.current.rotation.x += dy * 0.015;
-      prevMousePos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    };
-
-    const onTouchEnd = () => {
-      isDragging.current = false;
-    };
-
-    const dom = renderer.domElement;
-    dom.addEventListener('mousedown', onMouseDown);
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-    dom.addEventListener('wheel', onWheel, { passive: false });
-    dom.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('touchmove', onTouchMove, { passive: true });
-    window.addEventListener('touchend', onTouchEnd);
-
-    // Animation Loop
+    // Animation Loop with OrbitControls update
     const animate = () => {
-      if (autoRotateRef.current && modelGroupRef.current && !isDragging.current) {
-        modelGroupRef.current.rotation.y += 0.008;
+      if (controlsRef.current) {
+        controlsRef.current.update();
       }
       renderer.render(scene, camera);
       animFrameId.current = requestAnimationFrame(animate);
@@ -404,17 +448,18 @@ export const StlViewer: React.FC<StlViewerProps> = ({
 
     return () => {
       if (animFrameId.current) cancelAnimationFrame(animFrameId.current);
-      dom.removeEventListener('mousedown', onMouseDown);
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-      dom.removeEventListener('wheel', onWheel);
-      dom.removeEventListener('touchstart', onTouchStart);
-      window.removeEventListener('touchmove', onTouchMove);
-      window.removeEventListener('touchend', onTouchEnd);
       window.removeEventListener('resize', handleResize);
+      controls.dispose();
       renderer.dispose();
     };
-  }, [height, showBuildVolume]);
+  }, [height, maxBuildDimension, showBuildVolume]);
+
+  // Sync autoRotate state with OrbitControls
+  useEffect(() => {
+    if (controlsRef.current) {
+      controlsRef.current.autoRotate = autoRotate;
+    }
+  }, [autoRotate]);
 
   // Fetch or load model when props change
   useEffect(() => {
@@ -446,10 +491,12 @@ export const StlViewer: React.FC<StlViewerProps> = ({
   }, [fileBuffer, stlUrl, loadGeometry]);
 
   const resetCamera = () => {
-    if (cameraRef.current && modelGroupRef.current) {
-      cameraRef.current.position.set(0, 35, 75);
-      cameraRef.current.lookAt(0, 0, 0);
-      modelGroupRef.current.rotation.set(0, 0, 0);
+    if (cameraRef.current && controlsRef.current) {
+      const bedSize = maxBuildDimension || 160;
+      cameraRef.current.position.set(0, bedSize * 0.85, bedSize * 1.5);
+      const targetY = dimensions ? Math.max(15, Math.min(dimensions.height / 2, bedSize * 0.45)) : 40;
+      controlsRef.current.target.set(0, targetY, 0);
+      controlsRef.current.update();
     }
   };
 
@@ -553,4 +600,5 @@ export const StlViewer: React.FC<StlViewerProps> = ({
     </div>
   );
 };
+
 export default StlViewer;

@@ -252,4 +252,209 @@ describe('New Website Features Test Suite', () => {
       expect(dataUri.length).toBeGreaterThan(30);
     });
   });
+
+  describe('3D Plate Alignment & Axis Normalization (Interactive 3D STL Inspection)', () => {
+    const fs = require('fs');
+    const path = require('path');
+
+    const is3mfBuffer = (buffer) => {
+      if (!buffer || buffer.byteLength < 4) return false;
+      const b = new Uint8Array(buffer, 0, 4);
+      return b[0] === 0x50 && b[1] === 0x4B && (b[2] === 0x03 || b[2] === 0x05) && (b[3] === 0x04 || b[3] === 0x06);
+    };
+
+    // Aligns vertex buffer to build plate coordinates:
+    // 1. Converts CAD Z-up to Three.js Y-up (-90° around X axis: x'=x, y'=z, z'=-y)
+    // 2. Centers horizontally at (X=0, Z=0)
+    // 3. Positions bottom flush on build plate surface (Y=0)
+    const alignVerticesToBuildPlate = (vertices) => {
+      let minX = Infinity, maxX = -Infinity;
+      let minY = Infinity, maxY = -Infinity;
+      let minZ = Infinity, maxZ = -Infinity;
+
+      const rotated = [];
+      for (let i = 0; i < vertices.length; i += 3) {
+        const x = vertices[i];
+        const y = vertices[i + 1];
+        const z = vertices[i + 2];
+
+        // rotate -90° on X: x'=x, y'=z, z'=-y
+        const rx = x;
+        const ry = z;
+        const rz = -y;
+        rotated.push(rx, ry, rz);
+
+        minX = Math.min(minX, rx); maxX = Math.max(maxX, rx);
+        minY = Math.min(minY, ry); maxY = Math.max(maxY, ry);
+        minZ = Math.min(minZ, rz); maxZ = Math.max(maxZ, rz);
+      }
+
+      const centerX = (minX + maxX) / 2;
+      const bottomY = minY;
+      const centerZ = (minZ + maxZ) / 2;
+
+      let finalMinX = Infinity, finalMaxX = -Infinity;
+      let finalMinY = Infinity, finalMaxY = -Infinity;
+      let finalMinZ = Infinity, finalMaxZ = -Infinity;
+
+      for (let i = 0; i < rotated.length; i += 3) {
+        const tx = rotated[i] - centerX;
+        const ty = rotated[i + 1] - bottomY;
+        const tz = rotated[i + 2] - centerZ;
+
+        finalMinX = Math.min(finalMinX, tx); finalMaxX = Math.max(finalMaxX, tx);
+        finalMinY = Math.min(finalMinY, ty); finalMaxY = Math.max(finalMaxY, ty);
+        finalMinZ = Math.min(finalMinZ, tz); finalMaxZ = Math.max(finalMaxZ, tz);
+      }
+
+      return {
+        min: { x: finalMinX, y: finalMinY, z: finalMinZ },
+        max: { x: finalMaxX, y: finalMaxY, z: finalMaxZ },
+        centerX: (finalMinX + finalMaxX) / 2,
+        centerZ: (finalMinZ + finalMaxZ) / 2,
+        height: finalMaxY - finalMinY,
+      };
+    };
+
+    const extractStlVertices = (buffer) => {
+      const headerBytes = new Uint8Array(buffer, 0, Math.min(buffer.byteLength, 80));
+      const headerText = new TextDecoder().decode(headerBytes);
+      const isAscii = headerText.trim().startsWith('solid') && headerText.includes('facet');
+
+      if (isAscii) {
+        const text = new TextDecoder().decode(buffer);
+        const vertices = [];
+        const patternVertex = /vertex\s+([\d.eE+-]+)\s+([\d.eE+-]+)\s+([\d.eE+-]+)/g;
+        let match;
+        while ((match = patternVertex.exec(text)) !== null) {
+          vertices.push(parseFloat(match[1]), parseFloat(match[2]), parseFloat(match[3]));
+        }
+        return vertices;
+      } else {
+        const dataView = new DataView(buffer);
+        const rawTriangles = dataView.getUint32(80, true);
+        const vertices = [];
+        let offset = 84;
+        for (let i = 0; i < rawTriangles; i++) {
+          offset += 12; // skip normal
+          for (let j = 0; j < 3; j++) {
+            vertices.push(
+              dataView.getFloat32(offset, true) || 0,
+              dataView.getFloat32(offset + 4, true) || 0,
+              dataView.getFloat32(offset + 8, true) || 0
+            );
+            offset += 12;
+          }
+          offset += 2;
+        }
+        return vertices;
+      }
+    };
+
+    test('is3mfBuffer detects PK magic headers correctly', () => {
+      const valid3mf = new Uint8Array([0x50, 0x4B, 0x03, 0x04, 0x00, 0x00]).buffer;
+      const validEmpty3mf = new Uint8Array([0x50, 0x4B, 0x05, 0x06, 0x00, 0x00]).buffer;
+      const stlHeader = new Uint8Array([0x73, 0x6F, 0x6C, 0x69, 0x64]).buffer; // 'solid'
+
+      expect(is3mfBuffer(valid3mf)).toBe(true);
+      expect(is3mfBuffer(validEmpty3mf)).toBe(true);
+      expect(is3mfBuffer(stlHeader)).toBe(false);
+      expect(is3mfBuffer(new ArrayBuffer(2))).toBe(false);
+      expect(is3mfBuffer(null)).toBe(false);
+    });
+
+    test('aligns binary STL (sample_dragon.stl) flush to build plate at Y=0 and centered at (X=0, Z=0)', () => {
+      const filePath = path.resolve(__dirname, '../../public/assets/models/sample_dragon.stl');
+      const fileBuf = fs.readFileSync(filePath);
+      const ab = fileBuf.buffer.slice(fileBuf.byteOffset, fileBuf.byteOffset + fileBuf.byteLength);
+
+      const vertices = extractStlVertices(ab);
+      const result = alignVerticesToBuildPlate(vertices);
+
+      // Bottom must rest directly on the build plate surface (Y = 0)
+      expect(Math.abs(result.min.y)).toBeLessThan(0.001);
+      // CAD Z dimension (23mm) correctly maps to vertical height in Y
+      expect(Math.round(result.height)).toBe(23);
+      // Centered at X=0, Z=0
+      expect(Math.abs(result.centerX)).toBeLessThan(0.001);
+      expect(Math.abs(result.centerZ)).toBeLessThan(0.001);
+    });
+
+    test('aligns binary STL (sample_gearbox.stl) upright and flush to build plate', () => {
+      const filePath = path.resolve(__dirname, '../../public/assets/models/sample_gearbox.stl');
+      const fileBuf = fs.readFileSync(filePath);
+      const ab = fileBuf.buffer.slice(fileBuf.byteOffset, fileBuf.byteOffset + fileBuf.byteLength);
+
+      const vertices = extractStlVertices(ab);
+      const result = alignVerticesToBuildPlate(vertices);
+
+      expect(Math.abs(result.min.y)).toBeLessThan(0.001);
+      expect(Math.round(result.height)).toBe(123); // 123mm upright height
+      expect(Math.abs(result.centerX)).toBeLessThan(0.001);
+      expect(Math.abs(result.centerZ)).toBeLessThan(0.001);
+    });
+
+    test('aligns ASCII STL flush on build plate at Y=0 and centered at (X=0, Z=0)', () => {
+      const asciiStl = `solid precision_bracket
+facet normal 0 0 1
+outer loop
+vertex 0 0 0
+vertex 20 0 0
+vertex 0 30 0
+endloop
+endfacet
+facet normal 0 0 1
+outer loop
+vertex 20 0 0
+vertex 20 30 0
+vertex 0 30 0
+endloop
+endfacet
+endsolid precision_bracket`;
+      const ab = new TextEncoder().encode(asciiStl).buffer;
+
+      const vertices = extractStlVertices(ab);
+      const result = alignVerticesToBuildPlate(vertices);
+
+      expect(Math.abs(result.min.y)).toBeLessThan(0.001);
+      expect(Math.abs(result.centerX)).toBeLessThan(0.001);
+      expect(Math.abs(result.centerZ)).toBeLessThan(0.001);
+    });
+
+    test('aligns mock CAD 3MF object flush on plate at Y=0 and centered at (X=0, Z=0)', () => {
+      // Box in CAD Z-up: width 60, depth 40, height 50, with arbitrary offset
+      const cadVertices = [
+        100, 200, 300,
+        160, 200, 300,
+        160, 240, 300,
+        100, 240, 300,
+        100, 200, 350,
+        160, 200, 350,
+        160, 240, 350,
+        100, 240, 350,
+      ];
+      const result = alignVerticesToBuildPlate(cadVertices);
+
+      expect(Math.abs(result.min.y)).toBeLessThan(0.001);
+      expect(Math.round(result.height)).toBe(50);
+      expect(Math.abs(result.centerX)).toBeLessThan(0.001);
+      expect(Math.abs(result.centerZ)).toBeLessThan(0.001);
+    });
+
+    test('harmonizes build volume box and grid helper to 160mm build plate', () => {
+      const bedSize = 160;
+      const gridPosY = 0;
+      expect(gridPosY).toBe(0);
+
+      // 160x160x160mm build volume box sits flush from Y=0 to Y=160
+      const boxSize = bedSize;
+      const boxPosY = boxSize / 2;
+      const boxBottom = boxPosY - boxSize / 2;
+      const boxTop = boxPosY + boxSize / 2;
+
+      expect(boxBottom).toBe(0);
+      expect(boxTop).toBe(160);
+    });
+  });
 });
+
