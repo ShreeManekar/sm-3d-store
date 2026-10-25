@@ -2372,15 +2372,28 @@ export const Admin: React.FC = () => {
       {/* 3D STL VIEWER MODAL */}
       {stlModalUrl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-          <div className="bg-white dark:bg-gray-900 border border-cyan-500/40 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+          <div className="bg-white dark:bg-gray-900 border border-cyan-500/40 w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl flex flex-col">
             <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
               <span className="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2">
                 <span className="text-cyan-500">⚡</span> Interactive 3D STL Inspection
+                <span className="text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                  Adaptive Auto-Fit Preview • No 160mm Limit
+                </span>
               </span>
-              <button onClick={() => setStlModalUrl(null)} className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white p-1">✕</button>
+              <button
+                onClick={() => setStlModalUrl(null)}
+                className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              >
+                ✕
+              </button>
             </div>
             <div className="p-4">
-              <StlViewer stlUrl={stlModalUrl} height={400} />
+              <StlViewer
+                stlUrl={stlModalUrl}
+                height={460}
+                noBuildLimit={true}
+                allowScaleAdjustment={true}
+              />
             </div>
           </div>
         </div>

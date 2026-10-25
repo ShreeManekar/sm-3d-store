@@ -21,6 +21,9 @@ interface StlViewerProps {
   maxBuildDimension?: number;
   onDimensionsCalculated?: (dims: ModelDimensions) => void;
   showBuildVolume?: boolean;
+  noBuildLimit?: boolean;
+  allowScaleAdjustment?: boolean;
+  initialScale?: number;
 }
 
 export const is3mfBuffer = (buffer: ArrayBuffer): boolean => {
@@ -145,6 +148,9 @@ export const StlViewer: React.FC<StlViewerProps> = ({
   maxBuildDimension = 160,
   onDimensionsCalculated,
   showBuildVolume = true,
+  noBuildLimit = false,
+  allowScaleAdjustment = true,
+  initialScale = 1.0,
 }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -153,6 +159,8 @@ export const StlViewer: React.FC<StlViewerProps> = ({
   const [wireframe, setWireframe] = useState<boolean>(true);
   const [autoRotate, setAutoRotate] = useState<boolean>(true);
   const [meshColor, setMeshColor] = useState<string>('#00f0ff');
+  const [modelScale, setModelScale] = useState<number>(initialScale || 1.0);
+  const [gridDimension, setGridDimension] = useState<number>(maxBuildDimension || 160);
 
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -162,6 +170,101 @@ export const StlViewer: React.FC<StlViewerProps> = ({
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const animFrameId = useRef<number | null>(null);
+  const rawBoundingBoxRef = useRef<THREE.Box3 | null>(null);
+  const gridGroupRef = useRef<THREE.Group | null>(null);
+
+  /**
+   * Smoothly frames and centers any 3D model in the camera viewport
+   * regardless of physical size (from 5mm to 1000mm) without 160mm limits.
+   */
+  const frameModelInView = useCallback((box: THREE.Box3, currentScale: number = 1.0) => {
+    if (!cameraRef.current || !controlsRef.current) return;
+    const camera = cameraRef.current;
+    const controls = controlsRef.current;
+
+    const lenX = Math.abs(box.max.x - box.min.x) * currentScale;
+    const hgtY = Math.abs(box.max.y - box.min.y) * currentScale;
+    const widZ = Math.abs(box.max.z - box.min.z) * currentScale;
+    const maxDim = Math.max(lenX, widZ, hgtY, 20);
+
+    // Target the physical center of the model above the print bed (Y = 0)
+    const targetY = hgtY / 2;
+    controls.target.set(0, targetY, 0);
+
+    // Dynamic distance calculation based on camera FOV
+    const fovRad = (camera.fov * Math.PI) / 180;
+    const radius = (maxDim / 2) * 1.35;
+    const fitDistance = radius / Math.sin(fovRad / 2);
+    const distance = Math.max(fitDistance * 1.25, 35);
+
+    // Elevated 3/4 perspective looking down at centered model
+    camera.position.set(0, targetY + distance * 0.45, distance * 1.15);
+    camera.near = Math.max(0.5, distance * 0.01);
+    camera.far = Math.max(12000, distance * 30);
+    camera.updateProjectionMatrix();
+
+    controls.minDistance = Math.max(5, distance * 0.05);
+    controls.maxDistance = Math.max(5000, distance * 12);
+    controls.update();
+  }, []);
+
+  /**
+   * Builds or updates the build plate grid and floor to adapt to model footprint
+   */
+  const updateBuildPlate = useCallback((size: number) => {
+    if (!sceneRef.current || !showBuildVolume) return;
+    const scene = sceneRef.current;
+
+    if (gridGroupRef.current) {
+      scene.remove(gridGroupRef.current);
+      gridGroupRef.current.traverse((child: any) => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) {
+          if (Array.isArray(child.material)) child.material.forEach((m: any) => m.dispose());
+          else child.material.dispose();
+        }
+      });
+    }
+
+    const group = new THREE.Group();
+
+    // 1. Grid helper on build plate surface at Y = 0
+    const divisions = Math.max(16, Math.min(64, Math.round(size / 10)));
+    const grid = new THREE.GridHelper(size, divisions, 0x00f0ff, 0x1e293b);
+    grid.position.set(0, 0, 0);
+    group.add(grid);
+
+    // 2. Translucent build plate surface directly beneath grid
+    const bedGeo = new THREE.PlaneGeometry(size, size);
+    const bedMat = new THREE.MeshBasicMaterial({
+      color: 0x070c18,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.75,
+      depthWrite: false,
+    });
+    const bedPlane = new THREE.Mesh(bedGeo, bedMat);
+    bedPlane.rotation.x = -Math.PI / 2;
+    bedPlane.position.set(0, -0.05, 0);
+    group.add(bedPlane);
+
+    // 3. Build volume box outline (shown only in restricted 160mm mode)
+    if (!noBuildLimit) {
+      const boxGeo = new THREE.BoxGeometry(size, size, size);
+      const wireBoxGeo = new THREE.WireframeGeometry(boxGeo);
+      const boxMat = new THREE.LineBasicMaterial({
+        color: 0x00f0ff,
+        transparent: true,
+        opacity: 0.16,
+      });
+      const wireBox = new THREE.LineSegments(wireBoxGeo, boxMat);
+      wireBox.position.set(0, size / 2, 0);
+      group.add(wireBox);
+    }
+
+    scene.add(group);
+    gridGroupRef.current = group;
+  }, [noBuildLimit, showBuildVolume]);
 
   const loadGeometry = useCallback(async (buffer: ArrayBuffer) => {
     try {
@@ -191,11 +294,12 @@ export const StlViewer: React.FC<StlViewerProps> = ({
         // 2. Center horizontally on plate at (X = 0, Z = 0)
         // 3. Position bottom flush on top of build plate surface (Y = 0)
         const finalBox = alignObjectToBuildPlate(group);
+        rawBoundingBoxRef.current = finalBox.clone();
         const lenX = Math.round(Math.abs(finalBox.max.x - finalBox.min.x));
         const hgtY = Math.round(Math.abs(finalBox.max.y - finalBox.min.y));
         const widZ = Math.round(Math.abs(finalBox.max.z - finalBox.min.z));
 
-        const exceeds = lenX > maxBuildDimension || widZ > maxBuildDimension || hgtY > maxBuildDimension;
+        const exceeds = !noBuildLimit && (lenX > maxBuildDimension || widZ > maxBuildDimension || hgtY > maxBuildDimension);
         const dims: ModelDimensions = {
           length: Math.max(1, lenX),
           width: Math.max(1, widZ),
@@ -207,16 +311,22 @@ export const StlViewer: React.FC<StlViewerProps> = ({
           onDimensionsCalculated(dims);
         }
 
-        // Harmonize OrbitControls target with model height
-        if (controlsRef.current) {
-          const targetY = Math.max(15, Math.min(hgtY / 2, (maxBuildDimension || 160) * 0.45));
-          controlsRef.current.target.set(0, targetY, 0);
-          controlsRef.current.update();
+        // Adaptive build plate size (no 160mm limit)
+        const footprint = Math.max(lenX, widZ);
+        let effectivePlate = maxBuildDimension || 160;
+        if (noBuildLimit || footprint > effectivePlate) {
+          effectivePlate = Math.max(160, Math.ceil((footprint * 1.35) / 20) * 20);
         }
+        setGridDimension(effectivePlate);
+        updateBuildPlate(effectivePlate);
 
+        // Apply scale & frame camera centered on model
         if (modelGroupRef.current) {
+          modelGroupRef.current.scale.set(modelScale, modelScale, modelScale);
           modelGroupRef.current.add(group);
         }
+        frameModelInView(finalBox, modelScale);
+
         setLoading(false);
         return;
       }
@@ -235,11 +345,12 @@ export const StlViewer: React.FC<StlViewerProps> = ({
       // 2. Center horizontally on plate at (X = 0, Z = 0)
       // 3. Position bottom flush on top of build plate surface (Y = 0)
       const finalBox = alignGeometryToBuildPlate(geometry);
+      rawBoundingBoxRef.current = finalBox.clone();
       const lenX = Math.round(Math.abs(finalBox.max.x - finalBox.min.x));
       const hgtY = Math.round(Math.abs(finalBox.max.y - finalBox.min.y));
       const widZ = Math.round(Math.abs(finalBox.max.z - finalBox.min.z));
 
-      const exceeds = lenX > maxBuildDimension || widZ > maxBuildDimension || hgtY > maxBuildDimension;
+      const exceeds = !noBuildLimit && (lenX > maxBuildDimension || widZ > maxBuildDimension || hgtY > maxBuildDimension);
       const dims: ModelDimensions = {
         length: Math.max(1, lenX),
         width: Math.max(1, widZ),
@@ -251,12 +362,14 @@ export const StlViewer: React.FC<StlViewerProps> = ({
         onDimensionsCalculated(dims);
       }
 
-      // Harmonize OrbitControls target with model height
-      if (controlsRef.current) {
-        const targetY = Math.max(15, Math.min(hgtY / 2, (maxBuildDimension || 160) * 0.45));
-        controlsRef.current.target.set(0, targetY, 0);
-        controlsRef.current.update();
+      // Adaptive build plate size (no 160mm limit)
+      const footprint = Math.max(lenX, widZ);
+      let effectivePlate = maxBuildDimension || 160;
+      if (noBuildLimit || footprint > effectivePlate) {
+        effectivePlate = Math.max(160, Math.ceil((footprint * 1.35) / 20) * 20);
       }
+      setGridDimension(effectivePlate);
+      updateBuildPlate(effectivePlate);
 
       if (modelGroupRef.current) {
         const material = new THREE.MeshPhongMaterial({
@@ -280,7 +393,12 @@ export const StlViewer: React.FC<StlViewerProps> = ({
         wireLine.visible = wireframe;
         wireframeMeshRef.current = wireLine;
         modelGroupRef.current.add(wireLine);
+
+        modelGroupRef.current.scale.set(modelScale, modelScale, modelScale);
       }
+
+      // Frame model in view at center of viewport
+      frameModelInView(finalBox, modelScale);
 
       setLoading(false);
     } catch (err: any) {
@@ -288,7 +406,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
       setError(err.message || 'Failed to parse 3D model file');
       setLoading(false);
     }
-  }, [maxBuildDimension, meshColor, onDimensionsCalculated, wireframe]);
+  }, [frameModelInView, maxBuildDimension, meshColor, modelScale, noBuildLimit, onDimensionsCalculated, updateBuildPlate, wireframe]);
 
   // Handle color change across mesh and group
   useEffect(() => {
@@ -332,20 +450,19 @@ export const StlViewer: React.FC<StlViewerProps> = ({
     }
   }, [wireframe]);
 
-  // Setup Three.js scene, build plate grid, build volume cage, and OrbitControls
+  // Setup Three.js scene, build plate grid, and OrbitControls
   useEffect(() => {
     if (!mountRef.current) return;
     const container = mountRef.current;
     const width = container.clientWidth || 400;
     const hNum = typeof height === 'number' ? height : parseInt(String(height)) || 360;
-    const bedSize = maxBuildDimension || 160;
+    const bedSize = gridDimension || 160;
 
     const scene = new THREE.Scene();
     sceneRef.current = scene;
     scene.background = new THREE.Color(0x050811);
 
-    const camera = new THREE.PerspectiveCamera(45, width / hNum, 1, 3000);
-    // Harmonized elevated view of the 160mm printer bed
+    const camera = new THREE.PerspectiveCamera(45, width / hNum, 1, 5000);
     camera.position.set(0, bedSize * 0.85, bedSize * 1.5);
     cameraRef.current = camera;
 
@@ -365,11 +482,10 @@ export const StlViewer: React.FC<StlViewerProps> = ({
     controls.enablePan = true;
     controls.autoRotate = autoRotate;
     controls.autoRotateSpeed = 2.0;
-    // Target is centered on the print bed in the lower third of build volume
     controls.target.set(0, 40, 0);
-    controls.maxPolarAngle = Math.PI / 2 + 0.1; // allows viewing slightly below bed edge
-    controls.minDistance = 25;
-    controls.maxDistance = 800;
+    controls.maxPolarAngle = Math.PI / 2 + 0.1;
+    controls.minDistance = 15;
+    controls.maxDistance = 2000;
     controlsRef.current = controls;
 
     // Lights
@@ -388,42 +504,12 @@ export const StlViewer: React.FC<StlViewerProps> = ({
     dirLight3.position.set(0, -bedSize * 0.3, 0);
     scene.add(dirLight3);
 
-    // Build volume plate (160x160mm grid representation with 160x160x160mm box)
-    if (showBuildVolume) {
-      // 1. Grid helper representing the 160x160mm printer bed surface at Y = 0
-      const grid = new THREE.GridHelper(bedSize, 16, 0x00f0ff, 0x1e293b);
-      grid.position.set(0, 0, 0);
-      scene.add(grid);
-
-      // 2. Translucent build plate surface directly beneath grid
-      const bedGeo = new THREE.PlaneGeometry(bedSize, bedSize);
-      const bedMat = new THREE.MeshBasicMaterial({
-        color: 0x070c18,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.75,
-        depthWrite: false,
-      });
-      const bedPlane = new THREE.Mesh(bedGeo, bedMat);
-      bedPlane.rotation.x = -Math.PI / 2;
-      bedPlane.position.set(0, -0.05, 0);
-      scene.add(bedPlane);
-
-      // 3. Build volume box outline (160x160x160mm) resting flush on plate at Y = 0
-      const boxGeo = new THREE.BoxGeometry(bedSize, bedSize, bedSize);
-      const wireBoxGeo = new THREE.WireframeGeometry(boxGeo);
-      const boxMat = new THREE.LineBasicMaterial({
-        color: 0x00f0ff,
-        transparent: true,
-        opacity: 0.16,
-      });
-      const wireBox = new THREE.LineSegments(wireBoxGeo, boxMat);
-      wireBox.position.set(0, bedSize / 2, 0);
-      scene.add(wireBox);
-    }
+    // Initial build plate
+    updateBuildPlate(bedSize);
 
     const modelGroup = new THREE.Group();
     modelGroup.position.set(0, 0, 0);
+    modelGroup.scale.set(modelScale, modelScale, modelScale);
     scene.add(modelGroup);
     modelGroupRef.current = modelGroup;
 
@@ -452,7 +538,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
       controls.dispose();
       renderer.dispose();
     };
-  }, [height, maxBuildDimension, showBuildVolume]);
+  }, [height, updateBuildPlate]);
 
   // Sync autoRotate state with OrbitControls
   useEffect(() => {
@@ -490,12 +576,41 @@ export const StlViewer: React.FC<StlViewerProps> = ({
     }
   }, [fileBuffer, stlUrl, loadGeometry]);
 
+  /**
+   * Adjusts the model size/scale smoothly while keeping it anchored to the center of the plate
+   */
+  const handleScaleChange = (newScale: number) => {
+    const clamped = Math.max(0.1, Math.min(newScale, 5.0));
+    const rounded = Math.round(clamped * 100) / 100;
+    setModelScale(rounded);
+    if (modelGroupRef.current) {
+      modelGroupRef.current.scale.set(rounded, rounded, rounded);
+    }
+    if (rawBoundingBoxRef.current) {
+      frameModelInView(rawBoundingBoxRef.current, rounded);
+    }
+  };
+
+  /**
+   * Fits model to center at 1:1 scale
+   */
+  const fitToCenter = () => {
+    setModelScale(1.0);
+    if (modelGroupRef.current) {
+      modelGroupRef.current.scale.set(1.0, 1.0, 1.0);
+    }
+    if (rawBoundingBoxRef.current) {
+      frameModelInView(rawBoundingBoxRef.current, 1.0);
+    }
+  };
+
   const resetCamera = () => {
-    if (cameraRef.current && controlsRef.current) {
-      const bedSize = maxBuildDimension || 160;
+    if (rawBoundingBoxRef.current) {
+      frameModelInView(rawBoundingBoxRef.current, modelScale);
+    } else if (cameraRef.current && controlsRef.current) {
+      const bedSize = gridDimension || 160;
       cameraRef.current.position.set(0, bedSize * 0.85, bedSize * 1.5);
-      const targetY = dimensions ? Math.max(15, Math.min(dimensions.height / 2, bedSize * 0.45)) : 40;
-      controlsRef.current.target.set(0, targetY, 0);
+      controlsRef.current.target.set(0, 40, 0);
       controlsRef.current.update();
     }
   };
@@ -529,15 +644,19 @@ export const StlViewer: React.FC<StlViewerProps> = ({
       )}
 
       {/* Toolbar & Detected Dimensions Header */}
-      <div className="p-3 bg-gray-900/90 border-t border-gray-800 flex flex-wrap items-center justify-between gap-2 text-xs">
-        {/* Dimensions Pill */}
+      <div className="p-3 bg-gray-900/95 border-t border-gray-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+        {/* Dimensions Pill & Size Info */}
         {dimensions && (
-          <div className="flex items-center gap-2">
-            <span className="text-gray-400">Dimensions:</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-gray-400">Model Dimensions:</span>
             <span className="font-mono font-bold text-white bg-gray-800 px-2 py-0.5 rounded border border-gray-700">
               {dimensions.length} × {dimensions.width} × {dimensions.height} mm
             </span>
-            {dimensions.exceedsLimit ? (
+            {noBuildLimit ? (
+              <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded font-semibold text-[11px] flex items-center gap-1">
+                <span>⚡</span> Centered • No 160mm Limit
+              </span>
+            ) : dimensions.exceedsLimit ? (
               <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded font-semibold text-[11px]">
                 ⚠️ Exceeds {maxBuildDimension}mm (Multi-part assembly recommended)
               </span>
@@ -549,8 +668,54 @@ export const StlViewer: React.FC<StlViewerProps> = ({
           </div>
         )}
 
-        {/* View Controls */}
-        <div className="flex items-center gap-2 ml-auto">
+        {/* View & Size Controls */}
+        <div className="flex flex-wrap items-center gap-2 ml-auto">
+          {/* Interactive Size / Scale Adjustment Controls */}
+          {allowScaleAdjustment && (
+            <div className="flex items-center gap-1.5 bg-gray-800/90 px-2 py-1 rounded-xl border border-gray-700/80 shadow-inner">
+              <span className="text-[11px] text-gray-300 font-medium">Size:</span>
+              <button
+                type="button"
+                onClick={() => handleScaleChange(modelScale - 0.1)}
+                disabled={modelScale <= 0.15}
+                title="Decrease preview size"
+                className="w-5 h-5 flex items-center justify-center rounded bg-gray-700 text-gray-200 hover:text-white hover:bg-gray-600 disabled:opacity-40 text-xs font-bold transition"
+              >
+                −
+              </button>
+              <input
+                type="range"
+                min="0.2"
+                max="3.0"
+                step="0.05"
+                value={modelScale}
+                onChange={(e) => handleScaleChange(parseFloat(e.target.value))}
+                className="w-14 sm:w-20 accent-cyan-400 h-1.5 bg-gray-700 rounded-lg cursor-pointer"
+                title={`Preview scale: ${Math.round(modelScale * 100)}%`}
+              />
+              <button
+                type="button"
+                onClick={() => handleScaleChange(modelScale + 0.1)}
+                disabled={modelScale >= 4.9}
+                title="Increase preview size"
+                className="w-5 h-5 flex items-center justify-center rounded bg-gray-700 text-gray-200 hover:text-white hover:bg-gray-600 disabled:opacity-40 text-xs font-bold transition"
+              >
+                +
+              </button>
+              <span className="font-mono text-[11px] text-cyan-300 font-bold min-w-[36px] text-center">
+                {Math.round(modelScale * 100)}%
+              </span>
+              <button
+                type="button"
+                onClick={fitToCenter}
+                title="Auto-fit and center model in view"
+                className="px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-300 hover:bg-cyan-900 border border-cyan-800/60 text-[11px] font-semibold flex items-center gap-1 transition"
+              >
+                <span>⛶</span> Center & Fit
+              </button>
+            </div>
+          )}
+
           {/* Color palette */}
           <div className="flex items-center gap-1 mr-1">
             {['#00f0ff', '#8a2be2', '#f59e0b', '#ffffff'].map((color) => (

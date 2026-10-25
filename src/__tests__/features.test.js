@@ -456,5 +456,137 @@ endsolid precision_bracket`;
       expect(boxTop).toBe(160);
     });
   });
+
+  describe('Interactive 3D STL Inspection (Unrestricted Size & Auto-Fit Preview without 160mm Limit)', () => {
+    // 1. Auto-fit camera framing calculation
+    const calculateAutoFitCamera = (lenX, widZ, hgtY, fov = 45) => {
+      const maxDim = Math.max(lenX, widZ, hgtY, 20);
+      const targetY = hgtY / 2;
+      const fovRad = (fov * Math.PI) / 180;
+      const radius = (maxDim / 2) * 1.35;
+      const fitDistance = radius / Math.sin(fovRad / 2);
+      const distance = Math.max(fitDistance * 1.25, 35);
+
+      return {
+        target: { x: 0, y: targetY, z: 0 },
+        cameraPos: { x: 0, y: targetY + distance * 0.45, z: distance * 1.15 },
+        near: Math.max(0.5, distance * 0.01),
+        far: Math.max(12000, distance * 30),
+        distance,
+      };
+    };
+
+    // 2. Adaptive plate calculation
+    const calculateAdaptivePlateSize = (lenX, widZ, maxBuildDimension = 160, noBuildLimit = false) => {
+      const footprint = Math.max(lenX, widZ);
+      let plate = maxBuildDimension;
+      if (noBuildLimit || footprint > plate) {
+        plate = Math.max(160, Math.ceil((footprint * 1.35) / 20) * 20);
+      }
+      return plate;
+    };
+
+    // 3. Model scale calculation and anchor preservation
+    const scaleModelOnPlate = (initialBbox, scaleFactor) => {
+      // initialBbox is already aligned: min.y = 0, centerX = 0, centerZ = 0
+      const scaledMin = {
+        x: initialBbox.min.x * scaleFactor,
+        y: initialBbox.min.y * scaleFactor, // 0 * scale = 0
+        z: initialBbox.min.z * scaleFactor,
+      };
+      const scaledMax = {
+        x: initialBbox.max.x * scaleFactor,
+        y: initialBbox.max.y * scaleFactor,
+        z: initialBbox.max.z * scaleFactor,
+      };
+      return {
+        min: scaledMin,
+        max: scaledMax,
+        centerX: (scaledMin.x + scaledMax.x) / 2,
+        centerZ: (scaledMin.z + scaledMax.z) / 2,
+        bottomY: scaledMin.y,
+        height: scaledMax.y - scaledMin.y,
+      };
+    };
+
+    test('auto-frames small models (20mm) up close in center without clipping', () => {
+      const view = calculateAutoFitCamera(20, 15, 24);
+      expect(view.target.x).toBe(0);
+      expect(view.target.y).toBe(12); // vertical half-height
+      expect(view.target.z).toBe(0);
+      expect(view.distance).toBeGreaterThanOrEqual(35);
+      expect(view.distance).toBeLessThan(150); // up close for fine detail
+      expect(view.far).toBeGreaterThanOrEqual(12000);
+    });
+
+    test('auto-frames models exceeding 160mm (350mm) centered with appropriate viewing distance', () => {
+      const view = calculateAutoFitCamera(350, 280, 200);
+      expect(view.target.x).toBe(0);
+      expect(view.target.y).toBe(100);
+      expect(view.target.z).toBe(0);
+      // Distance scales proportionally so 350mm model fits viewport completely
+      expect(view.distance).toBeGreaterThan(600);
+      expect(view.distance).toBeLessThan(1200);
+      expect(view.far).toBeGreaterThan(view.distance);
+    });
+
+    test('auto-frames giant models (800mm) without 160mm restriction', () => {
+      const view = calculateAutoFitCamera(800, 600, 500);
+      expect(view.target.x).toBe(0);
+      expect(view.target.y).toBe(250);
+      expect(view.distance).toBeGreaterThan(1500);
+      expect(view.far).toBeGreaterThanOrEqual(25000);
+    });
+
+    test('adapts build plate size dynamically to fit models larger than 160mm', () => {
+      // 100mm model fits within standard 160mm plate
+      expect(calculateAdaptivePlateSize(100, 80, 160, false)).toBe(160);
+
+      // In noBuildLimit mode, plate expands dynamically with safety margin
+      const plate250 = calculateAdaptivePlateSize(250, 200, 160, true);
+      expect(plate250).toBeGreaterThanOrEqual(250);
+      expect(plate250 % 20).toBe(0); // clean grid step
+
+      const plate600 = calculateAdaptivePlateSize(600, 450, 160, true);
+      expect(plate600).toBeGreaterThanOrEqual(600);
+      expect(plate600).toBe(820);
+    });
+
+    test('scaling model preserves bottom flush at Y=0 and horizontal center at (X=0, Z=0)', () => {
+      const baseBbox = {
+        min: { x: -50, y: 0, z: -40 },
+        max: { x: 50, y: 70, z: 40 },
+      };
+
+      // Test across multiple preview scale factors: 50%, 100%, 150%, 250%
+      [0.5, 1.0, 1.5, 2.5].forEach((scale) => {
+        const scaled = scaleModelOnPlate(baseBbox, scale);
+        expect(scaled.bottomY).toBe(0); // remains flush on plate
+        expect(Math.abs(scaled.centerX)).toBeLessThan(0.001); // remains centered on X
+        expect(Math.abs(scaled.centerZ)).toBeLessThan(0.001); // remains centered on Z
+        expect(scaled.height).toBeCloseTo(70 * scale, 2);
+      });
+    });
+
+    test('noBuildLimit flag marks models exceeding 160mm as unrestricted inspection', () => {
+      const checkDimensions = (lenX, widZ, hgtY, maxDim = 160, noBuildLimit = false) => {
+        const exceeds = !noBuildLimit && (lenX > maxDim || widZ > maxDim || hgtY > maxDim);
+        return {
+          length: lenX,
+          width: widZ,
+          height: hgtY,
+          exceedsLimit: exceeds,
+        };
+      };
+
+      // Standard custom print mode: marks 250mm model as exceeding 160mm
+      const restricted = checkDimensions(250, 180, 120, 160, false);
+      expect(restricted.exceedsLimit).toBe(true);
+
+      // Interactive 3D STL Inspection mode (noBuildLimit = true): unrestricted inspection
+      const unrestricted = checkDimensions(250, 180, 120, 160, true);
+      expect(unrestricted.exceedsLimit).toBe(false);
+    });
+  });
 });
 

@@ -318,7 +318,12 @@ const Shop: React.FC = () => {
               </div>
 
               <div className="p-4 bg-gray-50 dark:bg-transparent">
-                <StlViewer stlUrl={active3dProduct.stlUrl || '/assets/models/sample_dragon.stl'} height={380} />
+                <StlViewer
+                  stlUrl={active3dProduct.stlUrl || '/assets/models/sample_dragon.stl'}
+                  height={380}
+                  noBuildLimit={true}
+                  allowScaleAdjustment={true}
+                />
               </div>
 
               <div className="p-4 bg-gray-50 dark:bg-gray-950/80 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
