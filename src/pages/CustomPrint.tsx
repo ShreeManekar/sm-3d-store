@@ -56,13 +56,14 @@ export const CustomPrint: React.FC = () => {
     }
   };
 
-  // Handle file upload
+  // Handle file upload (strictly .stl and .3mf files)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.name.toLowerCase().endsWith('.stl')) {
-      alert('Please upload a valid .stl 3D file.');
+    const lower = file.name.toLowerCase();
+    if (!lower.endsWith('.stl') && !lower.endsWith('.3mf')) {
+      alert('Only .stl and .3mf 3D model files are accepted. Please choose a valid file.');
       return;
     }
 
@@ -231,7 +232,7 @@ export const CustomPrint: React.FC = () => {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".stl"
+                    accept=".stl,.3mf"
                     onChange={handleFileChange}
                     className="hidden"
                   />
@@ -243,10 +244,10 @@ export const CustomPrint: React.FC = () => {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                       </svg>
-                      {selectedFile ? `Selected: ${selectedFile.name}` : 'Click to Upload Your Custom .STL File'}
+                      {selectedFile ? `Selected: ${selectedFile.name}` : 'Click to Upload 3D Model File (.stl or .3mf only)'}
                     </div>
                     <p className="text-[11px] text-gray-500 mt-1">
-                      Max build volume 160×160×160mm. Automatically detects dimensions & bounds.
+                      Max build volume 160×160×160mm. Automatically detects dimensions & bounds. Accepts .stl and .3mf.
                     </p>
                   </div>
                 </div>

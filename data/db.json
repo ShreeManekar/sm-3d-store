@@ -26,6 +26,32 @@
         "name": "ABS (HIGH TEMP / DURABLE)",
         "code": "ABS"
       }
+    ],
+    "upiId": "shreemanekar0@okaxis",
+    "upiQrImage": "",
+    "razorpayId": "rzp_test_sm3d",
+    "accountNumber": "928411860101",
+    "ifscCode": "SBIN0001234",
+    "bankName": "State Bank of India",
+    "accountHolderName": "SM 3D Technologies",
+    "techSpecs": {
+      "buildVolume": "160 × 160 × 160 mm",
+      "layerHeight": "0.12 - 0.28 mm",
+      "materials": "PLA, PETG, ABS, CF-PETG, TPU",
+      "nozzleSize": "0.4 mm Hardened Precision",
+      "printSpeed": "Up to 250 mm/s",
+      "notes": "Industrial Grade Direct Drive Extrusion"
+    },
+    "availableFilaments": [
+      "PLA",
+      "PETG",
+      "ABS",
+      "CF-PETG",
+      "TPU",
+      "Marble PLA",
+      "Silk Rainbow PLA",
+      "Nylon",
+      "Resin"
     ]
   },
   "products": [
@@ -46,7 +72,7 @@
         "Solid skin"
       ],
       "price": 799,
-      "stock": 7,
+      "stock": 5,
       "lowStockThreshold": 5,
       "image": "/assets/images/product_dragon_1786179208256.webp",
       "images": [

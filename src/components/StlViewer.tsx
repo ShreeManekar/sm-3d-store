@@ -113,6 +113,11 @@ export const StlViewer: React.FC<StlViewerProps> = ({
   const isDragging = useRef<boolean>(false);
   const prevMousePos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
+  const autoRotateRef = useRef<boolean>(autoRotate);
+  useEffect(() => {
+    autoRotateRef.current = autoRotate;
+  }, [autoRotate]);
+
   const loadGeometry = useCallback(async (buffer: ArrayBuffer) => {
     try {
       setLoading(true);
@@ -317,7 +322,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
 
     // Animation Loop
     const animate = () => {
-      if (autoRotate && modelGroupRef.current && !isDragging.current) {
+      if (autoRotateRef.current && modelGroupRef.current && !isDragging.current) {
         modelGroupRef.current.rotation.y += 0.008;
       }
       renderer.render(scene, camera);
@@ -346,7 +351,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
     };
-  }, [autoRotate, height, showBuildVolume]);
+  }, [height, showBuildVolume]);
 
   // Fetch or load model when props change
   useEffect(() => {

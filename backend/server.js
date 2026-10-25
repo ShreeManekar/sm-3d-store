@@ -47,7 +47,23 @@ function getDefaultDb() {
         { id: 'mat_1', name: 'PLA (Standard / Decorative)', code: 'PLA' },
         { id: 'mat_2', name: 'PETG (High Strength / Durable)', code: 'PETG' },
         { id: 'mat_3', name: 'ABS (HIGH TEMP / DURABLE)', code: 'ABS' }
-      ]
+      ],
+      upiId: 'shreemanekar0@okaxis',
+      upiQrImage: '',
+      razorpayId: 'rzp_test_sm3d',
+      accountNumber: '928411860101',
+      ifscCode: 'SBIN0001234',
+      bankName: 'State Bank of India',
+      accountHolderName: 'SM 3D Technologies',
+      techSpecs: {
+        buildVolume: '160 × 160 × 160 mm',
+        layerHeight: '0.12 - 0.28 mm',
+        materials: 'PLA, PETG, ABS, CF-PETG, TPU',
+        nozzleSize: '0.4 mm Hardened Precision',
+        printSpeed: 'Up to 250 mm/s',
+        notes: 'Industrial Grade Direct Drive Extrusion'
+      },
+      availableFilaments: ['PLA', 'PETG', 'ABS', 'CF-PETG', 'TPU', 'Marble PLA', 'Silk Rainbow PLA', 'Nylon', 'Resin']
     },
     products: [
       {
@@ -668,6 +684,9 @@ app.post('/api/orders', (req, res) => {
     paymentStatus: body.paymentStatus || 'Paid',
     paymentMethod: body.paymentMethod || 'Razorpay',
     paymentId: body.paymentId || `pay_${crypto.randomBytes(8).toString('hex')}`,
+    upiTransactionId: body.upiTransactionId || '',
+    paymentScreenshotUrl: body.paymentScreenshotUrl || '',
+    accountTransferDetails: body.accountTransferDetails || {},
     fulfillmentStatus: 'Processing',
     orderNotes: body.orderNotes || '',
     createdAt: now.toISOString()
@@ -686,7 +705,7 @@ app.post('/api/upload', (req, res) => {
 
   // Sanitize filename
   let safeName = path.basename(filename).replace(/[^a-zA-Z0-9._-]/g, '_');
-  const ALLOWED_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.svg', '.stl', '.obj'];
+  const ALLOWED_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.svg', '.stl', '.3mf', '.obj'];
   let ext = path.extname(safeName).toLowerCase();
   if (!ext || !ALLOWED_EXTS.includes(ext)) {
     ext = '.png';
@@ -862,6 +881,17 @@ app.get('*', (req, res) => {
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`SM 3D Full-Stack Server (Node.js) listening on port ${PORT}`);
+
+    // Keep-Alive Self-Ping: Periodically ping /api/health to prevent Render free instance spin-down
+    const pingTarget = process.env.RENDER_EXTERNAL_URL || `http://127.0.0.1:${PORT}`;
+    const httpLib = pingTarget.startsWith('https') ? require('https') : require('http');
+    setInterval(() => {
+      try {
+        httpLib.get(`${pingTarget}/api/health`, (res) => {
+          res.resume();
+        }).on('error', () => {});
+      } catch (_) {}
+    }, 9 * 60 * 1000); // every 9 minutes
   });
 }
 

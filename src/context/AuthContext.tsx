@@ -33,6 +33,8 @@ interface AuthContextType {
   adminToken: string | null;
   isLoggedIn: boolean;
   isAdmin: boolean;
+  isEditorMode: boolean;
+  toggleEditorMode: () => void;
   login: (emailOrPhone: string, password: string) => Promise<User>;
   register: (data: RegisterData) => Promise<User>;
   adminLogin: (email: string, password: string) => Promise<User>;
@@ -59,6 +61,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [adminToken, setAdminToken] = useState<string | null>(() => {
     return localStorage.getItem('sm3d_admin_token') || null;
   });
+
+  const [isEditorMode, setIsEditorMode] = useState<boolean>(() => {
+    return localStorage.getItem('sm3d_editor_mode') === 'true';
+  });
+
+  const toggleEditorMode = useCallback(() => {
+    setIsEditorMode((prev) => {
+      const next = !prev;
+      localStorage.setItem('sm3d_editor_mode', String(next));
+      return next;
+    });
+  }, []);
 
   const isLoggedIn = !!currentUser;
   const isAdmin = !!(currentUser && currentUser.role === 'admin' && adminToken);
@@ -131,6 +145,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         adminToken,
         isLoggedIn,
         isAdmin,
+        isEditorMode,
+        toggleEditorMode,
         login,
         register,
         adminLogin,

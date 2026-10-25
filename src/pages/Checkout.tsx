@@ -11,6 +11,7 @@ interface OrderConfirmationData {
   phone: string;
   address: string;
   paymentMethod: string;
+  upiTransactionId?: string;
   items: CartItem[];
   totalPrice: number;
   shippingFee: number;
@@ -18,7 +19,7 @@ interface OrderConfirmationData {
   placedAt: string;
 }
 
-const Checkout: React.FC = () => {
+export const Checkout: React.FC = () => {
   const { items, totalPrice, shippingFee, finalTotal, clearCart } = useCart();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
@@ -35,9 +36,37 @@ const Checkout: React.FC = () => {
     notes: '',
   });
 
+  // Settings loaded from backend (UPI ID, Scanner QR, Bank details)
+  const [storeSettings, setStoreSettings] = useState<any>({
+    upiId: 'shreemanekar0@okaxis',
+    upiQrImage: '',
+    accountNumber: '928411860101',
+    ifscCode: 'SBIN0001234',
+    bankName: 'State Bank of India',
+    accountHolderName: 'SM 3D Technologies',
+  });
+
+  const [upiTransactionId, setUpiTransactionId] = useState('');
+  const [screenshotUrl, setScreenshotUrl] = useState('');
+  const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
+
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState<OrderConfirmationData | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    axios.get('/api/settings')
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.data) {
+          setStoreSettings((prev: any) => ({ ...prev, ...res.data }));
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
 
   useEffect(() => {
     if (currentUser) {
@@ -61,6 +90,58 @@ const Checkout: React.FC = () => {
     });
   };
 
+  const handleCopy = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    setCopyFeedback(`Copied ${label}!`);
+    setTimeout(() => setCopyFeedback(null), 2500);
+  };
+
+  const handlePasteUpi = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      const digitsOnly = text.replace(/\D/g, '');
+      if (digitsOnly) {
+        setUpiTransactionId(digitsOnly);
+        setCopyFeedback('UPI ID pasted from clipboard');
+        setTimeout(() => setCopyFeedback(null), 2000);
+      }
+    } catch {
+      // Clipboard permissions denied
+    }
+  };
+
+  const handleScreenshotUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file (PNG, JPG, WEBP, etc.) for payment proof.');
+      return;
+    }
+
+    setUploadingScreenshot(true);
+    setError(null);
+    try {
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const res = await axios.post('/api/upload', {
+        filename: `proof_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`,
+        fileData: base64Data,
+      });
+
+      setScreenshotUrl(res.data?.fileUrl || '');
+    } catch (err: any) {
+      setError('Failed to upload payment proof screenshot. You may still proceed with UPI reference number.');
+    } finally {
+      setUploadingScreenshot(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -68,6 +149,15 @@ const Checkout: React.FC = () => {
     if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.street.trim() || !formData.city.trim() || !formData.pincode.trim()) {
       setError('Please fill in all required shipping and contact details.');
       return;
+    }
+
+    // Validation for UPI / Account Transfer: requires at least 12 digits
+    if (formData.paymentMethod === 'UPI' || formData.paymentMethod === 'Card') {
+      const cleanDigits = upiTransactionId.replace(/\D/g, '');
+      if (cleanDigits.length < 12) {
+        setError('Transaction Verification Failed — Please enter a valid 12 or more digit UPI Transaction ID / UTR reference number.');
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -95,7 +185,9 @@ const Checkout: React.FC = () => {
       subtotal: totalPrice,
       shippingFee,
       total: finalTotal,
-      paymentMethod: formData.paymentMethod,
+      paymentMethod: formData.paymentMethod === 'Card' ? 'Account transfer' : formData.paymentMethod,
+      upiTransactionId: (formData.paymentMethod === 'UPI' || formData.paymentMethod === 'Card') ? upiTransactionId.trim() : '',
+      paymentScreenshotUrl: screenshotUrl,
       orderNotes: formData.notes.trim(),
     };
 
@@ -106,7 +198,8 @@ const Checkout: React.FC = () => {
         email: formData.email.trim(),
         phone: formData.phone.trim(),
         address: fullAddress,
-        paymentMethod: formData.paymentMethod,
+        paymentMethod: formData.paymentMethod === 'Card' ? 'Account transfer' : formData.paymentMethod,
+        upiTransactionId: upiTransactionId.trim(),
         items: [...items],
         totalPrice,
         shippingFee,
@@ -132,35 +225,37 @@ const Checkout: React.FC = () => {
         finalizeOrder(backendOrderId);
       })
       .catch(() => {
-        // Offline / static hosting fallback
+        // Fallback for static/offline
         finalizeOrder(fallbackOrderId);
       });
   };
 
-  // If order was placed, show confirmation screen
+  // If order was placed, show confirmation screen with requested exact phrase
   if (confirmedOrder) {
     return (
-      <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-transparent text-inherit">
+      <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-transparent text-inherit animate-fadeIn">
         <div className="max-w-3xl mx-auto">
-          <div className="rounded-2xl border border-cyan-500/40 bg-white dark:bg-gray-900/90 p-8 sm:p-10 text-center shadow-2xl backdrop-blur text-gray-900 dark:text-white">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-emerald-500/20">
+          <div className="rounded-3xl border border-cyan-500/40 bg-white dark:bg-gray-900/90 p-8 sm:p-10 text-center shadow-2xl backdrop-blur text-gray-900 dark:text-white">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-emerald-500/20 border border-emerald-500/30">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
             </div>
 
-            <span className="text-cyan-600 dark:text-cyan-400 font-bold text-xs uppercase tracking-wider">Order Received</span>
-            <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mt-1 mb-2">Thank You For Your Order!</h1>
-            <p className="text-gray-600 dark:text-gray-300 text-sm max-w-md mx-auto mb-6">
-              Your 3D print order is queued for slicing and printing. We have dispatched confirmation to{' '}
-              <span className="text-cyan-600 dark:text-cyan-400 font-semibold">{confirmedOrder.email}</span> and WhatsApp{' '}
-              <span className="text-cyan-600 dark:text-cyan-400 font-semibold">{confirmedOrder.phone}</span>.
+            <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
+              Request Received Successfully
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mt-1 mb-3 leading-snug">
+              Your order request is collected succesfully, will be contacted soon for further delivery instructions
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300 text-sm max-w-lg mx-auto mb-6">
+              Our 3D printing engineering team has received your order specifications and will reach out via WhatsApp or email for slicing review and courier dispatch.
             </p>
 
             {/* Order Details Card */}
-            <div className="p-5 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-left mb-6 max-w-lg mx-auto space-y-3">
+            <div className="p-5 rounded-2xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-left mb-6 max-w-lg mx-auto space-y-3 shadow-inner">
               <div className="flex justify-between items-center text-xs pb-2 border-b border-gray-200 dark:border-gray-800">
-                <span className="text-gray-500">Order ID</span>
+                <span className="text-gray-500">Order Reference</span>
                 <span className="font-mono font-bold text-cyan-600 dark:text-cyan-400">{confirmedOrder.orderId}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
@@ -168,22 +263,28 @@ const Checkout: React.FC = () => {
                 <span className="font-medium text-gray-900 dark:text-white">{confirmedOrder.placedAt}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-500">Payment</span>
-                <span className="font-medium text-gray-900 dark:text-white">{confirmedOrder.paymentMethod}</span>
+                <span className="text-gray-500">Payment Option</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{confirmedOrder.paymentMethod}</span>
               </div>
+              {confirmedOrder.upiTransactionId && (
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-500">UPI / Reference ID</span>
+                  <span className="font-mono text-cyan-600 dark:text-cyan-400">{confirmedOrder.upiTransactionId}</span>
+                </div>
+              )}
               <div className="text-xs pt-1 border-t border-gray-200 dark:border-gray-800">
-                <span className="text-gray-500 block mb-1">Delivering to:</span>
+                <span className="text-gray-500 block mb-1">Shipping Destination:</span>
                 <span className="font-medium text-gray-900 dark:text-white leading-relaxed">{confirmedOrder.address}</span>
               </div>
 
               {/* Items List */}
               <div className="pt-2 border-t border-gray-200 dark:border-gray-800 space-y-1.5">
-                <span className="text-xs text-gray-500 font-semibold block mb-1">Items Ordered:</span>
+                <span className="text-xs text-gray-500 font-semibold block mb-1">Items in Production:</span>
                 <div className="max-h-36 overflow-y-auto space-y-1">
                   {confirmedOrder.items.map((item) => (
                     <div key={item.id} className="flex justify-between text-xs py-0.5">
                       <span className="text-gray-700 dark:text-gray-300 truncate max-w-[200px]">
-                        {item.name} <span className="text-gray-400">×{item.quantity}</span>
+                        • {item.name} <span className="text-gray-400">×{item.quantity}</span>
                       </span>
                       <span className="font-semibold text-gray-900 dark:text-white">₹{item.price * item.quantity}</span>
                     </div>
@@ -193,7 +294,7 @@ const Checkout: React.FC = () => {
 
               <div className="flex justify-between items-center pt-3 border-t border-gray-200 dark:border-gray-800">
                 <span className="text-sm font-bold text-gray-900 dark:text-white">Total Amount</span>
-                <span className="text-lg font-extrabold text-cyan-600 dark:text-cyan-400">₹{confirmedOrder.finalTotal}</span>
+                <span className="text-xl font-extrabold text-cyan-600 dark:text-cyan-400">₹{confirmedOrder.finalTotal}</span>
               </div>
             </div>
 
@@ -251,6 +352,9 @@ const Checkout: React.FC = () => {
     );
   }
 
+  const activeUpiId = storeSettings.upiId || 'shreemanekar0@okaxis';
+  const qrCodeUrl = storeSettings.upiQrImage || `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(`upi://pay?pa=${activeUpiId}&pn=SM3DStore&am=${finalTotal}&cu=INR`)}`;
+
   return (
     <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 bg-transparent text-inherit">
       <div className="max-w-7xl mx-auto">
@@ -273,11 +377,17 @@ const Checkout: React.FC = () => {
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-100 dark:bg-red-950/60 border border-red-300 dark:border-red-500/40 text-red-700 dark:text-red-300 text-sm flex items-center gap-2">
+          <div className="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-950/70 border border-red-300 dark:border-red-500/40 text-red-700 dark:text-red-300 text-sm flex items-center gap-3 shadow-sm animate-shake">
             <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>{error}</span>
+            <span className="font-medium">{error}</span>
+          </div>
+        )}
+
+        {copyFeedback && (
+          <div className="fixed bottom-6 right-6 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl shadow-2xl border border-cyan-500/40 text-xs font-semibold animate-fadeIn flex items-center gap-2">
+            <span className="text-emerald-400">✓</span> {copyFeedback}
           </div>
         )}
 
@@ -398,35 +508,164 @@ const Checkout: React.FC = () => {
                   <span className="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-xs flex items-center justify-center font-bold">3</span>
                   Payment Method
                 </h2>
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
-                    { id: 'UPI', label: 'UPI / QR Code', desc: 'GPay, PhonePe, Paytm' },
-                    { id: 'COD', label: 'Cash on Delivery', desc: 'Pay when delivered' },
-                    { id: 'Card', label: 'Card / NetBanking', desc: 'Credit, Debit, Net' },
+                    { id: 'UPI', label: 'UPI / QR Code', desc: 'Scan & Pay via GPay, PhonePe, Paytm' },
+                    { id: 'Card', label: 'Account transfer', desc: 'Account Transfer takes 24 to confirm your order.' },
+                    { id: 'COD', label: 'Cash on Delivery', desc: 'Pay cash when package arrives' },
                   ].map((method) => (
                     <label
                       key={method.id}
                       className={`p-4 rounded-xl border cursor-pointer transition flex flex-col justify-between ${
                         formData.paymentMethod === method.id
-                          ? 'bg-cyan-500/10 border-cyan-400 text-gray-900 dark:text-white'
+                          ? 'bg-cyan-500/10 border-cyan-400 text-gray-900 dark:text-white shadow-sm ring-1 ring-cyan-500/30'
                           : 'bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="font-semibold text-sm">{method.label}</span>
+                        <span className="font-bold text-sm">{method.label}</span>
                         <input
                           type="radio"
                           name="paymentMethod"
                           value={method.id}
                           checked={formData.paymentMethod === method.id}
                           onChange={handleChange}
-                          className="accent-cyan-500"
+                          className="accent-cyan-500 w-4 h-4"
                         />
                       </div>
                       <span className="text-xs text-gray-500 dark:text-gray-400">{method.desc}</span>
                     </label>
                   ))}
                 </div>
+
+                {/* DYNAMIC PAYMENT VERIFICATION CARD (for UPI & Account Transfer) */}
+                {(formData.paymentMethod === 'UPI' || formData.paymentMethod === 'Card') && (
+                  <div className="mt-4 p-5 rounded-2xl bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 border border-cyan-500/30 space-y-4 animate-fadeIn">
+                    <div className="flex flex-col sm:flex-row items-center gap-6">
+                      {/* QR Scanner Display */}
+                      <div className="flex flex-col items-center p-3 rounded-2xl bg-white dark:bg-black border border-gray-200 dark:border-gray-800 shadow-md">
+                        <img
+                          src={qrCodeUrl}
+                          alt="Admin UPI Scanner QR"
+                          className="w-40 h-40 object-contain rounded-xl"
+                        />
+                        <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 mt-2 uppercase tracking-wider">
+                          Scan to Pay ₹{finalTotal}
+                        </span>
+                      </div>
+
+                      {/* Payment Details */}
+                      <div className="flex-1 space-y-2 text-xs">
+                        <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                          <span className="text-gray-500 dark:text-gray-400 block text-[10px] uppercase font-bold">Admin Official UPI ID</span>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="font-mono font-bold text-sm text-cyan-600 dark:text-cyan-300">{activeUpiId}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(activeUpiId, 'UPI ID')}
+                              className="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-[11px] transition shadow"
+                            >
+                              Copy UPI ID
+                            </button>
+                          </div>
+                        </div>
+
+                        {formData.paymentMethod === 'Card' && (
+                          <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 space-y-1.5 text-xs">
+                            <div className="font-bold text-purple-700 dark:text-purple-300 text-xs flex items-center gap-1.5">
+                              <span>🏦</span> Admin Bank Account Details (IMPS / NEFT)
+                            </div>
+                            <div className="text-[11px] text-gray-600 dark:text-gray-300">
+                              <span className="font-medium text-gray-500">Holder:</span> {storeSettings.accountHolderName || 'SM 3D Technologies'}<br />
+                              <span className="font-medium text-gray-500">Bank:</span> {storeSettings.bankName || 'State Bank of India'}<br />
+                              <span className="font-medium text-gray-500">A/C Number:</span> <span className="font-mono font-bold text-gray-900 dark:text-white">{storeSettings.accountNumber || '928411860101'}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleCopy(storeSettings.accountNumber || '928411860101', 'Account Number')}
+                                className="ml-2 text-[10px] text-purple-600 dark:text-purple-400 hover:underline font-semibold"
+                              >
+                                [Copy]
+                              </button><br />
+                              <span className="font-medium text-gray-500">IFSC Code:</span> <span className="font-mono font-bold text-gray-900 dark:text-white">{storeSettings.ifscCode || 'SBIN0001234'}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleCopy(storeSettings.ifscCode || 'SBIN0001234', 'IFSC Code')}
+                                className="ml-2 text-[10px] text-purple-600 dark:text-purple-400 hover:underline font-semibold"
+                              >
+                                [Copy]
+                              </button>
+                            </div>
+                            <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold pt-1">
+                              * Account Transfer takes 24 to confirm your order.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* UPI Transaction ID Input with Paste Button */}
+                    <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
+                      <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-1">
+                        UPI Transaction ID / UTR Number (12+ Digits) *
+                      </label>
+                      <div className="relative flex items-center">
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          required
+                          value={upiTransactionId}
+                          onChange={(e) => setUpiTransactionId(e.target.value.replace(/\D/g, ''))}
+                          placeholder="Enter 12+ digit transaction number (e.g. 428912345678)"
+                          className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl pl-3 pr-20 py-2.5 text-gray-900 dark:text-white font-mono text-sm focus:outline-none focus:border-cyan-400"
+                        />
+                        <button
+                          type="button"
+                          onClick={handlePasteUpi}
+                          className="absolute right-2 px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold transition shadow-sm border border-gray-300 dark:border-gray-700"
+                          title="Paste from clipboard"
+                        >
+                          📋 Paste
+                        </button>
+                      </div>
+                      <div className="flex justify-between items-center mt-1 text-[11px] text-gray-500">
+                        <span>Digits entered: {upiTransactionId.length} (minimum 12 numbers required)</span>
+                        {upiTransactionId.length >= 12 && (
+                          <span className="text-emerald-500 font-semibold">✓ Valid length</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Upload Payment Screenshot Proof (Optional) */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-1">
+                        Upload Screenshot of Payment (Optional)
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <label className="px-4 py-2 rounded-xl bg-white dark:bg-gray-950 border border-dashed border-gray-300 dark:border-gray-700 hover:border-cyan-500 text-cyan-600 dark:text-cyan-400 text-xs font-semibold cursor-pointer transition flex items-center gap-2">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                          </svg>
+                          <span>{uploadingScreenshot ? 'Uploading Proof...' : (screenshotUrl ? 'Change Screenshot' : 'Choose Payment Screenshot')}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleScreenshotUpload}
+                            disabled={uploadingScreenshot}
+                            className="hidden"
+                          />
+                        </label>
+                        {screenshotUrl && (
+                          <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400">
+                            <img src={screenshotUrl} alt="Payment Proof" className="w-8 h-8 rounded-lg object-cover border border-emerald-500" />
+                            <span>✓ Screenshot attached</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Order Notes */}
@@ -498,7 +737,7 @@ const Checkout: React.FC = () => {
                 ))}
               </div>
 
-              {/* Price Breakdown */}
+              {/* Price Breakdown - (GST 18% removed per requirement) */}
               <div className="space-y-2 text-xs border-t border-gray-200 dark:border-gray-800 pt-4">
                 <div className="flex justify-between text-gray-600 dark:text-gray-300">
                   <span>Subtotal</span>
@@ -511,10 +750,6 @@ const Checkout: React.FC = () => {
                   ) : (
                     <span className="font-semibold text-gray-900 dark:text-white">₹{shippingFee}</span>
                   )}
-                </div>
-                <div className="flex justify-between text-gray-600 dark:text-gray-300">
-                  <span>GST 18%</span>
-                  <span className="text-gray-500 dark:text-gray-400">Included</span>
                 </div>
               </div>
 

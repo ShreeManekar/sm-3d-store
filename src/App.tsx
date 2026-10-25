@@ -10,6 +10,7 @@ import Admin from './pages/Admin';
 import EditAdmin from './pages/EditAdmin';
 import NotFound from './pages/NotFound';
 import { Header } from './components/Header';
+import { AdminBar } from './components/AdminBar';
 import { Footer } from './components/Footer';
 import { WhatsAppFloat } from './components/WhatsAppFloat';
 import { CartProvider } from './context/CartContext';
@@ -45,6 +46,7 @@ const App: React.FC = () => {
           <Router>
             <HashRedirectHandler />
             <div className="flex flex-col min-h-screen bg-[#f5f5f7] dark:bg-[#090d16] text-gray-900 dark:text-white transition-colors duration-200">
+              <AdminBar />
               <Header />
               <main className="flex-1">
                 <Routes>
