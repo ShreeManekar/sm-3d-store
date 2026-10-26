@@ -11,9 +11,10 @@ const DB_FILE = path.resolve(__dirname, '../data/db.json');
 const PUBLIC_UPLOADS = path.resolve(__dirname, '../public/uploads');
 const DIST_UPLOADS = path.resolve(__dirname, '../dist/uploads');
 const ROOT_UPLOADS = path.resolve(__dirname, '../uploads');
+const PARENT_UPLOADS = path.resolve(__dirname, '../../uploads');
 
 // Ensure upload directories exist
-[PUBLIC_UPLOADS, DIST_UPLOADS, ROOT_UPLOADS].forEach(dir => {
+[PUBLIC_UPLOADS, DIST_UPLOADS, ROOT_UPLOADS, PARENT_UPLOADS].forEach(dir => {
   try { fs.mkdirSync(dir, { recursive: true }); } catch (_) {}
 });
 
@@ -550,8 +551,8 @@ function stripSensitive(user) {
 }
 
 // ── Middleware ───────────────────────────────────────────────────────────────
-app.use(express.json({ limit: '150mb' }));
-app.use(express.urlencoded({ limit: '150mb', extended: true }));
+app.use(express.json({ limit: '300mb' }));
+app.use(express.urlencoded({ limit: '300mb', extended: true }));
 
 // Global Rate Limiter & DDoS Mitigation
 app.use(globalRateLimiter);
@@ -1511,17 +1512,17 @@ app.post('/api/upload', (req, res) => {
     return res.status(400).json({ error: 'Failed to decode uploaded file data: ' + decodeErr.message });
   }
 
-  // Enforce 100MB maximum capacity limit
-  const MAX_UPLOAD_BYTES = 100 * 1024 * 1024; // 100MB
+  // Enforce 200MB maximum capacity limit
+  const MAX_UPLOAD_BYTES = 200 * 1024 * 1024; // 200MB
   if (buffer.length > MAX_UPLOAD_BYTES) {
     const sizeMb = (buffer.length / (1024 * 1024)).toFixed(1);
     return res.status(413).json({
-      error: `File size (${sizeMb} MB) exceeds the maximum upload capacity limit of 100 MB.`
+      error: `File size (${sizeMb} MB) exceeds the maximum upload capacity limit of 200 MB.`
     });
   }
 
   try {
-    [PUBLIC_UPLOADS, DIST_UPLOADS, ROOT_UPLOADS].forEach(dir => {
+    [PUBLIC_UPLOADS, DIST_UPLOADS, ROOT_UPLOADS, PARENT_UPLOADS].forEach(dir => {
       try {
         fs.mkdirSync(dir, { recursive: true });
         fs.writeFileSync(path.join(dir, safeName), buffer);
@@ -1675,6 +1676,7 @@ app.put('/api/orders/:id/status', (req, res) => {
   if (!o) return res.status(404).json({ error: 'Order not found' });
   if (req.body.fulfillmentStatus) o.fulfillmentStatus = req.body.fulfillmentStatus;
   if (req.body.paymentStatus) o.paymentStatus = req.body.paymentStatus;
+  if (req.body.paymentMethod) o.paymentMethod = req.body.paymentMethod;
   saveDb(db);
   res.json({ message: 'Order updated', order: o });
 });
@@ -1732,6 +1734,14 @@ app.put('/api/users/:id', (req, res) => {
 
 // ── DELETE Routes ───────────────────────────────────────────────────────────
 
+app.delete('/api/products', (req, res) => {
+  if (!verifyAdminAccess(req)) return res.status(401).json({ error: 'Unauthorized: Admin token required' });
+  const db = loadDb();
+  db.products = [];
+  saveDb(db);
+  res.json({ message: 'All products removed successfully', count: 0 });
+});
+
 app.delete('/api/products/:id', (req, res) => {
   if (!verifyAdminAccess(req)) return res.status(401).json({ error: 'Unauthorized: Admin token required' });
   const db = loadDb();
@@ -1787,7 +1797,7 @@ app.delete('/api/delivery-cities/:id', (req, res) => {
 app.use((err, req, res, next) => {
   if (err && (err.type === 'entity.too.large' || err.status === 413)) {
     return res.status(413).json({
-      error: 'Upload Payload Too Large: The file exceeds the maximum 100MB upload capacity limit supported by SM 3D.'
+      error: 'Upload Payload Too Large: The file exceeds the maximum 200MB upload capacity limit supported by SM 3D.'
     });
   }
   if (err && err.status === 400 && 'body' in err) {

@@ -180,6 +180,7 @@ export const Admin: React.FC = () => {
   const [editHeight, setEditHeight] = useState<number>(100);
 
   // Uploading and filament states
+  const [includeModel, setIncludeModel] = useState<boolean>(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imgUploadProgress, setImgUploadProgress] = useState<number | null>(null);
   const [uploadingStl, setUploadingStl] = useState(false);
@@ -281,6 +282,7 @@ export const Admin: React.FC = () => {
       dimensions: `${l} x ${w} x ${h} mm`,
       material: p.material || 'PLA',
     });
+    setIncludeModel(Boolean(p.stlUrl && p.stlUrl !== 'NA' && p.stlUrl.trim() !== ''));
     setProductModalOpen(true);
   };
 
@@ -302,20 +304,20 @@ export const Admin: React.FC = () => {
     );
   };
 
-  // Image & 3D Model Upload Handler (accepts images, .stl, and .3mf up to 100MB)
+  // Image & 3D Model Upload Handler (accepts images, .stl, and .3mf up to 200MB)
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+    const MAX_SIZE = 200 * 1024 * 1024; // 200MB
     if (file.size > MAX_SIZE) {
-      alert(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds 100MB limit. Please choose a file under 100MB.`);
+      alert(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds 200MB limit. Please choose a file under 200MB.`);
       e.target.value = '';
       return;
     }
 
     const lower = file.name.toLowerCase();
-    const is3d = lower.endsWith('.stl') || lower.endsWith('.3mf');
+    const is3d = lower.endsWith('.stl') || lower.endsWith('.3mf') || lower.endsWith('.obj');
     setUploadingImage(true);
     setImgUploadProgress(0);
 
@@ -327,6 +329,7 @@ export const Admin: React.FC = () => {
           filename: file.name,
           fileData: base64,
         }, {
+          timeout: 300000,
           onUploadProgress: (progressEvent) => {
             if (progressEvent.total) {
               const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -362,20 +365,22 @@ export const Admin: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
-  // 3D Model (.stl, .3mf only up to 100MB) Upload Handler
+  // 3D Model (.stl, .3mf, .obj, .step, .stp up to 200MB) Upload Handler
   const handleStlUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-    if (ext !== '.stl' && ext !== '.3mf') {
-      alert('File format restricted! Only .stl and .3mf 3D model files are accepted.');
+    const lower = file.name.toLowerCase();
+    const valid3d = ['.stl', '.3mf', '.obj', '.step', '.stp'];
+    const hasValidExt = valid3d.some((v) => lower.endsWith(v));
+    if (!hasValidExt) {
+      alert('File format restricted! Only .stl, .3mf, .obj, and STEP 3D model files are accepted.');
       e.target.value = '';
       return;
     }
 
-    const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+    const MAX_SIZE = 200 * 1024 * 1024; // 200MB
     if (file.size > MAX_SIZE) {
-      alert(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds 100MB limit. Please upload a file under 100MB.`);
+      alert(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds 200MB limit. Please upload a file under 200MB.`);
       e.target.value = '';
       return;
     }
@@ -390,6 +395,7 @@ export const Admin: React.FC = () => {
           filename: file.name,
           fileData: base64,
         }, {
+          timeout: 300000,
           onUploadProgress: (progressEvent) => {
             if (progressEvent.total) {
               const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -430,6 +436,8 @@ export const Admin: React.FC = () => {
         const res = await axios.post('/api/upload', {
           filename: file.name,
           fileData: base64,
+        }, {
+          timeout: 300000,
         });
         const url = res.data.fileUrl;
         setSettings((prev) => ({ ...prev, upiQrImage: url }));
@@ -558,14 +566,19 @@ export const Admin: React.FC = () => {
     if (!editingProduct) return;
     const headers = getAdminHeaders();
 
+    const productPayload = {
+      ...editingProduct,
+      stlUrl: includeModel ? (editingProduct.stlUrl || '').trim() : '',
+    };
+
     try {
       if (editingProduct.id) {
         // Edit existing product
-        await axios.put(`/api/products/${editingProduct.id}`, editingProduct, { headers });
+        await axios.put(`/api/products/${editingProduct.id}`, productPayload, { headers });
         showToast('Product updated successfully');
       } else {
         // Create new product
-        await axios.post('/api/products', editingProduct, { headers });
+        await axios.post('/api/products', productPayload, { headers });
         showToast('New product created successfully');
       }
       setProductModalOpen(false);
@@ -585,6 +598,19 @@ export const Admin: React.FC = () => {
       loadAllData();
     } catch (err: any) {
       alert(err.response?.data?.error || 'Failed to delete product');
+    }
+  };
+
+  const handleDeleteAllProducts = async () => {
+    if (!window.confirm('Are you sure you want to delete ALL products from the catalog? This action cannot be undone.')) return;
+    const headers = getAdminHeaders();
+    try {
+      await axios.delete('/api/products', { headers });
+      setProducts([]);
+      showToast('All products deleted successfully');
+      loadAllData();
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to delete all products');
     }
   };
 
@@ -632,6 +658,85 @@ export const Admin: React.FC = () => {
       loadAllData();
     } catch (err: any) {
       alert(err.response?.data?.error || 'Failed to update order status');
+    }
+  };
+
+  // Payment Options Helpers & Inline Handler for [Paid, Not Paid, COD, WhatsApp, Bank Account, UPI]
+  const getOrderPaymentOption = (ord: CustomerOrder): string => {
+    const status = (ord.paymentStatus || '').trim().toLowerCase();
+    const method = (ord.paymentMethod || '').trim().toLowerCase();
+
+    if (method.includes('cod') || status === 'cod') return 'COD';
+    if (method.includes('whatsapp') || status === 'whatsapp') return 'WhatsApp';
+    if (method.includes('bank') || method.includes('account') || status === 'bank account') return 'Bank Account';
+    if (method.includes('upi') || status === 'upi') return 'UPI';
+    if (status === 'not paid' || status === 'unpaid' || status === 'pending') return 'Not Paid';
+    if (status === 'paid' || status === 'completed') return 'Paid';
+    return 'Paid';
+  };
+
+  const getPaymentBadge = (opt: string) => {
+    switch (opt) {
+      case 'Paid':
+        return {
+          badgeClass: 'bg-emerald-950/60 text-emerald-400 border-emerald-500/30',
+          icon: '✓',
+        };
+      case 'Not Paid':
+        return {
+          badgeClass: 'bg-rose-950/60 text-rose-400 border-rose-500/30',
+          icon: '✕',
+        };
+      case 'COD':
+        return {
+          badgeClass: 'bg-sky-950/60 text-sky-400 border-sky-500/30',
+          icon: '📦',
+        };
+      case 'WhatsApp':
+        return {
+          badgeClass: 'bg-green-950/60 text-green-400 border-green-500/30',
+          icon: '💬',
+        };
+      case 'Bank Account':
+      case 'UPI':
+      default:
+        return {
+          badgeClass: 'bg-amber-950/60 text-amber-400 border-amber-500/30',
+          icon: '⚡',
+        };
+    }
+  };
+
+  const handleUpdateOrderPayment = async (id: string, paymentValue: string) => {
+    const headers = getAdminHeaders();
+    let paymentStatus = paymentValue;
+    let paymentMethod = paymentValue;
+    if (paymentValue === 'Paid') {
+      paymentStatus = 'Paid';
+      paymentMethod = 'Online / Verified';
+    } else if (paymentValue === 'Not Paid') {
+      paymentStatus = 'Not Paid';
+      paymentMethod = 'Pending';
+    } else if (paymentValue === 'COD') {
+      paymentStatus = 'COD';
+      paymentMethod = 'COD';
+    } else if (paymentValue === 'WhatsApp') {
+      paymentStatus = 'WhatsApp';
+      paymentMethod = 'WhatsApp';
+    } else if (paymentValue === 'Bank Account') {
+      paymentStatus = 'Bank Account';
+      paymentMethod = 'Bank Account';
+    } else if (paymentValue === 'UPI') {
+      paymentStatus = 'UPI';
+      paymentMethod = 'UPI';
+    }
+
+    try {
+      await axios.put(`/api/orders/${id}/status`, { paymentStatus, paymentMethod }, { headers });
+      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, paymentStatus, paymentMethod } : o)));
+      showToast(`Payment updated to ${paymentValue} for order ${id}`);
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to update order payment');
     }
   };
 
@@ -1375,6 +1480,15 @@ export const Admin: React.FC = () => {
                   </svg>
                   Export Catalog (.xlsx)
                 </button>
+                {products.length > 0 && (
+                  <button
+                    onClick={handleDeleteAllProducts}
+                    className="px-3.5 py-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/20 transition text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    Delete All Products
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     openEditProductModal({
@@ -1389,9 +1503,9 @@ export const Admin: React.FC = () => {
                       price: 499,
                       stock: 10,
                       lowStockThreshold: 3,
-                      image: '/assets/images/product_dragon_1786179208256.webp',
-                      featured: true,
-                      stlUrl: '/assets/models/sample_dragon.stl',
+                      image: '/assets/images/hero_3d_printer_1786179196218.webp',
+                      featured: false,
+                      stlUrl: '',
                     });
                   }}
                   className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-gray-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition flex items-center gap-1.5"
@@ -1420,7 +1534,14 @@ export const Admin: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800 text-gray-700 dark:text-gray-300">
-                  {filteredProducts.map((p) => (
+                  {filteredProducts.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="p-8 text-center text-gray-500 dark:text-gray-400">
+                        No products in catalog. Click "Add New Product" to create a new product listing.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredProducts.map((p) => (
                     <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition">
                       <td className="p-3.5">
                         <img
@@ -1473,7 +1594,7 @@ export const Admin: React.FC = () => {
                         </button>
                       </td>
                     </tr>
-                  ))}
+                  )))}
                 </tbody>
               </table>
             </div>
@@ -1675,10 +1796,37 @@ export const Admin: React.FC = () => {
                         ₹{ord.total}
                       </td>
                       <td className="p-3.5">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30">
-                          {ord.paymentStatus || 'Paid'}
-                        </span>
-                        <div className="text-[10px] text-gray-500 mt-0.5">{ord.paymentMethod}</div>
+                        {(() => {
+                          const currentOpt = getOrderPaymentOption(ord);
+                          const badge = getPaymentBadge(currentOpt);
+                          return (
+                            <div className="flex flex-col gap-1.5 min-w-[125px]">
+                              <div className="flex items-center gap-1.5">
+                                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${badge.badgeClass}`}>
+                                  <span>{badge.icon}</span>
+                                  <span>{currentOpt}</span>
+                                </span>
+                              </div>
+                              <select
+                                value={currentOpt}
+                                onChange={(e) => handleUpdateOrderPayment(ord.id, e.target.value)}
+                                className="bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-200 text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-amber-400 cursor-pointer shadow-sm"
+                              >
+                                <option value="Paid">Paid</option>
+                                <option value="Not Paid">Not Paid</option>
+                                <option value="COD">COD</option>
+                                <option value="WhatsApp">WhatsApp</option>
+                                <option value="Bank Account">Bank Account</option>
+                                <option value="UPI">UPI</option>
+                              </select>
+                              {ord.paymentMethod && ord.paymentMethod !== currentOpt && (
+                                <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[140px]" title={ord.paymentMethod}>
+                                  Method: {ord.paymentMethod}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td className="p-3.5">
                         <select
@@ -3084,60 +3232,100 @@ export const Admin: React.FC = () => {
                 </div>
               </div>
 
-              {/* 3D Model Attachment (.stl, .3mf only) + Separate Model Name Box (Issue 3 Fix) */}
-              <div className="p-3.5 rounded-2xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/40 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <label className="font-semibold text-gray-800 dark:text-gray-200 text-xs flex items-center gap-1.5">
-                    <span className="text-purple-600 dark:text-purple-400">⚡</span> 3D Model Attachment (.stl, .3mf only — up to 100MB)
-                  </label>
-                  {editingProduct.stlUrl && (
-                    <button
-                      type="button"
-                      onClick={() => setStlModalUrl(editingProduct.stlUrl || null)}
-                      className="text-[11px] font-semibold text-amber-500 dark:text-amber-400 hover:underline flex items-center gap-1"
-                    >
-                      👁️ Preview in 3D
-                    </button>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-[10px] text-gray-500 mb-0.5 font-medium">3D Model Name Box</label>
-                  <input
-                    type="text"
-                    value={editingProduct.name ? `${editingProduct.name} Model` : 'Sample Model'}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, sku: editingProduct.sku || 'SM3D-CUSTOM' })}
-                    placeholder="e.g. Articulated Dragon 3D Print File"
-                    className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-1.5 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-purple-400"
-                  />
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                  <label className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold cursor-pointer shadow-sm transition text-xs flex-shrink-0">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    <span>{uploadingStl ? (stlUploadProgress !== null ? `Uploading (${stlUploadProgress}%)...` : 'Uploading Model...') : 'Upload 3D Model (.stl, .3mf)'}</span>
+              {/* 3D Model Attachment Optional Checkbox Section */}
+              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 dark:bg-[#0B0F17]/80 p-4 shadow-lg backdrop-blur-md">
+                {/* Header & Checkbox */}
+                <label className="flex items-center justify-between cursor-pointer select-none">
+                  <div className="flex items-center space-x-3">
                     <input
-                      type="file"
-                      accept=".stl,.3mf"
-                      className="hidden"
-                      onChange={handleStlUpload}
-                      disabled={uploadingStl}
+                      type="checkbox"
+                      id="includeModelCheckbox"
+                      checked={includeModel}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setIncludeModel(checked);
+                        if (!checked && editingProduct) {
+                          setEditingProduct({ ...editingProduct, stlUrl: '' });
+                        }
+                      }}
+                      className="h-4 w-4 rounded border-amber-500/40 bg-white dark:bg-black/60 text-amber-500 accent-amber-500 focus:ring-amber-400 focus:ring-offset-0 transition-all cursor-pointer"
                     />
-                  </label>
+                    <div>
+                      <span className="font-semibold text-gray-900 dark:text-amber-200 text-xs">
+                        Attach 3D Model File <span className="text-[11px] text-amber-500 font-normal">(Optional)</span>
+                      </span>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                        Enable to upload an interactive .STL or .3MF preview file for this item.
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all ${
+                    includeModel 
+                      ? 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-300' 
+                      : 'border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900/50 text-gray-400'
+                  }`}>
+                    {includeModel ? 'Enabled' : 'Disabled'}
+                  </span>
+                </label>
 
-                  <input
-                    type="text"
-                    value={editingProduct.stlUrl || ''}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, stlUrl: e.target.value })}
-                    placeholder="3D Model STL/3MF URL (Optional, e.g. /uploads/model.stl)"
-                    className="flex-1 w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-purple-400 font-mono"
-                  />
-                </div>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400">
-                  Strictly accepts <strong className="text-gray-700 dark:text-gray-300">.stl</strong> and <strong className="text-gray-700 dark:text-gray-300">.3mf</strong> formats up to 100MB for interactive 3D WebGL rendering.
-                </p>
+                {/* Conditional Upload Box - Only rendered when checkbox is active */}
+                {includeModel && (
+                  <div className="mt-3.5 pt-3.5 border-t border-amber-500/15 space-y-3">
+                    {/* 3D Model Display Name */}
+                    <div>
+                      <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-300 mb-1">
+                        3D Model Display Name
+                      </label>
+                      <input
+                        type="text"
+                        value={editingProduct.name ? `${editingProduct.name} Model` : 'Sample Model'}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, sku: editingProduct.sku || 'SM3D-CUSTOM' })}
+                        placeholder="e.g. Precision Bracket v2 (STL)"
+                        className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/60 px-3 py-1.5 text-xs text-gray-900 dark:text-gray-200 placeholder-gray-400 focus:border-amber-500 focus:outline-none"
+                      />
+                    </div>
+
+                    {/* 3D Model Upload (.stl, .3mf) or Direct URL */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-[10px] font-medium text-gray-600 dark:text-gray-300">
+                          3D Model Upload (.stl, .3mf, .obj) or Direct URL
+                        </label>
+                        {editingProduct.stlUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setStlModalUrl(editingProduct.stlUrl || null)}
+                            className="text-[11px] font-semibold text-amber-500 hover:underline flex items-center gap-1"
+                          >
+                            👁️ Preview in 3D
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={editingProduct.stlUrl || ''}
+                          onChange={(e) => setEditingProduct({ ...editingProduct, stlUrl: e.target.value })}
+                          placeholder="/uploads/model.stl or https://..."
+                          className="flex-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/60 px-3 py-1.5 text-xs text-gray-900 dark:text-gray-200 placeholder-gray-400 focus:border-amber-500 focus:outline-none font-mono"
+                        />
+                        <label className="cursor-pointer inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-amber-500 to-yellow-600 px-3.5 py-1.5 text-xs font-bold text-gray-950 shadow-md hover:from-amber-400 hover:to-yellow-500 transition-all flex-shrink-0">
+                          <span>{uploadingStl ? (stlUploadProgress !== null ? `Uploading (${stlUploadProgress}%)...` : 'Uploading...') : 'Upload File'}</span>
+                          <input
+                            type="file"
+                            accept=".stl,.3mf,.obj,.step,.stp"
+                            className="hidden"
+                            onChange={handleStlUpload}
+                            disabled={uploadingStl}
+                          />
+                        </label>
+                      </div>
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+                        Supports .STL, .3MF, .OBJ, and STEP packages up to 200MB with real-time 3D viewport inspection.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-2 pt-2">

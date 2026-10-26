@@ -56,7 +56,7 @@ const Shop: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { addToCart, items } = useCart();
-  const [products, setProducts] = useState<Product[]>(PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [active3dProduct, setActive3dProduct] = useState<Product | null>(null);
@@ -70,7 +70,7 @@ const Shop: React.FC = () => {
       .get('/api/products')
       .then((res) => {
         if (!isMounted) return;
-        if (Array.isArray(res.data) && res.data.length > 0) {
+        if (Array.isArray(res.data)) {
           const loaded: Product[] = res.data.map((p: any) => ({
             id: p.id,
             name: p.name,
@@ -79,7 +79,7 @@ const Shop: React.FC = () => {
             description: p.description || '',
             image: p.image || p.images?.[0] || '/assets/images/hero_3d_printer_1786179196218.webp',
             dimensions: typeof p.dimensions === 'string' ? p.dimensions : '100 × 100 × 100 mm',
-            stlUrl: p.stlUrl || (p.id === 'prod_1' ? '/assets/models/sample_dragon.stl' : p.id === 'prod_2' ? '/assets/models/sample_gearbox.stl' : ''),
+            stlUrl: p.stlUrl || '',
             material: p.material || 'PLA',
             colors: p.colors || [],
           }));
@@ -87,7 +87,8 @@ const Shop: React.FC = () => {
         }
       })
       .catch(() => {
-        // Retain fallback PRODUCTS
+        // Fallback only if server completely unreachable
+        setProducts(PRODUCTS);
       });
 
     return () => {

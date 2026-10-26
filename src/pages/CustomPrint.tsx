@@ -120,26 +120,28 @@ export const CustomPrint: React.FC = () => {
     }
   };
 
-  // Handle file upload (strictly .stl and .3mf files up to 100MB)
+  // Handle file upload (supports .stl, .3mf, .obj, .step, .stp files up to 200MB)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (file.size === 0) {
-      setError('The selected 3D model file is empty (0 bytes). Please select a valid .stl or .3mf file.');
+      setError('The selected 3D model file is empty (0 bytes). Please select a valid 3D file.');
       return;
     }
 
     const lower = file.name.toLowerCase();
-    if (!lower.endsWith('.stl') && !lower.endsWith('.3mf')) {
-      setError('Only .stl and .3mf 3D model files are accepted. Please choose a valid file.');
+    const validExtensions = ['.stl', '.3mf', '.obj', '.step', '.stp'];
+    const hasValidExt = validExtensions.some(ext => lower.endsWith(ext));
+    if (!hasValidExt) {
+      setError('Invalid format. Please upload a .STL, .3MF, .OBJ, or STEP file.');
       return;
     }
 
-    const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+    const MAX_SIZE = 200 * 1024 * 1024; // 200MB
     if (file.size > MAX_SIZE) {
-      setError(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the maximum allowed 100MB capacity.`);
+      setError(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the maximum allowed 200MB capacity. Please optimize or compress your mesh.`);
       return;
     }
 
@@ -277,6 +279,10 @@ export const CustomPrint: React.FC = () => {
           filename: selectedFile.name,
           fileData: fileDataUri,
         }, {
+          timeout: 300000, // 5 minutes timeout for 200MB payloads
+          headers: {
+            'Content-Type': 'application/json'
+          },
           onUploadProgress: (progressEvent) => {
             if (progressEvent.total) {
               const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -419,7 +425,7 @@ export const CustomPrint: React.FC = () => {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".stl,.3mf"
+                    accept=".stl,.3mf,.obj,.step,.stp"
                     onChange={handleFileChange}
                     className="hidden"
                   />
@@ -433,10 +439,10 @@ export const CustomPrint: React.FC = () => {
                       </svg>
                       {selectedFile ? (
                         <span className="truncate">
-                          Selected: <strong className="text-white">{selectedFile.name}</strong> ({((selectedFile.size || 0) / (1024 * 1024)).toFixed(1)} MB / 100MB max)
+                          Selected: <strong className="text-white">{selectedFile.name}</strong> ({((selectedFile.size || 0) / (1024 * 1024)).toFixed(1)} MB / 200MB max)
                         </span>
                       ) : (
-                        'Click to Upload 3D Model (.stl or .3mf up to 100MB)'
+                        'Click to Upload 3D Model (.stl, .3mf, .obj up to 200MB)'
                       )}
                     </div>
                     <p className="text-[11px] text-gray-400 mt-1">

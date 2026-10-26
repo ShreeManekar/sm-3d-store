@@ -1,6 +1,10 @@
 const { Socket } = require('net');
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 const app = require('./server');
+
+const DB_FILE = path.resolve(__dirname, '../data/db.json');
 
 function testEndpoint(method, path, body, headers = {}) {
   return new Promise((resolve) => {
@@ -37,6 +41,7 @@ function testEndpoint(method, path, body, headers = {}) {
 }
 
 async function runTests() {
+  const dbBackup = fs.readFileSync(DB_FILE, 'utf-8');
   let passed = 0;
   let failed = 0;
 
@@ -166,7 +171,7 @@ async function runTests() {
   assert(secCheck.headers['x-content-type-options'] === 'nosniff', 'Header X-Content-Type-Options: nosniff is enforced');
   assert(secCheck.headers['x-frame-options'] === 'SAMEORIGIN', 'Header X-Frame-Options: SAMEORIGIN is enforced');
 
-  console.log('\n--- 15. 3D Model Upload (.stl, .3mf) & 100MB Capacity Limits ---');
+  console.log('\n--- 15. 3D Model Upload (.stl, .3mf) & 200MB Capacity Limits ---');
   // STL Upload
   const dummyStl = "data:application/sla;base64," + Buffer.from("solid test\nfacet normal 0 0 0\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\nendsolid test").toString('base64');
   const uploadStl = await testEndpoint('POST', '/api/upload', {
@@ -183,6 +188,14 @@ async function runTests() {
   });
   assert(upload3mf.status === 200 && upload3mf.data.fileUrl.endsWith('.3mf'), 'POST /api/upload successfully processes .3mf packages (200 OK)');
 
+  // STEP CAD Upload
+  const dummyStep = "data:application/step;base64," + Buffer.from("ISO-10303-21;\nHEADER;\nENDSEC;\nDATA;\nENDSEC;\nEND-ISO-10303-21;").toString('base64');
+  const uploadStep = await testEndpoint('POST', '/api/upload', {
+    filename: 'precision_chassis.step',
+    fileData: dummyStep
+  });
+  assert(uploadStep.status === 200 && uploadStep.data.fileUrl.endsWith('.step'), 'POST /api/upload successfully processes .step CAD files (200 OK)');
+
   // Large upload (20MB file which failed previously under 15MB limit)
   const large20MbBase64 = "data:application/octet-stream;base64," + Buffer.alloc(20 * 1024 * 1024, 0x41).toString('base64');
   const uploadLarge = await testEndpoint('POST', '/api/upload', {
@@ -191,13 +204,13 @@ async function runTests() {
   });
   assert(uploadLarge.status === 200, 'POST /api/upload accepts large 20MB 3D files (exceeds previous 15MB limit, 200 OK)');
 
-  // Upload exceeding 100MB capacity limit
-  const over100MbBase64 = "data:application/octet-stream;base64," + Buffer.alloc(101 * 1024 * 1024, 0x41).toString('base64');
+  // Upload exceeding 200MB capacity limit
+  const over200MbBase64 = "data:application/octet-stream;base64," + Buffer.alloc(201 * 1024 * 1024, 0x41).toString('base64');
   const uploadExcess = await testEndpoint('POST', '/api/upload', {
-    filename: 'giant_model_101mb.stl',
-    fileData: over100MbBase64
+    filename: 'giant_model_201mb.stl',
+    fileData: over200MbBase64
   });
-  assert(uploadExcess.status === 413, 'POST /api/upload rejects files exceeding 100MB capacity limit with HTTP 413');
+  assert(uploadExcess.status === 413, 'POST /api/upload rejects files exceeding 200MB capacity limit with HTTP 413');
 
   console.log('\n--- 16. Delivery Cities Coverage & Management Endpoints ---');
   // 1. Public GET
@@ -315,6 +328,56 @@ async function runTests() {
   assert(unauthReviewList.status === 200 && Array.isArray(unauthReviewList.data), 'Public GET /api/reviews returns approved reviews');
   const authReviewList = await testEndpoint('GET', '/api/reviews', null, { 'Authorization': `Bearer ${adminToken}` });
   assert(authReviewList.status === 200 && Array.isArray(authReviewList.data), 'Admin GET /api/reviews returns full review catalog');
+
+  console.log('\n--- 23. Batch Delete Products & No-Reseed Empty State ---');
+  const unauthDeleteAll = await testEndpoint('DELETE', '/api/products');
+  assert(unauthDeleteAll.status === 401, 'DELETE /api/products without admin token returns 401 Unauthorized');
+
+  const authDeleteAll = await testEndpoint('DELETE', '/api/products', null, { 'Authorization': `Bearer ${adminToken}` });
+  assert(authDeleteAll.status === 200 && authDeleteAll.data.count === 0, 'DELETE /api/products with admin token deletes all products (200 OK)');
+
+  const emptyProductsRes = await testEndpoint('GET', '/api/products');
+  assert(emptyProductsRes.status === 200 && Array.isArray(emptyProductsRes.data) && emptyProductsRes.data.length === 0, 'GET /api/products returns empty array [] without auto-reseeding');
+
+  // Test creating product without 3D model attachment (stlUrl is empty string)
+  const createNoModelRes = await testEndpoint('POST', '/api/products', {
+    name: 'Plain PLA Filament Spool',
+    sku: 'FIL-PLA-001',
+    category: 'Prototyping',
+    price: 799,
+    stock: 50,
+    stlUrl: ''
+  }, { 'Authorization': `Bearer ${adminToken}` });
+  assert(createNoModelRes.status === 201 && createNoModelRes.data.product && createNoModelRes.data.product.stlUrl === '', 'POST /api/products allows creating product without 3D model attachment (stlUrl is empty)');
+
+  console.log('\n--- 24. Order Payment Method & Status Updates ([Paid, Not Paid, COD, WhatsApp, Bank Account, UPI]) ---');
+  // Create an order to test payment status updates
+  const testOrderRes = await testEndpoint('POST', '/api/orders', {
+    items: [{ productId: 'test_p1', name: 'Test Bracket', price: 299, quantity: 1 }],
+    userName: 'Aarav Mehta',
+    userEmail: 'aarav@test.com',
+    userPhone: '9876543210',
+    shippingAddress: '42 MG Road, Bangalore',
+    paymentMethod: 'UPI'
+  });
+  assert(testOrderRes.status === 201, 'POST /api/orders creates test order for payment method verification');
+  const testOrderId = testOrderRes.data.order.id;
+
+  const paymentOptions = ['Paid', 'Not Paid', 'COD', 'WhatsApp', 'Bank Account', 'UPI'];
+  for (const opt of paymentOptions) {
+    const updateRes = await testEndpoint('PUT', `/api/orders/${testOrderId}/status`, {
+      paymentStatus: opt === 'Paid' ? 'Paid' : (opt === 'Not Paid' ? 'Not Paid' : opt),
+      paymentMethod: opt
+    }, { 'Authorization': `Bearer ${adminToken}` });
+    assert(updateRes.status === 200 && (updateRes.data.order.paymentMethod === opt || updateRes.data.order.paymentStatus === opt), `PUT /api/orders/:id/status successfully updates order payment to "${opt}"`);
+  }
+
+  // Restore database snapshot
+  try {
+    fs.writeFileSync(DB_FILE, dbBackup, 'utf-8');
+  } catch (err) {
+    console.error('Failed to restore dbBackup', err);
+  }
 
   console.log(`\n========================================`);
   console.log(`Summary: ${passed} Passed, ${failed} Failed`);

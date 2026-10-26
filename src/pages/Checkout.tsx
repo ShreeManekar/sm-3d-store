@@ -157,6 +157,8 @@ export const Checkout: React.FC = () => {
       const res = await axios.post('/api/upload', {
         filename: `proof_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`,
         fileData: base64Data,
+      }, {
+        timeout: 300000,
       });
 
       setScreenshotUrl(res.data?.fileUrl || '');

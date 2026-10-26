@@ -97,7 +97,7 @@ const Home: React.FC = () => {
       .get('/api/products')
       .then((res) => {
         if (!isMounted) return;
-        if (Array.isArray(res.data) && res.data.length > 0) {
+        if (Array.isArray(res.data)) {
           const loaded: ProductItem[] = res.data.slice(0, 4).map((p: any) => ({
             id: p.id,
             name: p.name,
