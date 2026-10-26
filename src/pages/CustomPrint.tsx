@@ -96,6 +96,7 @@ export const CustomPrint: React.FC = () => {
   // Submission & feedback
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string>('');
   const [submittedOrder, setSubmittedOrder] = useState<any | null>(null);
   const [cartToast, setCartToast] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -128,6 +129,7 @@ export const CustomPrint: React.FC = () => {
 
     if (file.size === 0) {
       setError('The selected 3D model file is empty (0 bytes). Please select a valid 3D file.');
+      e.target.value = '';
       return;
     }
 
@@ -136,23 +138,67 @@ export const CustomPrint: React.FC = () => {
     const hasValidExt = validExtensions.some(ext => lower.endsWith(ext));
     if (!hasValidExt) {
       setError('Invalid format. Please upload a .STL, .3MF, .OBJ, or STEP file.');
+      e.target.value = '';
       return;
     }
 
     const MAX_SIZE = 200 * 1024 * 1024; // 200MB
     if (file.size > MAX_SIZE) {
       setError(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the maximum allowed 200MB capacity. Please optimize or compress your mesh.`);
+      e.target.value = '';
       return;
     }
 
     setSelectedFile(file);
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (reader.result instanceof ArrayBuffer) {
-        setFileBuffer(reader.result);
+    setUploadedFileUrl('');
+
+    // Read buffer for 3D viewer
+    const isCadOnly = lower.endsWith('.step') || lower.endsWith('.stp');
+    if (!isCadOnly) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.result instanceof ArrayBuffer) {
+          setFileBuffer(reader.result);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      setFileBuffer(null);
+    }
+
+    // Immediately upload to server asynchronously with progress
+    setUploadProgress(0);
+    const dataReader = new FileReader();
+    dataReader.onload = async () => {
+      try {
+        const fileDataUri = dataReader.result as string;
+        const uploadRes = await axios.post('/api/upload', {
+          filename: file.name,
+          fileData: fileDataUri,
+        }, {
+          timeout: 300000, // 5 minutes timeout for 200MB payloads
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              setUploadProgress(percent);
+            }
+          }
+        });
+        const url = uploadRes.data?.fileUrl || '';
+        setUploadedFileUrl(url);
+        setUploadProgress(100);
+      } catch (err: any) {
+        console.error('File upload failed:', err);
+        setError(err.response?.data?.error || err.message || 'File upload failed. Please try again.');
+        setUploadProgress(null);
       }
     };
-    reader.readAsArrayBuffer(file);
+    dataReader.readAsDataURL(file);
+
+    e.target.value = '';
   };
 
   const handleDimensionChange = (l: number, w: number, h: number) => {
@@ -238,6 +284,8 @@ export const CustomPrint: React.FC = () => {
       description: `${activeMat.name} • ${color} • ${infill}% Infill • ${layerHeight}mm • ${orientationOpt.name} • ${dimL}×${dimW}×${dimH}mm${isRushOrder ? ' [24-48h Rush Dispatch]' : ''}`,
       image: '/assets/images/hero_3d_printer_1786179196218.webp',
       dimensions: `${dimL} × ${dimW} × ${dimH} mm`,
+      fileUrl: uploadedFileUrl || '',
+      fileName: selectedFile ? selectedFile.name : '',
     };
 
     addToCart(customItem, 1);
@@ -262,11 +310,10 @@ export const CustomPrint: React.FC = () => {
     }
 
     setLoading(true);
-    setUploadProgress(null);
 
     try {
-      let fileUrl = '';
-      if (selectedFile) {
+      let fileUrl = uploadedFileUrl;
+      if (!fileUrl && selectedFile) {
         setUploadProgress(0);
         const fileDataUri = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
@@ -291,6 +338,7 @@ export const CustomPrint: React.FC = () => {
           }
         });
         fileUrl = uploadRes.data?.fileUrl || '';
+        setUploadedFileUrl(fileUrl);
       }
 
       const payload = {
@@ -442,9 +490,28 @@ export const CustomPrint: React.FC = () => {
                           Selected: <strong className="text-white">{selectedFile.name}</strong> ({((selectedFile.size || 0) / (1024 * 1024)).toFixed(1)} MB / 200MB max)
                         </span>
                       ) : (
-                        'Click to Upload 3D Model (.stl, .3mf, .obj up to 200MB)'
+                        'Click to Upload 3D Model (.stl, .3mf, .obj, .step up to 200MB)'
                       )}
                     </div>
+                    {uploadProgress !== null && uploadProgress < 100 && (
+                      <div className="mt-2.5 max-w-xs mx-auto">
+                        <div className="flex justify-between text-[10px] text-amber-400 mb-1 font-semibold">
+                          <span>Uploading 3D Model...</span>
+                          <span>{uploadProgress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-amber-500 to-yellow-400 h-1.5 rounded-full transition-all duration-200"
+                            style={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {uploadedFileUrl && (
+                      <p className="text-[11px] text-emerald-400 mt-1.5 font-semibold flex items-center justify-center gap-1">
+                        <span>✓</span> File uploaded & verified on server
+                      </p>
+                    )}
                     <p className="text-[11px] text-gray-400 mt-1">
                       Max single-print build volume 160×160×160mm. Automatic bounding box analysis.
                     </p>

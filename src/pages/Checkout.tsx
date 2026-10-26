@@ -139,8 +139,25 @@ export const Checkout: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
+    if (file.size === 0) {
+      setError('The selected file is empty (0 bytes).');
+      e.target.value = '';
+      return;
+    }
+
+    const lower = file.name.toLowerCase();
+    const validImageExts = ['.png', '.jpg', '.jpeg', '.webp', '.svg', '.gif', '.bmp', '.jfif'];
+    const hasImageExt = validImageExts.some((ext) => lower.endsWith(ext));
+    if (!file.type.startsWith('image/') && !hasImageExt) {
       setError('Please upload an image file (PNG, JPG, WEBP, etc.) for payment proof.');
+      e.target.value = '';
+      return;
+    }
+
+    const MAX_SIZE = 200 * 1024 * 1024; // 200MB
+    if (file.size > MAX_SIZE) {
+      setError(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds 200MB limit.`);
+      e.target.value = '';
       return;
     }
 
@@ -166,6 +183,7 @@ export const Checkout: React.FC = () => {
       setError('Failed to upload payment proof screenshot. You may still proceed with UPI reference number.');
     } finally {
       setUploadingScreenshot(false);
+      e.target.value = '';
     }
   };
 

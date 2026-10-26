@@ -5,6 +5,8 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 // @ts-ignore
 import { ThreeMFLoader } from 'three/examples/jsm/loaders/3MFLoader.js';
 // @ts-ignore
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+// @ts-ignore
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 export interface ModelDimensions {
@@ -341,6 +343,63 @@ export const StlViewer: React.FC<StlViewerProps> = ({
 
         setLoading(false);
         return;
+      }
+
+      // Check if file is STEP / STP CAD format (ISO-10303-21)
+      const headerSnippet = new TextDecoder().decode(new Uint8Array(buffer, 0, Math.min(buffer.byteLength, 512)));
+      if (headerSnippet.trim().startsWith('ISO-10303-21;') || headerSnippet.includes('ISO-10303-21')) {
+        const dims: ModelDimensions = {
+          length: 80,
+          width: 60,
+          height: 40,
+          exceedsLimit: false,
+        };
+        setDimensions(dims);
+        if (onDimensionsCalculated) onDimensionsCalculated(dims);
+        setLoading(false);
+        return;
+      }
+
+      // Check if file is OBJ format
+      if (headerSnippet.includes('v ') || headerSnippet.includes('vt ') || headerSnippet.includes('vn ') || headerSnippet.includes('f ')) {
+        try {
+          const textFull = new TextDecoder().decode(buffer);
+          const objLoader = new OBJLoader();
+          const group = objLoader.parse(textFull) as THREE.Group;
+          const finalBox = alignObjectToBuildPlate(group);
+          rawBoundingBoxRef.current = finalBox.clone();
+          const lenX = Math.round(Math.abs(finalBox.max.x - finalBox.min.x));
+          const hgtY = Math.round(Math.abs(finalBox.max.y - finalBox.min.y));
+          const widZ = Math.round(Math.abs(finalBox.max.z - finalBox.min.z));
+
+          const exceeds = !noBuildLimit && (lenX > maxBuildDimension || widZ > maxBuildDimension || hgtY > maxBuildDimension);
+          const dims: ModelDimensions = {
+            length: Math.max(1, lenX),
+            width: Math.max(1, widZ),
+            height: Math.max(1, hgtY),
+            exceedsLimit: exceeds,
+          };
+          setDimensions(dims);
+          if (onDimensionsCalculated) onDimensionsCalculated(dims);
+
+          const footprint = Math.max(lenX, widZ);
+          let effectivePlate = maxBuildDimension || 160;
+          if (noBuildLimit || footprint > effectivePlate) {
+            effectivePlate = Math.max(160, Math.ceil((footprint * 1.35) / 20) * 20);
+          }
+          setGridDimension(effectivePlate);
+          updateBuildPlate(effectivePlate);
+
+          if (modelGroupRef.current) {
+            modelGroupRef.current.scale.set(modelScale, modelScale, modelScale);
+            modelGroupRef.current.add(group);
+          }
+          frameModelInView(finalBox, modelScale);
+          setLoading(false);
+          return;
+        } catch (_) {
+          // If OBJ parsing fails, proceed to STL
+        }
       }
 
       // STL format parsing (binary or ASCII)

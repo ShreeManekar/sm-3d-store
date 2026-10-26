@@ -372,6 +372,12 @@ function saveDb(data) {
   try {
     fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    const PARENT_DB = path.resolve(__dirname, '../../data/db.json');
+    if (fs.existsSync(path.dirname(PARENT_DB))) {
+      try {
+        fs.writeFileSync(PARENT_DB, JSON.stringify(data, null, 2), 'utf-8');
+      } catch (_) {}
+    }
   } catch (e) {
     console.error('Failed to save db.json:', e.message);
   }
@@ -482,7 +488,7 @@ function containsSqlInjection(value) {
 }
 
 function sqlInjectionShield(req, res, next) {
-  if (req.path.startsWith('/assets') || req.path.startsWith('/uploads') || req.path === '/api/upload') {
+  if (req.path.startsWith('/assets') || req.path.startsWith('/uploads') || req.path === '/api/upload' || req.path.startsWith('/api/upload')) {
     return next();
   }
 

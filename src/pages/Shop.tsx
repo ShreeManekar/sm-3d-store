@@ -264,7 +264,7 @@ const Shop: React.FC = () => {
                       )}
 
                       {/* 3D Model Badge */}
-                      {product.stlUrl && (
+                      {Boolean(product.stlUrl && product.stlUrl !== 'NA' && product.stlUrl.trim() !== '') && (
                         <button
                           onClick={() => setActive3dProduct(product)}
                           className="absolute bottom-3 left-3 bg-white/90 dark:bg-gray-900/90 hover:bg-amber-500 hover:text-gray-950 text-amber-500 text-[11px] font-bold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-amber-500/40 shadow-lg backdrop-blur flex items-center gap-1.5 transition-all duration-300 ease-apple"

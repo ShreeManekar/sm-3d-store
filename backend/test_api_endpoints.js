@@ -375,6 +375,10 @@ async function runTests() {
   // Restore database snapshot
   try {
     fs.writeFileSync(DB_FILE, dbBackup, 'utf-8');
+    const PARENT_DB = path.resolve(__dirname, '../../data/db.json');
+    if (fs.existsSync(PARENT_DB)) {
+      fs.writeFileSync(PARENT_DB, dbBackup, 'utf-8');
+    }
   } catch (err) {
     console.error('Failed to restore dbBackup', err);
   }

@@ -22,6 +22,7 @@ export interface Product {
   images?: string[];
   featured?: boolean;
   stlUrl?: string;
+  modelName?: string;
 }
 
 export interface CustomOrder {
@@ -304,10 +305,16 @@ export const Admin: React.FC = () => {
     );
   };
 
-  // Image & 3D Model Upload Handler (accepts images, .stl, and .3mf up to 200MB)
+  // Image & 3D Model Upload Handler (accepts images, .stl, .3mf, .obj, .step, .stp up to 200MB)
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.size === 0) {
+      alert('The selected file is empty (0 bytes).');
+      e.target.value = '';
+      return;
+    }
 
     const MAX_SIZE = 200 * 1024 * 1024; // 200MB
     if (file.size > MAX_SIZE) {
@@ -317,7 +324,7 @@ export const Admin: React.FC = () => {
     }
 
     const lower = file.name.toLowerCase();
-    const is3d = lower.endsWith('.stl') || lower.endsWith('.3mf') || lower.endsWith('.obj');
+    const is3d = lower.endsWith('.stl') || lower.endsWith('.3mf') || lower.endsWith('.obj') || lower.endsWith('.step') || lower.endsWith('.stp');
     setUploadingImage(true);
     setImgUploadProgress(0);
 
@@ -360,6 +367,7 @@ export const Admin: React.FC = () => {
       } finally {
         setUploadingImage(false);
         setImgUploadProgress(null);
+        e.target.value = '';
       }
     };
     reader.readAsDataURL(file);
@@ -369,6 +377,13 @@ export const Admin: React.FC = () => {
   const handleStlUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.size === 0) {
+      alert('The selected 3D model file is empty (0 bytes).');
+      e.target.value = '';
+      return;
+    }
+
     const lower = file.name.toLowerCase();
     const valid3d = ['.stl', '.3mf', '.obj', '.step', '.stp'];
     const hasValidExt = valid3d.some((v) => lower.endsWith(v));
@@ -419,15 +434,30 @@ export const Admin: React.FC = () => {
       } finally {
         setUploadingStl(false);
         setStlUploadProgress(null);
+        e.target.value = '';
       }
     };
     reader.readAsDataURL(file);
   };
 
-  // UPI QR Code Image Upload Handler (any image format)
+  // UPI QR Code Image Upload Handler (any image format up to 200MB)
   const handleQrUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.size === 0) {
+      alert('The selected QR image file is empty (0 bytes).');
+      e.target.value = '';
+      return;
+    }
+
+    const MAX_SIZE = 200 * 1024 * 1024; // 200MB
+    if (file.size > MAX_SIZE) {
+      alert(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds 200MB limit. Please upload a file under 200MB.`);
+      e.target.value = '';
+      return;
+    }
+
     setUploadingQr(true);
     const reader = new FileReader();
     reader.onload = async () => {
@@ -446,6 +476,7 @@ export const Admin: React.FC = () => {
         alert(err.response?.data?.error || 'Failed to upload QR scanner');
       } finally {
         setUploadingQr(false);
+        e.target.value = '';
       }
     };
     reader.readAsDataURL(file);
@@ -569,6 +600,7 @@ export const Admin: React.FC = () => {
     const productPayload = {
       ...editingProduct,
       stlUrl: includeModel ? (editingProduct.stlUrl || '').trim() : '',
+      modelName: includeModel ? (editingProduct.modelName || '').trim() : '',
     };
 
     try {
@@ -666,12 +698,22 @@ export const Admin: React.FC = () => {
     const status = (ord.paymentStatus || '').trim().toLowerCase();
     const method = (ord.paymentMethod || '').trim().toLowerCase();
 
-    if (method.includes('cod') || status === 'cod') return 'COD';
-    if (method.includes('whatsapp') || status === 'whatsapp') return 'WhatsApp';
-    if (method.includes('bank') || method.includes('account') || status === 'bank account') return 'Bank Account';
-    if (method.includes('upi') || status === 'upi') return 'UPI';
-    if (status === 'not paid' || status === 'unpaid' || status === 'pending') return 'Not Paid';
+    // Check paymentStatus first
     if (status === 'paid' || status === 'completed') return 'Paid';
+    if (status === 'not paid' || status === 'unpaid' || status === 'pending') return 'Not Paid';
+    if (status === 'cod') return 'COD';
+    if (status === 'whatsapp') return 'WhatsApp';
+    if (status === 'bank account' || status === 'account transfer') return 'Bank Account';
+    if (status === 'upi') return 'UPI';
+
+    // Fallback to paymentMethod
+    if (method.includes('cod')) return 'COD';
+    if (method.includes('whatsapp')) return 'WhatsApp';
+    if (method.includes('bank') || method.includes('account')) return 'Bank Account';
+    if (method.includes('upi')) return 'UPI';
+    if (method.includes('paid')) return 'Paid';
+    if (method.includes('not paid') || method.includes('pending')) return 'Not Paid';
+
     return 'Paid';
   };
 
@@ -679,29 +721,29 @@ export const Admin: React.FC = () => {
     switch (opt) {
       case 'Paid':
         return {
-          badgeClass: 'bg-emerald-950/60 text-emerald-400 border-emerald-500/30',
+          badgeClass: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30',
           icon: '✓',
         };
       case 'Not Paid':
         return {
-          badgeClass: 'bg-rose-950/60 text-rose-400 border-rose-500/30',
+          badgeClass: 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-500/30',
           icon: '✕',
         };
       case 'COD':
         return {
-          badgeClass: 'bg-sky-950/60 text-sky-400 border-sky-500/30',
+          badgeClass: 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-500/30',
           icon: '📦',
         };
       case 'WhatsApp':
         return {
-          badgeClass: 'bg-green-950/60 text-green-400 border-green-500/30',
+          badgeClass: 'bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-500/30',
           icon: '💬',
         };
       case 'Bank Account':
       case 'UPI':
       default:
         return {
-          badgeClass: 'bg-amber-950/60 text-amber-400 border-amber-500/30',
+          badgeClass: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-500/30',
           icon: '⚡',
         };
     }
@@ -711,24 +753,17 @@ export const Admin: React.FC = () => {
     const headers = getAdminHeaders();
     let paymentStatus = paymentValue;
     let paymentMethod = paymentValue;
+
+    const existing = orders.find((o) => o.id === id);
     if (paymentValue === 'Paid') {
       paymentStatus = 'Paid';
-      paymentMethod = 'Online / Verified';
+      paymentMethod = existing?.paymentMethod || 'Paid';
     } else if (paymentValue === 'Not Paid') {
       paymentStatus = 'Not Paid';
-      paymentMethod = 'Pending';
-    } else if (paymentValue === 'COD') {
-      paymentStatus = 'COD';
-      paymentMethod = 'COD';
-    } else if (paymentValue === 'WhatsApp') {
-      paymentStatus = 'WhatsApp';
-      paymentMethod = 'WhatsApp';
-    } else if (paymentValue === 'Bank Account') {
-      paymentStatus = 'Bank Account';
-      paymentMethod = 'Bank Account';
-    } else if (paymentValue === 'UPI') {
-      paymentStatus = 'UPI';
-      paymentMethod = 'UPI';
+      paymentMethod = existing?.paymentMethod || 'Not Paid';
+    } else {
+      paymentStatus = paymentValue;
+      paymentMethod = paymentValue;
     }
 
     try {
@@ -1409,7 +1444,19 @@ export const Admin: React.FC = () => {
               <div className="p-6 rounded-2xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 space-y-3 shadow-sm">
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Administrative Shortcuts</h3>
                 <button
-                  onClick={() => { setEditingProduct({ colors: ['Pure White', 'Black'], dimensions: '100 x 100 x 100', price: 499, stock: 10 }); setProductModalOpen(true); }}
+                  onClick={() => {
+                    openEditProductModal({
+                      sku: `SM3D-${Math.floor(100 + Math.random() * 900)}`,
+                      name: '',
+                      category: 'Display Models',
+                      price: 499,
+                      stock: 10,
+                      dimensions: '100 x 100 x 100 mm',
+                      colors: ['Pure White', 'Black'],
+                      material: 'PLA',
+                      stlUrl: '',
+                    });
+                  }}
                   className="w-full py-2.5 px-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 dark:text-amber-400 hover:bg-amber-500/20 transition text-xs font-semibold flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
@@ -3214,7 +3261,7 @@ export const Admin: React.FC = () => {
                       <span>{uploadingImage ? (imgUploadProgress !== null ? `Uploading (${imgUploadProgress}%)...` : 'Uploading...') : 'Upload Image / 3D Model File'}</span>
                       <input
                         type="file"
-                        accept="image/png,image/jpeg,image/webp,image/svg+xml,.stl,.3mf"
+                        accept="image/*,.stl,.3mf,.obj,.step,.stp"
                         className="hidden"
                         onChange={handleImageUpload}
                         disabled={uploadingImage}
@@ -3278,8 +3325,8 @@ export const Admin: React.FC = () => {
                       </label>
                       <input
                         type="text"
-                        value={editingProduct.name ? `${editingProduct.name} Model` : 'Sample Model'}
-                        onChange={(e) => setEditingProduct({ ...editingProduct, sku: editingProduct.sku || 'SM3D-CUSTOM' })}
+                        value={editingProduct.modelName !== undefined ? editingProduct.modelName : (editingProduct.name ? `${editingProduct.name} Model` : '')}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, modelName: e.target.value })}
                         placeholder="e.g. Precision Bracket v2 (STL)"
                         className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/60 px-3 py-1.5 text-xs text-gray-900 dark:text-gray-200 placeholder-gray-400 focus:border-amber-500 focus:outline-none"
                       />
