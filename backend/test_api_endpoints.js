@@ -244,6 +244,47 @@ async function runTests() {
     assert(deleteCityRes.status === 200 && deleteCityRes.data.success, 'DELETE /api/delivery-cities/:id deletes delivery city (200 OK)');
   }
 
+  console.log('\n--- 17. Materials Matrix Guide ---');
+  const materialsRes = await testEndpoint('GET', '/api/materials');
+  assert(materialsRes.status === 200 && Array.isArray(materialsRes.data) && materialsRes.data.length >= 5, 'GET /api/materials returns 200 and comprehensive materials guide');
+  assert(materialsRes.data.some(m => m.shortCode === 'PLA') && materialsRes.data.some(m => m.shortCode === 'CF-PETG'), 'Materials guide includes PLA and CF-PETG technical metrics');
+
+  console.log('\n--- 18. Customer Reviews & Showcase ---');
+  const reviewsRes = await testEndpoint('GET', '/api/reviews');
+  assert(reviewsRes.status === 200 && Array.isArray(reviewsRes.data) && reviewsRes.data.length > 0, 'GET /api/reviews returns customer showcase reviews');
+
+  const addReviewRes = await testEndpoint('POST', '/api/reviews', {
+    customerName: 'Karan Patel',
+    productName: 'Mechanical Bevel Gear',
+    rating: 5,
+    review: 'Smooth print, precise tolerances right off the bed.',
+    material: 'PETG'
+  });
+  assert(addReviewRes.status === 201 && addReviewRes.data.review.customerName === 'Karan Patel', 'POST /api/reviews successfully creates customer review');
+
+  console.log('\n--- 19. Real-Time Production Order Tracking ---');
+  const trackRes = await testEndpoint('GET', '/api/track/ORD-2026-8801');
+  assert(trackRes.status === 200 && trackRes.data && trackRes.data.stages.length === 7, 'GET /api/track/:orderId returns 7-stage production tracking pipeline');
+  assert(trackRes.data.courierPartner && trackRes.data.trackingNumber, 'Order tracking includes courier partner and AWB tracking number');
+
+  console.log('\n--- 20. Enterprise RFQ & Bulk Inquiries ---');
+  const rfqRes = await testEndpoint('POST', '/api/rfq', {
+    companyName: 'Apex Robotics Labs',
+    contactName: 'Sanjay Verma',
+    email: 'sanjay@apexrobotics.in',
+    phone: '9822012345',
+    quantity: 100,
+    material: 'Carbon Fiber PETG',
+    targetDate: 'Within 10 Days',
+    projectNotes: 'Need 100 pcs precision mounting brackets.',
+    ndaRequired: true
+  });
+  assert(rfqRes.status === 201 && rfqRes.data && rfqRes.data.rfq.id.startsWith('RFQ-'), 'POST /api/rfq creates enterprise RFQ (201 Created)');
+
+  console.log('\n--- 21. FAQs Knowledge Base ---');
+  const faqsRes = await testEndpoint('GET', '/api/faqs');
+  assert(faqsRes.status === 200 && Array.isArray(faqsRes.data) && faqsRes.data.length >= 4, 'GET /api/faqs returns knowledge base and DFAM guide');
+
   console.log(`\n========================================`);
   console.log(`Summary: ${passed} Passed, ${failed} Failed`);
   console.log(`========================================\n`);

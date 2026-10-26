@@ -158,7 +158,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
   const [dimensions, setDimensions] = useState<ModelDimensions | null>(null);
   const [wireframe, setWireframe] = useState<boolean>(true);
   const [autoRotate, setAutoRotate] = useState<boolean>(true);
-  const [meshColor, setMeshColor] = useState<string>('#00f0ff');
+  const [meshColor, setMeshColor] = useState<string>('#f59e0b');
   const [modelScale, setModelScale] = useState<number>(initialScale || 1.0);
   const [gridDimension, setGridDimension] = useState<number>(maxBuildDimension || 160);
 
@@ -230,7 +230,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
 
     // 1. Grid helper on build plate surface at Y = 0
     const divisions = Math.max(16, Math.min(64, Math.round(size / 10)));
-    const grid = new THREE.GridHelper(size, divisions, 0x00f0ff, 0x1e293b);
+    const grid = new THREE.GridHelper(size, divisions, 0xf59e0b, 0x221a10);
     grid.position.set(0, 0, 0);
     group.add(grid);
 
@@ -253,9 +253,9 @@ export const StlViewer: React.FC<StlViewerProps> = ({
       const boxGeo = new THREE.BoxGeometry(size, size, size);
       const wireBoxGeo = new THREE.WireframeGeometry(boxGeo);
       const boxMat = new THREE.LineBasicMaterial({
-        color: 0x00f0ff,
+        color: 0xf59e0b,
         transparent: true,
-        opacity: 0.16,
+        opacity: 0.22,
       });
       const wireBox = new THREE.LineSegments(wireBoxGeo, boxMat);
       wireBox.position.set(0, size / 2, 0);
@@ -385,7 +385,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
 
         const wireGeo = new THREE.WireframeGeometry(geometry);
         const wireMat = new THREE.LineBasicMaterial({
-          color: 0x8a2be2,
+          color: 0xd97706,
           transparent: true,
           opacity: 0.45,
         });
@@ -492,11 +492,11 @@ export const StlViewer: React.FC<StlViewerProps> = ({
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
     scene.add(ambientLight);
 
-    const dirLight1 = new THREE.DirectionalLight(0x00f0ff, 1.2);
+    const dirLight1 = new THREE.DirectionalLight(0xfde68a, 1.25);
     dirLight1.position.set(bedSize * 0.5, bedSize, bedSize * 0.6);
     scene.add(dirLight1);
 
-    const dirLight2 = new THREE.DirectionalLight(0x8a2be2, 0.85);
+    const dirLight2 = new THREE.DirectionalLight(0xf59e0b, 0.9);
     dirLight2.position.set(-bedSize * 0.5, bedSize * 0.6, -bedSize * 0.6);
     scene.add(dirLight2);
 
@@ -626,15 +626,15 @@ export const StlViewer: React.FC<StlViewerProps> = ({
 
       {/* Loading overlay */}
       {loading && (
-        <div className="absolute inset-0 bg-[#090d16]/80 backdrop-blur-sm flex flex-col items-center justify-center text-cyan-400 gap-3 z-20">
-          <div className="w-9 h-9 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs font-semibold tracking-wider uppercase">Loading 3D Model...</p>
+        <div className="absolute inset-0 bg-[#080b11]/85 backdrop-blur-sm flex flex-col items-center justify-center text-amber-400 gap-3 z-20">
+          <div className="w-9 h-9 border-2 border-amber-400 border-t-transparent rounded-full animate-spin shadow-lg shadow-amber-500/20" />
+          <p className="text-xs font-semibold tracking-wider uppercase text-amber-300">Loading 3D Model...</p>
         </div>
       )}
 
       {/* Error overlay */}
       {error && (
-        <div className="absolute inset-0 bg-red-950/70 backdrop-blur-sm flex flex-col items-center justify-center text-red-200 p-6 text-center z-20">
+        <div className="absolute inset-0 bg-red-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-red-200 p-6 text-center z-20">
           <svg className="w-8 h-8 text-red-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
@@ -644,24 +644,24 @@ export const StlViewer: React.FC<StlViewerProps> = ({
       )}
 
       {/* Toolbar & Detected Dimensions Header */}
-      <div className="p-3 bg-gray-900/95 border-t border-gray-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="p-3 bg-[#0b0f17]/95 border-t border-amber-500/20 flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xl">
         {/* Dimensions Pill & Size Info */}
         {dimensions && (
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-gray-400">Model Dimensions:</span>
-            <span className="font-mono font-bold text-white bg-gray-800 px-2 py-0.5 rounded border border-gray-700">
+            <span className="font-mono font-bold text-amber-300 bg-[#121824] px-2.5 py-0.5 rounded-lg border border-amber-500/30 shadow-sm">
               {dimensions.length} × {dimensions.width} × {dimensions.height} mm
             </span>
             {noBuildLimit ? (
-              <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded font-semibold text-[11px] flex items-center gap-1">
+              <span className="px-2 py-0.5 bg-amber-500/15 text-amber-300 border border-amber-500/30 rounded-lg font-semibold text-[11px] flex items-center gap-1">
                 <span>⚡</span> Centered • No 160mm Limit
               </span>
             ) : dimensions.exceedsLimit ? (
-              <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded font-semibold text-[11px]">
+              <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-lg font-semibold text-[11px]">
                 ⚠️ Exceeds {maxBuildDimension}mm (Multi-part assembly recommended)
               </span>
             ) : (
-              <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded font-semibold text-[11px]">
+              <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg font-semibold text-[11px]">
                 ✓ Fits 160mm Plate
               </span>
             )}
@@ -672,14 +672,14 @@ export const StlViewer: React.FC<StlViewerProps> = ({
         <div className="flex flex-wrap items-center gap-2 ml-auto">
           {/* Interactive Size / Scale Adjustment Controls */}
           {allowScaleAdjustment && (
-            <div className="flex items-center gap-1.5 bg-gray-800/90 px-2 py-1 rounded-xl border border-gray-700/80 shadow-inner">
+            <div className="flex items-center gap-1.5 bg-[#121824] px-2 py-1 rounded-xl border border-amber-500/20 shadow-inner">
               <span className="text-[11px] text-gray-300 font-medium">Size:</span>
               <button
                 type="button"
                 onClick={() => handleScaleChange(modelScale - 0.1)}
                 disabled={modelScale <= 0.15}
                 title="Decrease preview size"
-                className="w-5 h-5 flex items-center justify-center rounded bg-gray-700 text-gray-200 hover:text-white hover:bg-gray-600 disabled:opacity-40 text-xs font-bold transition"
+                className="w-5 h-5 flex items-center justify-center rounded bg-gray-800 text-gray-200 hover:text-white hover:bg-gray-700 disabled:opacity-40 text-xs font-bold transition"
               >
                 −
               </button>
@@ -690,7 +690,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
                 step="0.05"
                 value={modelScale}
                 onChange={(e) => handleScaleChange(parseFloat(e.target.value))}
-                className="w-14 sm:w-20 accent-cyan-400 h-1.5 bg-gray-700 rounded-lg cursor-pointer"
+                className="w-14 sm:w-20 accent-amber-500 h-1.5 bg-gray-800 rounded-lg cursor-pointer"
                 title={`Preview scale: ${Math.round(modelScale * 100)}%`}
               />
               <button
@@ -698,18 +698,18 @@ export const StlViewer: React.FC<StlViewerProps> = ({
                 onClick={() => handleScaleChange(modelScale + 0.1)}
                 disabled={modelScale >= 4.9}
                 title="Increase preview size"
-                className="w-5 h-5 flex items-center justify-center rounded bg-gray-700 text-gray-200 hover:text-white hover:bg-gray-600 disabled:opacity-40 text-xs font-bold transition"
+                className="w-5 h-5 flex items-center justify-center rounded bg-gray-800 text-gray-200 hover:text-white hover:bg-gray-700 disabled:opacity-40 text-xs font-bold transition"
               >
                 +
               </button>
-              <span className="font-mono text-[11px] text-cyan-300 font-bold min-w-[36px] text-center">
+              <span className="font-mono text-[11px] text-amber-300 font-bold min-w-[36px] text-center">
                 {Math.round(modelScale * 100)}%
               </span>
               <button
                 type="button"
                 onClick={fitToCenter}
                 title="Auto-fit and center model in view"
-                className="px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-300 hover:bg-cyan-900 border border-cyan-800/60 text-[11px] font-semibold flex items-center gap-1 transition"
+                className="px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 border border-amber-500/30 text-[11px] font-semibold flex items-center gap-1 transition"
               >
                 <span>⛶</span> Center & Fit
               </button>
@@ -717,14 +717,14 @@ export const StlViewer: React.FC<StlViewerProps> = ({
           )}
 
           {/* Color palette */}
-          <div className="flex items-center gap-1 mr-1">
-            {['#00f0ff', '#8a2be2', '#f59e0b', '#ffffff'].map((color) => (
+          <div className="flex items-center gap-1.5 mr-1">
+            {['#f59e0b', '#d97706', '#fbbf24', '#ffffff', '#1f2937'].map((color) => (
               <button
                 key={color}
                 onClick={() => setMeshColor(color)}
                 style={{ backgroundColor: color }}
                 title={`Color ${color}`}
-                className={`w-4 h-4 rounded-full border ${meshColor === color ? 'border-white scale-125' : 'border-transparent'} transition`}
+                className={`w-4 h-4 rounded-full border ${meshColor === color ? 'border-amber-300 scale-125 ring-1 ring-amber-400' : 'border-transparent'} transition`}
               />
             ))}
           </div>
@@ -732,10 +732,10 @@ export const StlViewer: React.FC<StlViewerProps> = ({
           {/* Wireframe toggle */}
           <button
             onClick={() => setWireframe(!wireframe)}
-            className={`px-2 py-1 rounded border text-[11px] font-medium transition ${
+            className={`px-2 py-1 rounded-lg border text-[11px] font-medium transition ${
               wireframe
-                ? 'bg-purple-900/40 text-purple-300 border-purple-500/40'
-                : 'bg-gray-800 text-gray-400 border-gray-700 hover:text-white'
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
+                : 'bg-gray-800/80 text-gray-400 border-gray-700 hover:text-white'
             }`}
           >
             Wireframe {wireframe ? 'ON' : 'OFF'}
@@ -744,10 +744,10 @@ export const StlViewer: React.FC<StlViewerProps> = ({
           {/* Auto-rotate toggle */}
           <button
             onClick={() => setAutoRotate(!autoRotate)}
-            className={`px-2 py-1 rounded border text-[11px] font-medium transition ${
+            className={`px-2 py-1 rounded-lg border text-[11px] font-medium transition ${
               autoRotate
-                ? 'bg-cyan-900/40 text-cyan-300 border-cyan-500/40'
-                : 'bg-gray-800 text-gray-400 border-gray-700 hover:text-white'
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
+                : 'bg-gray-800/80 text-gray-400 border-gray-700 hover:text-white'
             }`}
           >
             Rotate {autoRotate ? 'ON' : 'OFF'}
@@ -756,7 +756,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
           {/* Reset View */}
           <button
             onClick={resetCamera}
-            className="px-2 py-1 rounded border bg-gray-800 text-gray-300 border-gray-700 hover:text-white text-[11px] font-medium transition"
+            className="px-2 py-1 rounded-lg border bg-gray-800/80 text-gray-300 border-gray-700 hover:text-white text-[11px] font-medium transition"
           >
             Reset
           </button>

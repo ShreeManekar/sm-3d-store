@@ -23,17 +23,17 @@ const Cart: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-6" aria-label="Breadcrumb">
-          <Link to="/" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition">Home</Link>
+          <Link to="/" className="hover:text-amber-500 dark:hover:text-amber-400 transition">Home</Link>
           <span>/</span>
-          <Link to="/shop" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition">Shop</Link>
+          <Link to="/shop" className="hover:text-amber-500 dark:hover:text-amber-400 transition">Shop</Link>
           <span>/</span>
-          <span className="text-cyan-600 dark:text-cyan-400 font-medium">Cart</span>
+          <span className="text-amber-500 dark:text-amber-400 font-medium">Cart</span>
         </nav>
 
         {items.length === 0 ? (
           /* Empty Cart State */
           <div className="max-w-2xl mx-auto text-center py-16 px-4">
-            <div className="w-20 h-20 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-cyan-500/10">
+            <div className="w-20 h-20 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-black/40">
               <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
@@ -45,13 +45,13 @@ const Cart: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
                 to="/shop"
-                className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-lg shadow-cyan-500/20 transition transform hover:-translate-y-0.5"
+                className="px-6 py-3 rounded-xl font-bold text-gray-950 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 shadow-lg shadow-amber-500/20 transition transform hover:-translate-y-0.5"
               >
                 Browse 3D Print Catalog
               </Link>
               <Link
                 to="/custom-print"
-                className="px-6 py-3 rounded-xl font-semibold text-cyan-600 dark:text-cyan-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-cyan-500/30 hover:bg-gray-50 dark:hover:bg-gray-800 transition transform hover:-translate-y-0.5 shadow-sm"
+                className="px-6 py-3 rounded-xl font-semibold text-amber-500 bg-white dark:bg-gray-900 border border-gray-200 dark:border-amber-500/30 hover:border-amber-500/60 hover:bg-gray-50 dark:hover:bg-gray-800 transition transform hover:-translate-y-0.5 shadow-sm"
               >
                 Request Custom Print
               </Link>
@@ -64,7 +64,7 @@ const Cart: React.FC = () => {
               <div>
                 <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">Shopping Cart</h1>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  You have <span className="text-cyan-600 dark:text-cyan-400 font-semibold">{totalItems} {totalItems === 1 ? 'item' : 'items'}</span> in your cart.
+                  You have <span className="text-amber-500 font-semibold">{totalItems} {totalItems === 1 ? 'item' : 'items'}</span> in your cart.
                 </p>
               </div>
               <button
@@ -93,14 +93,14 @@ const Cart: React.FC = () => {
                       </span>
                     ) : (
                       <span className="text-gray-700 dark:text-gray-300">
-                        Add <span className="text-cyan-600 dark:text-cyan-400 font-bold">₹{freeShippingThreshold - totalPrice}</span> more to unlock <span className="text-gray-900 dark:text-white font-semibold">FREE Delivery</span>
+                        Add <span className="text-amber-500 font-bold">₹{freeShippingThreshold - totalPrice}</span> more to unlock <span className="text-gray-900 dark:text-white font-semibold">FREE Delivery</span>
                       </span>
                     )}
                     <span className="text-gray-500 dark:text-gray-400">{progressPercent}%</span>
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2 overflow-hidden">
                     <div
-                      className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full transition-all duration-500"
+                      className="bg-gradient-to-r from-amber-500 to-yellow-500 h-2 rounded-full transition-all duration-500"
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>
@@ -109,13 +109,13 @@ const Cart: React.FC = () => {
                 {items.map((item) => (
                   <div
                     key={item.id}
-                    className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition hover:border-gray-300 dark:hover:border-gray-700 shadow-sm"
+                    className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition hover:border-amber-500/40 shadow-sm"
                   >
                     {/* Product info + image */}
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                       <Link
                         to="/shop"
-                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 overflow-hidden flex-shrink-0 flex items-center justify-center p-1 hover:border-cyan-400 transition"
+                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 overflow-hidden flex-shrink-0 flex items-center justify-center p-1 hover:border-amber-400 transition"
                         title="View in Shop"
                       >
                         <img
@@ -126,13 +126,13 @@ const Cart: React.FC = () => {
                       </Link>
                       <div className="min-w-0 flex-1">
                         {item.category && (
-                          <span className="text-[11px] font-semibold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider block mb-1">
+                          <span className="text-[11px] font-semibold text-amber-500 uppercase tracking-wider block mb-1">
                             {item.category}
                           </span>
                         )}
                         <Link
                           to="/shop"
-                          className="font-bold text-gray-900 dark:text-white text-base truncate block mb-1 hover:text-cyan-600 dark:hover:text-cyan-300 transition"
+                          className="font-bold text-gray-900 dark:text-white text-base truncate block mb-1 hover:text-amber-500 transition"
                           title="View in Shop"
                         >
                           {item.name}
@@ -142,7 +142,7 @@ const Cart: React.FC = () => {
                             Dimensions: {item.dimensions}
                           </div>
                         )}
-                        <div className="text-sm text-cyan-600 dark:text-cyan-400 font-semibold">
+                        <div className="text-sm text-amber-500 font-semibold">
                           ₹{item.price} each
                         </div>
                       </div>
@@ -199,7 +199,7 @@ const Cart: React.FC = () => {
                 <div className="pt-4">
                   <Link
                     to="/shop"
-                    className="inline-flex items-center text-sm font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition gap-1.5"
+                    className="inline-flex items-center text-sm font-medium text-amber-500 hover:text-amber-400 transition gap-1.5"
                   >
                     <span>&larr;</span> Continue Shopping
                   </Link>
@@ -208,7 +208,7 @@ const Cart: React.FC = () => {
 
               {/* Order Summary Sidebar */}
               <div className="lg:col-span-1">
-                <div className="sticky top-24 p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-5 shadow-xl">
+                <div className="sticky top-24 p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-5 shadow-xl shadow-black/40">
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white">Order Summary</h2>
 
                   <div className="space-y-3 text-sm border-b border-gray-200 dark:border-gray-800 pb-4">
@@ -236,12 +236,12 @@ const Cart: React.FC = () => {
 
                   <div className="flex justify-between items-baseline pt-1">
                     <span className="text-base font-bold text-gray-900 dark:text-white">Total Amount</span>
-                    <span className="text-2xl font-extrabold text-cyan-600 dark:text-cyan-400">₹{finalTotal}</span>
+                    <span className="text-2xl font-extrabold text-amber-500">₹{finalTotal}</span>
                   </div>
 
                   <button
                     onClick={() => navigate('/checkout')}
-                    className="w-full py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-lg shadow-cyan-500/25 transition transform hover:-translate-y-0.5 active:scale-95 text-center flex items-center justify-center gap-2"
+                    className="w-full py-3.5 rounded-xl font-black text-gray-950 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 shadow-lg shadow-amber-500/25 transition transform hover:-translate-y-0.5 active:scale-95 text-center flex items-center justify-center gap-2"
                   >
                     <span>Proceed to Checkout</span>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,19 +251,19 @@ const Cart: React.FC = () => {
 
                   <div className="pt-4 border-t border-gray-100 dark:border-gray-800/80 space-y-2.5 text-xs text-gray-500 dark:text-gray-400">
                     <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-cyan-600 dark:text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                       </svg>
                       <span>160mm precision additive manufacturing</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-cyan-600 dark:text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                       </svg>
                       <span>Industrial grade PLA+, PETG & ABS</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-cyan-600 dark:text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <span>Fast fulfillment & dispatched with protective cushioning</span>

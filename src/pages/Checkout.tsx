@@ -260,7 +260,7 @@ export const Checkout: React.FC = () => {
     return (
       <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-transparent text-inherit animate-fadeIn">
         <div className="max-w-3xl mx-auto">
-          <div className="rounded-3xl border border-cyan-500/40 bg-white dark:bg-gray-900/90 p-8 sm:p-10 text-center shadow-2xl backdrop-blur text-gray-900 dark:text-white">
+          <div className="rounded-3xl border border-amber-500/40 bg-white dark:bg-gray-900/90 p-8 sm:p-10 text-center shadow-2xl shadow-black/80 backdrop-blur text-gray-900 dark:text-white">
             <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-emerald-500/20 border border-emerald-500/30">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
@@ -281,7 +281,7 @@ export const Checkout: React.FC = () => {
             <div className="p-5 rounded-2xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-left mb-6 max-w-lg mx-auto space-y-3 shadow-inner">
               <div className="flex justify-between items-center text-xs pb-2 border-b border-gray-200 dark:border-gray-800">
                 <span className="text-gray-500">Order Reference</span>
-                <span className="font-mono font-bold text-cyan-600 dark:text-cyan-400">{confirmedOrder.orderId}</span>
+                <span className="font-mono font-bold text-amber-500">{confirmedOrder.orderId}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-gray-500">Date</span>
@@ -294,7 +294,7 @@ export const Checkout: React.FC = () => {
               {confirmedOrder.upiTransactionId && (
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-gray-500">UPI / Reference ID</span>
-                  <span className="font-mono text-cyan-600 dark:text-cyan-400">{confirmedOrder.upiTransactionId}</span>
+                  <span className="font-mono text-amber-500">{confirmedOrder.upiTransactionId}</span>
                 </div>
               )}
               <div className="text-xs pt-1 border-t border-gray-200 dark:border-gray-800">
@@ -319,7 +319,7 @@ export const Checkout: React.FC = () => {
 
               <div className="flex justify-between items-center pt-3 border-t border-gray-200 dark:border-gray-800">
                 <span className="text-sm font-bold text-gray-900 dark:text-white">Total Amount</span>
-                <span className="text-xl font-extrabold text-cyan-600 dark:text-cyan-400">₹{confirmedOrder.finalTotal}</span>
+                <span className="text-xl font-extrabold text-amber-500">₹{confirmedOrder.finalTotal}</span>
               </div>
             </div>
 
@@ -327,13 +327,13 @@ export const Checkout: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
                 to="/shop"
-                className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-lg shadow-cyan-500/20 transition transform hover:-translate-y-0.5"
+                className="px-6 py-3 rounded-xl font-bold text-gray-950 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 shadow-lg shadow-amber-500/20 transition transform hover:-translate-y-0.5"
               >
                 Continue Shopping
               </Link>
               <Link
                 to="/account"
-                className="px-6 py-3 rounded-xl font-semibold text-cyan-600 dark:text-cyan-300 bg-gray-100 dark:bg-gray-900 border border-cyan-500/30 hover:bg-gray-200 dark:hover:bg-gray-800 transition transform hover:-translate-y-0.5"
+                className="px-6 py-3 rounded-xl font-semibold text-amber-500 bg-gray-100 dark:bg-gray-900 border border-amber-500/30 hover:bg-gray-200 dark:hover:bg-gray-800 transition transform hover:-translate-y-0.5"
               >
                 View My Account & Orders
               </Link>
@@ -349,7 +349,7 @@ export const Checkout: React.FC = () => {
     return (
       <div className="min-h-screen py-16 px-4 bg-transparent text-inherit">
         <div className="max-w-md mx-auto text-center">
-          <div className="w-16 h-16 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mx-auto mb-4 border border-cyan-500/20">
+          <div className="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-4 border border-amber-500/30 shadow-xl shadow-black/40">
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
@@ -361,13 +361,13 @@ export const Checkout: React.FC = () => {
           <div className="flex flex-col gap-3">
             <Link
               to="/shop"
-              className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-md shadow-cyan-500/20 transition"
+              className="w-full py-3 rounded-xl font-bold text-gray-950 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 shadow-md shadow-amber-500/20 transition"
             >
               Browse 3D Prints
             </Link>
             <Link
               to="/cart"
-              className="text-xs text-gray-500 dark:text-gray-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition"
+              className="text-xs text-gray-500 dark:text-gray-400 hover:text-amber-500 transition"
             >
               View Cart Page
             </Link>
@@ -385,13 +385,13 @@ export const Checkout: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-6" aria-label="Breadcrumb">
-          <Link to="/" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition">Home</Link>
+          <Link to="/" className="hover:text-amber-500 dark:hover:text-amber-400 transition">Home</Link>
           <span>/</span>
-          <Link to="/shop" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition">Shop</Link>
+          <Link to="/shop" className="hover:text-amber-500 dark:hover:text-amber-400 transition">Shop</Link>
           <span>/</span>
-          <Link to="/cart" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition">Cart</Link>
+          <Link to="/cart" className="hover:text-amber-500 dark:hover:text-amber-400 transition">Cart</Link>
           <span>/</span>
-          <span className="text-cyan-600 dark:text-cyan-400 font-medium">Checkout</span>
+          <span className="text-amber-500 dark:text-amber-400 font-medium">Checkout</span>
         </nav>
 
         <div className="mb-8">
@@ -411,7 +411,7 @@ export const Checkout: React.FC = () => {
         )}
 
         {copyFeedback && (
-          <div className="fixed bottom-6 right-6 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl shadow-2xl border border-cyan-500/40 text-xs font-semibold animate-fadeIn flex items-center gap-2">
+          <div className="fixed bottom-6 right-6 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl shadow-2xl border border-amber-500/40 text-xs font-semibold animate-fadeIn flex items-center gap-2">
             <span className="text-emerald-400">✓</span> {copyFeedback}
           </div>
         )}
@@ -423,7 +423,7 @@ export const Checkout: React.FC = () => {
               {/* Contact Information */}
               <div className="p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm text-gray-900 dark:text-white">
                 <h2 className="text-lg font-bold flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-xs flex items-center justify-center font-bold">1</span>
+                  <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-500 text-xs flex items-center justify-center font-bold">1</span>
                   Contact Information
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -436,7 +436,7 @@ export const Checkout: React.FC = () => {
                       placeholder="e.g. Shree Manekar"
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                     />
                   </div>
                   <div>
@@ -448,7 +448,7 @@ export const Checkout: React.FC = () => {
                       placeholder="e.g. shree@example.com"
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                     />
                   </div>
                   <div className="sm:col-span-2">
@@ -460,7 +460,7 @@ export const Checkout: React.FC = () => {
                       placeholder="+91 98765 43210"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                     />
                   </div>
                 </div>
@@ -469,7 +469,7 @@ export const Checkout: React.FC = () => {
               {/* Delivery Address */}
               <div className="p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm text-gray-900 dark:text-white">
                 <h2 className="text-lg font-bold flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-xs flex items-center justify-center font-bold">2</span>
+                  <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-500 text-xs flex items-center justify-center font-bold">2</span>
                   Delivery Address
                 </h2>
                 <div className="space-y-4">
@@ -482,7 +482,7 @@ export const Checkout: React.FC = () => {
                       placeholder="e.g. Flat 301, Lakeview Residency, Civil Lines"
                       value={formData.street}
                       onChange={handleChange}
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                     />
                   </div>
 
@@ -494,7 +494,7 @@ export const Checkout: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setShowCitiesModal(true)}
-                            className="text-[10px] text-cyan-600 dark:text-cyan-400 hover:underline font-bold"
+                            className="text-[10px] text-amber-500 hover:underline font-bold"
                           >
                             {deliveryCities.filter(c => c.active !== false).length}+ Cities
                           </button>
@@ -518,7 +518,7 @@ export const Checkout: React.FC = () => {
                             state: matched?.state && !prev.state ? matched.state : prev.state
                           }));
                         }}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-cyan-400"
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                       />
                       <datalist id="supported-delivery-cities">
                         {deliveryCities
@@ -549,7 +549,7 @@ export const Checkout: React.FC = () => {
                         placeholder="e.g. Maharashtra"
                         value={formData.state}
                         onChange={handleChange}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-cyan-400"
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                       />
                     </div>
                     <div>
@@ -561,7 +561,7 @@ export const Checkout: React.FC = () => {
                         placeholder="e.g. 442401"
                         value={formData.pincode}
                         onChange={handleChange}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-cyan-400"
+                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                       />
                     </div>
                   </div>
@@ -571,7 +571,7 @@ export const Checkout: React.FC = () => {
               {/* Payment Method */}
               <div className="p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm text-gray-900 dark:text-white">
                 <h2 className="text-lg font-bold flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-xs flex items-center justify-center font-bold">3</span>
+                  <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-500 text-xs flex items-center justify-center font-bold">3</span>
                   Payment Method
                 </h2>
 
@@ -585,7 +585,7 @@ export const Checkout: React.FC = () => {
                       key={method.id}
                       className={`p-4 rounded-xl border cursor-pointer transition flex flex-col justify-between ${
                         formData.paymentMethod === method.id
-                          ? 'bg-cyan-500/10 border-cyan-400 text-gray-900 dark:text-white shadow-sm ring-1 ring-cyan-500/30'
+                          ? 'bg-amber-500/10 border-amber-400 text-gray-900 dark:text-white shadow-sm ring-1 ring-amber-500/30'
                           : 'bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700'
                       }`}
                     >
@@ -597,7 +597,7 @@ export const Checkout: React.FC = () => {
                           value={method.id}
                           checked={formData.paymentMethod === method.id}
                           onChange={handleChange}
-                          className="accent-cyan-500 w-4 h-4"
+                          className="accent-amber-500 w-4 h-4"
                         />
                       </div>
                       <span className="text-xs text-gray-500 dark:text-gray-400">{method.desc}</span>
@@ -607,7 +607,7 @@ export const Checkout: React.FC = () => {
 
                 {/* DYNAMIC PAYMENT VERIFICATION CARD (for UPI & Account Transfer) */}
                 {(formData.paymentMethod === 'UPI' || formData.paymentMethod === 'Card') && (
-                  <div className="mt-4 p-5 rounded-2xl bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 border border-cyan-500/30 space-y-4 animate-fadeIn">
+                  <div className="mt-4 p-5 rounded-2xl bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 border border-amber-500/30 space-y-4 animate-fadeIn">
                     <div className="flex flex-col sm:flex-row items-center gap-6">
                       {/* QR Scanner Display */}
                       <div className="flex flex-col items-center p-3 rounded-2xl bg-white dark:bg-black border border-gray-200 dark:border-gray-800 shadow-md">
@@ -616,21 +616,21 @@ export const Checkout: React.FC = () => {
                           alt="Admin UPI Scanner QR"
                           className="w-40 h-40 object-contain rounded-xl"
                         />
-                        <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 mt-2 uppercase tracking-wider">
+                        <span className="text-[10px] font-bold text-amber-500 mt-2 uppercase tracking-wider">
                           Scan to Pay ₹{finalTotal}
                         </span>
                       </div>
 
                       {/* Payment Details */}
                       <div className="flex-1 space-y-2 text-xs">
-                        <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                        <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30">
                           <span className="text-gray-500 dark:text-gray-400 block text-[10px] uppercase font-bold">Admin Official UPI ID</span>
                           <div className="flex items-center justify-between mt-1">
-                            <span className="font-mono font-bold text-sm text-cyan-600 dark:text-cyan-300">{activeUpiId}</span>
+                            <span className="font-mono font-bold text-sm text-amber-500">{activeUpiId}</span>
                             <button
                               type="button"
                               onClick={() => handleCopy(activeUpiId, 'UPI ID')}
-                              className="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-[11px] transition shadow"
+                              className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-gray-950 font-bold text-[11px] transition shadow"
                             >
                               Copy UPI ID
                             </button>
@@ -684,7 +684,7 @@ export const Checkout: React.FC = () => {
                           value={upiTransactionId}
                           onChange={(e) => setUpiTransactionId(e.target.value.replace(/\D/g, ''))}
                           placeholder="Enter 12+ digit transaction number (e.g. 428912345678)"
-                          className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl pl-3 pr-20 py-2.5 text-gray-900 dark:text-white font-mono text-sm focus:outline-none focus:border-cyan-400"
+                          className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl pl-3 pr-20 py-2.5 text-gray-900 dark:text-white font-mono text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                         />
                         <button
                           type="button"
@@ -709,7 +709,7 @@ export const Checkout: React.FC = () => {
                         Upload Screenshot of Payment (Optional)
                       </label>
                       <div className="flex items-center gap-3">
-                        <label className="px-4 py-2 rounded-xl bg-white dark:bg-gray-950 border border-dashed border-gray-300 dark:border-gray-700 hover:border-cyan-500 text-cyan-600 dark:text-cyan-400 text-xs font-semibold cursor-pointer transition flex items-center gap-2">
+                        <label className="px-4 py-2 rounded-xl bg-white dark:bg-gray-950 border border-dashed border-gray-300 dark:border-gray-700 hover:border-amber-500 text-amber-500 text-xs font-semibold cursor-pointer transition flex items-center gap-2">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                           </svg>
@@ -743,14 +743,14 @@ export const Checkout: React.FC = () => {
                   value={formData.notes}
                   onChange={handleChange}
                   placeholder="Special instructions, desired color variant preference, or landmark details..."
-                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-xl shadow-cyan-500/25 transition transform hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 text-base flex items-center justify-center gap-2"
+                className="w-full py-4 rounded-xl font-black text-gray-950 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 shadow-xl shadow-amber-500/25 transition transform hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 text-base flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <span>Processing Order...</span>
@@ -768,10 +768,10 @@ export const Checkout: React.FC = () => {
 
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24 p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-5 shadow-2xl text-gray-900 dark:text-white">
+            <div className="sticky top-24 p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-5 shadow-2xl shadow-black/40 text-gray-900 dark:text-white">
               <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-800">
                 <h2 className="text-lg font-bold">Items in Order ({items.length})</h2>
-                <Link to="/cart" className="text-xs text-cyan-600 dark:text-cyan-400 hover:underline">
+                <Link to="/cart" className="text-xs text-amber-500 hover:underline font-semibold">
                   Edit Cart
                 </Link>
               </div>
@@ -791,19 +791,19 @@ export const Checkout: React.FC = () => {
                       className="w-12 h-12 object-cover rounded-lg bg-gray-100 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 flex-shrink-0"
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-semibold text-gray-900 dark:text-white truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition">
+                      <div className="text-xs font-semibold text-gray-900 dark:text-white truncate group-hover:text-amber-500 transition">
                         {item.name}
                       </div>
                       <div className="text-[11px] text-gray-500 dark:text-gray-400">Qty: {item.quantity} × ₹{item.price}</div>
                     </div>
-                    <div className="text-xs font-bold text-cyan-600 dark:text-cyan-400">
+                    <div className="text-xs font-bold text-amber-500">
                       ₹{item.price * item.quantity}
                     </div>
                   </Link>
                 ))}
               </div>
 
-              {/* Price Breakdown - (GST 18% removed per requirement) */}
+              {/* Price Breakdown */}
               <div className="space-y-2 text-xs border-t border-gray-200 dark:border-gray-800 pt-4">
                 <div className="flex justify-between text-gray-600 dark:text-gray-300">
                   <span>Subtotal</span>
@@ -821,13 +821,13 @@ export const Checkout: React.FC = () => {
 
               <div className="flex justify-between items-baseline pt-2 border-t border-gray-200 dark:border-gray-800">
                 <span className="text-sm font-bold text-gray-900 dark:text-white">Total</span>
-                <span className="text-xl font-extrabold text-cyan-600 dark:text-cyan-400">₹{finalTotal}</span>
+                <span className="text-xl font-extrabold text-amber-500">₹{finalTotal}</span>
               </div>
 
               <div className="pt-2 text-center">
                 <Link
                   to="/cart"
-                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition"
+                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-amber-500 transition"
                 >
                   &larr; Back to Shopping Cart
                 </Link>
@@ -844,7 +844,7 @@ export const Checkout: React.FC = () => {
               <div>
                 <h3 className="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
                   <span>🚚 Deliverable Destinations</span>
-                  <span className="text-xs bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-xs bg-amber-500/10 text-amber-500 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">
                     {deliveryCities.filter(c => c.active !== false).length} Cities
                   </span>
                 </h3>
@@ -875,10 +875,10 @@ export const Checkout: React.FC = () => {
                         }));
                         setShowCitiesModal(false);
                       }}
-                      className="p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-left hover:border-cyan-500/50 hover:bg-cyan-500/5 transition flex items-center justify-between group"
+                      className="p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-left hover:border-amber-500/50 hover:bg-amber-500/5 transition flex items-center justify-between group"
                     >
                       <div>
-                        <span className="font-bold text-gray-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 block">
+                        <span className="font-bold text-gray-900 dark:text-white group-hover:text-amber-500 block">
                           {city.name}
                         </span>
                         <span className="text-[10px] text-gray-500">{city.state}</span>

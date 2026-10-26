@@ -23,7 +23,7 @@ export const AdminBar: React.FC = () => {
             {currentUser?.email}
           </span>
           <span className="text-gray-400 hidden md:inline">•</span>
-          <span className="text-[11px] font-medium text-cyan-300 hidden md:inline">
+          <span className="text-[11px] font-medium text-amber-300 hidden md:inline">
             {isEditorMode ? '🎨 In-Page Editor Active' : '👁️ Normal Storefront View'}
           </span>
         </div>

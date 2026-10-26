@@ -24,12 +24,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const { isAdmin, isEditorMode } = useAuth();
 
   return (
-    <div className="group rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden hover:border-cyan-500/50 transition duration-300 flex flex-col justify-between shadow-sm relative">
+    <div className="group rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden hover:border-amber-500/50 transition duration-300 flex flex-col justify-between shadow-sm hover:shadow-xl hover:shadow-black/40 relative">
       {isAdmin && isEditorMode && (
         <div className="absolute top-3 right-3 z-10">
           <Link
             to={`/admin?tab=products&edit=${id}`}
-            className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-[11px] font-bold shadow-md flex items-center gap-1 transition backdrop-blur"
+            className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-gray-950 font-bold text-[11px] shadow-md flex items-center gap-1 transition backdrop-blur"
             title="Edit product listing in Admin"
           >
             <span>✏️</span> Edit
@@ -47,16 +47,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </div>
         <div className="p-4">
           {category && (
-            <div className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 mb-1">{category}</div>
+            <div className="text-xs font-semibold text-amber-600 dark:text-amber-400 mb-1">{category}</div>
           )}
-          <h3 className="font-bold text-gray-900 dark:text-white mb-1 hover:text-cyan-600 dark:hover:text-cyan-300 transition">{name}</h3>
+          <h3 className="font-bold text-gray-900 dark:text-white mb-1 hover:text-amber-600 dark:hover:text-amber-400 transition">{name}</h3>
           {description && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">{description}</p>
           )}
         </div>
       </Link>
       <div className="p-4 pt-0 border-t border-gray-100 dark:border-gray-800/80 flex items-center justify-between mt-3">
-        <span className="text-lg font-bold text-cyan-600 dark:text-cyan-400">₹{price}</span>
+        <span className="text-lg font-bold text-amber-600 dark:text-amber-400">₹{price}</span>
         <div className="flex items-center gap-2">
           <Link
             to="/shop"
@@ -67,14 +67,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {onAddToCart ? (
             <button
               onClick={onAddToCart}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md shadow-cyan-500/20 transition"
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-gray-950 font-bold shadow-md shadow-amber-500/20 transition"
             >
               Add to Cart
             </button>
           ) : (
             <Link
               to="/shop"
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md shadow-cyan-500/20 transition"
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-gray-950 font-bold shadow-md shadow-amber-500/20 transition"
             >
               Shop Now
             </Link>

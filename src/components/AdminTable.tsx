@@ -35,7 +35,7 @@ export const AdminTable: React.FC<AdminTableProps> = ({ users }) => (
             <tr key={user.id} className="hover:bg-gray-800/40 transition">
               <td className="px-6 py-4 whitespace-nowrap font-medium text-white">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center text-xs">
+                  <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold flex items-center justify-center text-xs">
                     {user.name.charAt(0).toUpperCase()}
                   </div>
                   <span>{user.name}</span>
@@ -43,7 +43,7 @@ export const AdminTable: React.FC<AdminTableProps> = ({ users }) => (
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-gray-400 font-mono text-xs">{user.email}</td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
                   {user.role}
                 </span>
               </td>
@@ -51,7 +51,7 @@ export const AdminTable: React.FC<AdminTableProps> = ({ users }) => (
                 {user.role === 'admin' ? (
                   <Link
                     to={`/admin/edit/${user.id}`}
-                    className="inline-flex items-center gap-1 text-cyan-400 hover:text-cyan-300 font-semibold px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 transition"
+                    className="inline-flex items-center gap-1 text-amber-400 hover:text-amber-300 font-semibold px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 transition"
                   >
                     <span>Edit User</span>
                     <span>&rarr;</span>

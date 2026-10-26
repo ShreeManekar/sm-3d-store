@@ -8,11 +8,34 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        darkBg: '#090d16',
-        darkSurface: '#111726',
-        darkElevated: '#1a2337',
-        neonCyan: '#00f0ff',
-        neonPurple: '#8a2be2',
+        darkBg: '#080b11',
+        darkSurface: '#0b0f17',
+        darkElevated: '#121824',
+        neonGold: '#f59e0b',
+        goldAccent: '#fbbf24',
+        goldDark: '#d97706',
+        neonCyan: '#f59e0b', // fallback so any legacy neonCyan renders golden
+        neonPurple: '#d97706',
+        gold: {
+          50: '#fffbeb',
+          100: '#fef3c7',
+          200: '#fde68a',
+          300: '#fcd34d',
+          400: '#fbbf24',
+          500: '#f59e0b',
+          600: '#d97706',
+          700: '#b45309',
+          800: '#92400e',
+          900: '#78350f',
+          950: '#451a03',
+        },
+      },
+      boxShadow: {
+        'gold-glow': '0 0 25px -4px rgba(245, 158, 11, 0.35)',
+        'gold-sm': '0 0 15px -2px rgba(245, 158, 11, 0.25)',
+        'gold-rim': '0 0 0 1px rgba(245, 158, 11, 0.3), 0 12px 35px -8px rgba(0, 0, 0, 0.85)',
+        'dark-velvet': '0 20px 45px -15px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(245, 158, 11, 0.12)',
+        'dark-deep': '0 25px 60px -15px rgba(0, 0, 0, 0.98)',
       },
     },
   },
@@ -22,3 +45,4 @@ module.exports = {
     },
   ],
 };
+

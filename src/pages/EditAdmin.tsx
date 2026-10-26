@@ -101,19 +101,19 @@ export const EditAdmin: React.FC = () => {
       <div className="max-w-xl mx-auto space-y-6">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400" aria-label="Breadcrumb">
-          <Link to="/" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition">Home</Link>
+          <Link to="/" className="hover:text-amber-500 dark:hover:text-amber-400 transition">Home</Link>
           <span>/</span>
-          <Link to="/admin" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition">Admin Portal</Link>
+          <Link to="/admin" className="hover:text-amber-500 dark:hover:text-amber-400 transition">Admin Portal</Link>
           <span>/</span>
-          <span className="text-cyan-600 dark:text-cyan-400 font-medium">Edit Administrator</span>
+          <span className="text-amber-500 dark:text-amber-400 font-medium">Edit Administrator</span>
         </nav>
 
-        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-purple-500/30 shadow-xl">
+        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-amber-500/30 shadow-xl shadow-black/40">
           <div className="mb-6">
-            <span className="text-purple-600 dark:text-purple-400 font-bold text-xs uppercase tracking-wider">Access Control</span>
+            <span className="text-amber-500 font-bold text-xs uppercase tracking-wider">Access Control</span>
             <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">Edit Administrator Details</h1>
             <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
-              Account Identifier: <span className="font-mono text-cyan-600 dark:text-cyan-300">{id}</span>
+              Account Identifier: <span className="font-mono text-amber-500">{id}</span>
             </p>
           </div>
 

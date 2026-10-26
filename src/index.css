@@ -4,25 +4,29 @@
 @tailwind utilities;
 
 :root {
-  --bg-dark: #090d16;
-  --bg-surface: #111726;
-  --bg-surface-elevated: #1a2337;
-  --border-color: rgba(255, 255, 255, 0.12);
-  --primary: #00f0ff;
-  --secondary: #8a2be2;
-  --text-main: #f3f4f6;
+  --bg-dark: #080b11;
+  --bg-surface: #0b0f17;
+  --bg-surface-elevated: #121824;
+  --border-color: rgba(245, 158, 11, 0.2);
+  --primary: #f59e0b;
+  --primary-hover: #d97706;
+  --primary-glow: rgba(245, 158, 11, 0.35);
+  --secondary: #d97706;
+  --text-main: #f9fafb;
   --text-muted: #9ca3af;
 }
 
 [data-theme="light"] {
-  --bg-dark: #f5f5f7;
+  --bg-dark: #fbfaf8;
   --bg-surface: #ffffff;
-  --bg-surface-elevated: #ffffff;
-  --border-color: rgba(0, 0, 0, 0.08);
-  --primary: #0284c7;
-  --secondary: #7c3aed;
-  --text-main: #1d1d1f;
-  --text-muted: #4b5563;
+  --bg-surface-elevated: #fefefe;
+  --border-color: rgba(217, 119, 6, 0.2);
+  --primary: #d97706;
+  --primary-hover: #b45309;
+  --primary-glow: rgba(217, 119, 6, 0.25);
+  --secondary: #b45309;
+  --text-main: #18181b;
+  --text-muted: #52525b;
 }
 
 html {
@@ -30,27 +34,45 @@ html {
 }
 
 html.dark {
-  background-color: #090d16;
-  color: #f3f4f6;
+  background-color: #080b11;
+  color: #f9fafb;
 }
 
 html:not(.dark) {
-  background-color: #f5f5f7;
-  color: #1d1d1f;
+  background-color: #fbfaf8;
+  color: #18181b;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar with golden accent */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #080b11;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.4);
+  background: rgba(245, 158, 11, 0.3);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.7);
+  background: rgba(245, 158, 11, 0.65);
 }
+
+/* Multi-layered dark shadows and golden glow utility classes */
+.gold-glow {
+  box-shadow: 0 0 25px -4px rgba(245, 158, 11, 0.35);
+}
+
+.gold-glow-sm {
+  box-shadow: 0 0 15px -2px rgba(245, 158, 11, 0.25);
+}
+
+.gold-rim-card {
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.25), 0 20px 40px -15px rgba(0, 0, 0, 0.95);
+}
+
+.dark-velvet-shadow {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.98), 0 0 0 1px rgba(245, 158, 11, 0.12);
+}
+

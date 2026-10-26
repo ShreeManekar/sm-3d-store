@@ -3,6 +3,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocat
 import Home from './pages/Home';
 import Shop from './pages/Shop';
 import CustomPrint from './pages/CustomPrint';
+import MaterialsGuide from './pages/MaterialsGuide';
+import OrderTracking from './pages/OrderTracking';
+import Showcase from './pages/Showcase';
+import KnowledgeBase from './pages/KnowledgeBase';
+import EnterpriseRFQ from './pages/EnterpriseRFQ';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Account from './pages/Account';
@@ -45,7 +50,7 @@ const App: React.FC = () => {
         <CartProvider>
           <Router>
             <HashRedirectHandler />
-            <div className="flex flex-col min-h-screen bg-[#f5f5f7] dark:bg-[#090d16] text-gray-900 dark:text-white transition-colors duration-200">
+            <div className="flex flex-col min-h-screen bg-[#fbfaf8] dark:bg-[#080b11] text-gray-900 dark:text-white transition-colors duration-200">
               <AdminBar />
               <Header />
               <main className="flex-1">
@@ -55,6 +60,11 @@ const App: React.FC = () => {
                   <Route path="/shop/:id" element={<Navigate to="/shop" replace />} />
                   <Route path="/product/:id" element={<Navigate to="/shop" replace />} />
                   <Route path="/custom-print" element={<CustomPrint />} />
+                  <Route path="/materials" element={<MaterialsGuide />} />
+                  <Route path="/track" element={<OrderTracking />} />
+                  <Route path="/showcase" element={<Showcase />} />
+                  <Route path="/faq" element={<KnowledgeBase />} />
+                  <Route path="/rfq" element={<EnterpriseRFQ />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/account" element={<Account />} />

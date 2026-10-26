@@ -170,7 +170,7 @@ export const Account: React.FC = () => {
       <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center bg-transparent text-inherit">
         <div className="w-full max-w-md bg-white dark:bg-gray-900/90 border border-gray-200 dark:border-gray-800 rounded-3xl p-8 shadow-2xl backdrop-blur">
           <div className="text-center mb-6">
-            <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20 mb-3">
+            <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-600 flex items-center justify-center text-gray-950 font-black shadow-lg shadow-amber-500/20 mb-3">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
@@ -184,16 +184,16 @@ export const Account: React.FC = () => {
             <div className="flex bg-gray-100 dark:bg-gray-950 p-1 rounded-xl mt-6 border border-gray-200 dark:border-gray-800 gap-1">
               <button
                 onClick={() => { setAuthTab('login'); setAuthError(null); }}
-                className={`flex-1 py-2 text-xs font-semibold rounded-lg transition ${
-                  authTab === 'login' ? 'bg-cyan-500 text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition ${
+                  authTab === 'login' ? 'bg-amber-500 text-gray-950 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
                 Sign In
               </button>
               <button
                 onClick={() => { setAuthTab('register'); setAuthError(null); }}
-                className={`flex-1 py-2 text-xs font-semibold rounded-lg transition ${
-                  authTab === 'register' ? 'bg-cyan-500 text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition ${
+                  authTab === 'register' ? 'bg-amber-500 text-gray-950 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
                 Sign Up
@@ -201,7 +201,7 @@ export const Account: React.FC = () => {
               <button
                 onClick={() => { setAuthTab('admin'); setAuthError(null); }}
                 className={`flex-1 py-2 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1 ${
-                  authTab === 'admin' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  authTab === 'admin' ? 'bg-gradient-to-r from-amber-600 to-yellow-600 text-gray-950 font-bold shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -234,7 +234,7 @@ export const Account: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com or mobile"
-                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                 />
               </div>
 
@@ -246,16 +246,16 @@ export const Account: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={authLoading}
-                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-cyan-500/20 transition flex items-center justify-center gap-2"
+                className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-gray-950 font-bold text-sm rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2"
               >
-                {authLoading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Sign In'}
+                {authLoading ? <div className="w-4 h-4 border-2 border-gray-950 border-t-transparent rounded-full animate-spin" /> : 'Sign In'}
               </button>
             </form>
           )}
@@ -271,7 +271,7 @@ export const Account: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Rahul Sharma"
-                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                 />
               </div>
 
@@ -284,7 +284,7 @@ export const Account: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="rahul@example.com"
-                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                   />
                 </div>
                 <div>
@@ -296,7 +296,7 @@ export const Account: React.FC = () => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                     placeholder="9812345678"
-                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                   />
                 </div>
               </div>
@@ -309,7 +309,7 @@ export const Account: React.FC = () => {
                   value={street}
                   onChange={(e) => setStreet(e.target.value)}
                   placeholder="Flat 402, Sunshine Apartments"
-                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                 />
               </div>
 
@@ -323,7 +323,7 @@ export const Account: React.FC = () => {
                     value={pincode}
                     onChange={(e) => handlePincodeChange(e.target.value)}
                     placeholder="400050"
-                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                   />
                 </div>
                 <div>
@@ -334,7 +334,7 @@ export const Account: React.FC = () => {
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="Auto-fill"
-                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                   />
                 </div>
                 <div>
@@ -345,7 +345,7 @@ export const Account: React.FC = () => {
                     value={state}
                     onChange={(e) => setState(e.target.value)}
                     placeholder="Auto-fill"
-                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                   />
                 </div>
               </div>
@@ -359,16 +359,16 @@ export const Account: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={authLoading}
-                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-cyan-500/20 transition flex items-center justify-center gap-2 mt-2"
+                className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-gray-950 font-bold text-sm rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 mt-2"
               >
-                {authLoading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Register Account'}
+                {authLoading ? <div className="w-4 h-4 border-2 border-gray-950 border-t-transparent rounded-full animate-spin" /> : 'Register Account'}
               </button>
             </form>
           )}
@@ -426,9 +426,9 @@ export const Account: React.FC = () => {
     <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 bg-transparent text-inherit">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Top Header Card */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-3xl bg-white dark:bg-gray-900/90 border border-gray-200 dark:border-gray-800 shadow-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-3xl bg-white dark:bg-gray-900/90 border border-gray-200 dark:border-gray-800 shadow-xl shadow-black/40">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-cyan-500/20">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-600 flex items-center justify-center text-gray-950 text-xl font-black shadow-lg shadow-amber-500/20">
               {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
             </div>
             <div>
@@ -437,7 +437,7 @@ export const Account: React.FC = () => {
                 <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
                   currentUser?.role === 'admin'
                     ? 'bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/40'
-                    : 'bg-cyan-50 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-500/40'
+                    : 'bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-500/40'
                 }`}>
                   {currentUser?.role === 'admin' ? 'Store Administrator' : 'Verified Customer'}
                 </span>
@@ -502,16 +502,16 @@ export const Account: React.FC = () => {
         {/* Profile / Address Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-5 rounded-2xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 shadow-sm">
-            <h3 className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider mb-3">User Details</h3>
+            <h3 className="text-xs font-bold text-amber-500 uppercase tracking-wider mb-3">User Details</h3>
             <div className="space-y-1.5 text-xs text-gray-600 dark:text-gray-300">
               <div><span className="text-gray-400 dark:text-gray-500">Name:</span> <strong className="text-gray-900 dark:text-white">{currentUser?.name}</strong></div>
               <div><span className="text-gray-400 dark:text-gray-500">Account ID:</span> <code className="text-gray-700 dark:text-gray-400">{currentUser?.id}</code></div>
-              <div><span className="text-gray-400 dark:text-gray-500">Role:</span> <span className="text-cyan-600 dark:text-cyan-400 font-semibold">{currentUser?.role}</span></div>
+              <div><span className="text-gray-400 dark:text-gray-500">Role:</span> <span className="text-amber-500 font-semibold">{currentUser?.role}</span></div>
             </div>
           </div>
 
           <div className="p-5 rounded-2xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 shadow-sm">
-            <h3 className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider mb-3">Contact Info</h3>
+            <h3 className="text-xs font-bold text-amber-500 uppercase tracking-wider mb-3">Contact Info</h3>
             <div className="space-y-1.5 text-xs text-gray-600 dark:text-gray-300">
               <div><span className="text-gray-400 dark:text-gray-500">Email:</span> <strong className="text-gray-900 dark:text-white">{currentUser?.email}</strong></div>
               <div><span className="text-gray-400 dark:text-gray-500">Phone:</span> <strong className="text-gray-900 dark:text-white">{currentUser?.phone || 'N/A'}</strong></div>
@@ -520,7 +520,7 @@ export const Account: React.FC = () => {
           </div>
 
           <div className="p-5 rounded-2xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 shadow-sm">
-            <h3 className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider mb-3">Saved Shipping Address</h3>
+            <h3 className="text-xs font-bold text-amber-500 uppercase tracking-wider mb-3">Saved Shipping Address</h3>
             <div className="space-y-1 text-xs text-gray-600 dark:text-gray-300">
               <p className="text-gray-900 dark:text-white font-medium">{currentUser?.street || 'No street provided'}</p>
               <p>{[currentUser?.city, currentUser?.state].filter(Boolean).join(', ')} {currentUser?.pincode}</p>
@@ -530,15 +530,15 @@ export const Account: React.FC = () => {
         </div>
 
         {/* Customer Orders History */}
-        <div className="p-6 rounded-3xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 shadow-xl space-y-4">
+        <div className="p-6 rounded-3xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 shadow-xl shadow-black/40 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <svg className="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
               My Order History
             </h2>
-            <Link to="/shop" className="text-xs text-cyan-600 dark:text-cyan-400 hover:underline">
+            <Link to="/shop" className="text-xs text-amber-500 hover:underline">
               Browse More 3D Prints →
             </Link>
           </div>
@@ -548,7 +548,7 @@ export const Account: React.FC = () => {
           ) : orders.length === 0 ? (
             <div className="text-center py-8 text-gray-500 text-xs">
               No orders found for this account. Ready to print?{' '}
-              <Link to="/shop" className="text-cyan-600 dark:text-cyan-400 hover:underline">Explore store</Link>
+              <Link to="/shop" className="text-amber-500 hover:underline">Explore store</Link>
             </div>
           ) : (
             <div className="divide-y divide-gray-200 dark:divide-gray-800">
@@ -556,7 +556,7 @@ export const Account: React.FC = () => {
                 <div key={ord.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-cyan-600 dark:text-cyan-400">{ord.id}</span>
+                      <span className="font-mono text-xs font-bold text-amber-500">{ord.id}</span>
                       <span className="text-[11px] text-gray-500">
                         {ord.createdAt ? new Date(ord.createdAt).toLocaleDateString() : ''}
                       </span>
@@ -619,7 +619,7 @@ export const Account: React.FC = () => {
                       Dims: {co.dimensions?.length}×{co.dimensions?.width}×{co.dimensions?.height} mm • Material: {co.desiredMaterial} ({co.desiredColor}) • Infill: {co.infillDensity}
                     </div>
                     {co.adminNotes && (
-                      <p className="text-[11px] text-cyan-700 dark:text-cyan-300 mt-1 bg-cyan-50 dark:bg-cyan-950/20 px-2 py-1 rounded border border-cyan-200 dark:border-cyan-800/40 inline-block">
+                      <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-1 bg-amber-50 dark:bg-amber-950/20 px-2 py-1 rounded border border-amber-200 dark:border-amber-800/40 inline-block">
                         Admin Note: {co.adminNotes}
                       </p>
                     )}

@@ -150,7 +150,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* Modal Header */}
         <div className="p-6 pb-4 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-2 mb-2">
-            <span className="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-tr from-amber-500 to-yellow-600 flex items-center justify-center text-gray-950 text-xs font-black shadow-md shadow-amber-500/20">
               SM
             </span>
             <span className="font-bold text-lg text-gray-900 dark:text-white">SM 3D Authentication</span>
@@ -163,9 +163,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div className="flex rounded-xl bg-gray-100 dark:bg-gray-900/80 p-1 mt-4 gap-1">
             <button
               onClick={() => { setActiveTab('login'); setError(null); }}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition ${
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition ${
                 activeTab === 'login'
-                  ? 'bg-cyan-500 text-white shadow'
+                  ? 'bg-amber-500 text-gray-950 shadow-md shadow-amber-500/20'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
@@ -173,9 +173,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </button>
             <button
               onClick={() => { setActiveTab('register'); setError(null); }}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition ${
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition ${
                 activeTab === 'register'
-                  ? 'bg-cyan-500 text-white shadow'
+                  ? 'bg-amber-500 text-gray-950 shadow-md shadow-amber-500/20'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
@@ -185,7 +185,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onClick={() => { setActiveTab('admin'); setError(null); }}
               className={`flex-1 py-2 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5 ${
                 activeTab === 'admin'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow'
+                  ? 'bg-gradient-to-r from-amber-600 to-yellow-600 text-gray-950 font-bold shadow-md shadow-amber-500/20'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
@@ -230,7 +230,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
                   placeholder="name@example.com or 10-digit mobile"
-                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400 transition"
+                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition"
                 />
               </div>
 
@@ -244,16 +244,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400 transition"
+                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-cyan-500/20 transition flex items-center justify-center gap-2"
+                className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-gray-950 font-bold text-sm rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2"
               >
-                {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Sign In to Account'}
+                {loading ? <div className="w-4 h-4 border-2 border-gray-950 border-t-transparent rounded-full animate-spin" /> : 'Sign In to Account'}
               </button>
 
               <div className="text-center text-xs text-gray-500 dark:text-gray-400 pt-2">
@@ -261,7 +261,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveTab('register')}
-                  className="text-cyan-600 dark:text-cyan-400 hover:underline font-semibold"
+                  className="text-amber-600 dark:text-amber-400 hover:underline font-semibold"
                 >
                   Create Account
                 </button>
@@ -281,7 +281,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
                     placeholder="Rahul Sharma"
-                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400 transition"
+                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition"
                   />
                 </div>
                 <div>
@@ -293,7 +293,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     value={regPhone}
                     onChange={(e) => setRegPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                     placeholder="9812345678"
-                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400 transition"
+                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition"
                   />
                 </div>
               </div>
@@ -306,7 +306,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
                   placeholder="rahul@example.com"
-                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400 transition"
+                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition"
                 />
               </div>
 
@@ -318,7 +318,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={regStreet}
                   onChange={(e) => setRegStreet(e.target.value)}
                   placeholder="Flat 402, Sunshine Apartments, Main Road"
-                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400 transition"
+                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition"
                 />
               </div>
 
@@ -332,7 +332,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     value={regPincode}
                     onChange={(e) => handlePincodeChange(e.target.value)}
                     placeholder="400050"
-                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400 transition"
+                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition"
                   />
                 </div>
                 <div>
@@ -343,7 +343,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     value={regCity}
                     onChange={(e) => setRegCity(e.target.value)}
                     placeholder="Auto-detect"
-                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400 transition"
+                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition"
                   />
                 </div>
                 <div>
@@ -354,7 +354,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     value={regState}
                     onChange={(e) => setRegState(e.target.value)}
                     placeholder="Auto-detect"
-                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400 transition"
+                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition"
                   />
                 </div>
               </div>
@@ -370,16 +370,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400 transition"
+                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-cyan-500/20 transition flex items-center justify-center gap-2 mt-2"
+                className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-gray-950 font-bold text-sm rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 mt-2"
               >
-                {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Register New Account'}
+                {loading ? <div className="w-4 h-4 border-2 border-gray-950 border-t-transparent rounded-full animate-spin" /> : 'Register New Account'}
               </button>
 
               <div className="text-center text-xs text-gray-500 dark:text-gray-400 pt-1">
@@ -387,7 +387,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveTab('login')}
-                  className="text-cyan-600 dark:text-cyan-400 hover:underline font-semibold"
+                  className="text-amber-600 dark:text-amber-400 hover:underline font-semibold"
                 >
                   Sign In here
                 </button>

@@ -981,8 +981,8 @@ export const Admin: React.FC = () => {
     <div className="min-h-screen bg-transparent text-inherit py-8 px-4 sm:px-6 lg:px-8">
       {/* Toast Alert */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-white dark:bg-gray-900 border border-cyan-500/40 text-cyan-600 dark:text-cyan-300 px-4 py-3 rounded-2xl shadow-2xl text-xs flex items-center gap-2 animate-bounce">
-          <svg className="w-4 h-4 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="fixed bottom-6 right-6 z-50 bg-white dark:bg-gray-900 border border-amber-500/40 text-amber-500 dark:text-amber-300 px-4 py-3 rounded-2xl shadow-2xl text-xs flex items-center gap-2 animate-bounce">
+          <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
           <span>{toastMessage}</span>
@@ -1010,7 +1010,7 @@ export const Admin: React.FC = () => {
               className="p-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition text-xs flex items-center gap-1.5 shadow-sm"
               title="Refresh Data"
             >
-              <svg className={`w-4 h-4 ${loading ? 'animate-spin text-cyan-500' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 ${loading ? 'animate-spin text-amber-500' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
               Refresh
@@ -1064,7 +1064,7 @@ export const Admin: React.FC = () => {
                 </span>
               )}
               {tab.id === 'delivery' && (
-                <span className="px-1.5 py-0.5 rounded-full bg-cyan-500 text-gray-950 font-extrabold text-[10px] flex items-center justify-center shadow">
+                <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-gray-950 font-extrabold text-[10px] flex items-center justify-center shadow">
                   {deliveryCities.filter(c => c.active !== false).length}
                 </span>
               )}
@@ -1088,7 +1088,7 @@ export const Admin: React.FC = () => {
               </div>
 
               <div className="p-5 rounded-2xl bg-white dark:bg-gray-900/90 border border-gray-200 dark:border-gray-800 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-500">
+                <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                   </svg>
@@ -1125,7 +1125,7 @@ export const Admin: React.FC = () => {
 
               <div
                 onClick={() => { setActiveTab('delivery'); setSearchParams({ tab: 'delivery' }); }}
-                className="p-5 rounded-2xl bg-white dark:bg-gray-900/90 border border-gray-200 dark:border-gray-800 shadow-sm flex items-center gap-4 cursor-pointer hover:border-cyan-500/50 transition group"
+                className="p-5 rounded-2xl bg-white dark:bg-gray-900/90 border border-gray-200 dark:border-gray-800 shadow-sm flex items-center gap-4 cursor-pointer hover:border-amber-500/50 transition group"
               >
                 <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 group-hover:scale-110 transition">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1147,7 +1147,7 @@ export const Admin: React.FC = () => {
               <div className="lg:col-span-2 p-6 rounded-2xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Recent Orders</h3>
-                  <button onClick={() => setActiveTab('orders')} className="text-xs text-cyan-600 dark:text-cyan-400 hover:underline">
+                  <button onClick={() => setActiveTab('orders')} className="text-xs text-amber-500 dark:text-amber-400 hover:underline">
                     View All →
                   </button>
                 </div>
@@ -1158,7 +1158,7 @@ export const Admin: React.FC = () => {
                   orders.slice(0, 4).map((ord) => (
                     <div key={ord.id} className="p-3 rounded-xl bg-gray-50 dark:bg-gray-950/60 border border-gray-200 dark:border-gray-800 flex items-center justify-between text-xs">
                       <div>
-                        <span className="font-mono text-cyan-600 dark:text-cyan-400 font-bold">{ord.id}</span>
+                        <span className="font-mono text-amber-500 dark:text-amber-400 font-bold">{ord.id}</span>
                         <p className="text-gray-600 dark:text-gray-300 mt-0.5">{ord.userName} • {ord.items?.length || 0} items</p>
                       </div>
                       <div className="text-right">
@@ -1175,7 +1175,7 @@ export const Admin: React.FC = () => {
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Administrative Shortcuts</h3>
                 <button
                   onClick={() => { setEditingProduct({ colors: ['Pure White', 'Black'], dimensions: '100 x 100 x 100', price: 499, stock: 10 }); setProductModalOpen(true); }}
-                  className="w-full py-2.5 px-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20 transition text-xs font-semibold flex items-center gap-2"
+                  className="w-full py-2.5 px-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 dark:text-amber-400 hover:bg-amber-500/20 transition text-xs font-semibold flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                   Create New Product Listing
@@ -1228,7 +1228,7 @@ export const Admin: React.FC = () => {
                   value={productSearch}
                   onChange={(e) => setProductSearch(e.target.value)}
                   placeholder="Filter by title, SKU, category..."
-                  className="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400 pl-9 shadow-sm"
+                  className="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-amber-400 pl-9 shadow-sm"
                 />
                 <svg className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -1264,7 +1264,7 @@ export const Admin: React.FC = () => {
                       stlUrl: '/assets/models/sample_dragon.stl',
                     });
                   }}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs shadow-lg shadow-cyan-500/20 transition flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-blue-600 hover:from-amber-400 hover:to-blue-500 text-white font-semibold text-xs shadow-lg shadow-amber-500/20 transition flex items-center gap-1.5"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1323,7 +1323,7 @@ export const Admin: React.FC = () => {
                         {p.stlUrl && (
                           <button
                             onClick={() => setStlModalUrl(p.stlUrl || null)}
-                            className="px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-cyan-600 dark:text-cyan-400 font-medium text-[11px]"
+                            className="px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-amber-500 dark:text-amber-400 font-medium text-[11px]"
                             title="Inspect 3D STL Model"
                           >
                             3D
@@ -1331,7 +1331,7 @@ export const Admin: React.FC = () => {
                         )}
                         <button
                           onClick={() => openEditProductModal(p)}
-                          className="px-2.5 py-1 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 border border-cyan-200 dark:border-cyan-500/30 text-cyan-600 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-800/40 font-medium text-[11px]"
+                          className="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-500/30 text-amber-500 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-800/40 font-medium text-[11px]"
                         >
                           Edit
                         </button>
@@ -1400,7 +1400,7 @@ export const Admin: React.FC = () => {
                       <td className="p-3.5 max-w-xs">
                         <div className="font-medium text-gray-900 dark:text-white line-clamp-2">{co.description}</div>
                         {co.fileName && (
-                          <div className="text-[10px] text-cyan-600 dark:text-cyan-400 mt-0.5 flex items-center gap-1">
+                          <div className="text-[10px] text-amber-500 dark:text-amber-400 mt-0.5 flex items-center gap-1">
                             <span>📎 {co.fileName}</span>
                             {co.fileUrl && (
                               <button
@@ -1522,7 +1522,7 @@ export const Admin: React.FC = () => {
                   {orders.map((ord) => (
                     <tr key={ord.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition">
                       <td className="p-3.5">
-                        <span className="font-mono font-bold text-cyan-600 dark:text-cyan-400">{ord.id}</span>
+                        <span className="font-mono font-bold text-amber-500 dark:text-amber-400">{ord.id}</span>
                         <div className="text-[10px] text-gray-500 mt-0.5">
                           {ord.createdAt ? new Date(ord.createdAt).toLocaleString() : ''}
                         </div>
@@ -1554,7 +1554,7 @@ export const Admin: React.FC = () => {
                         <select
                           value={ord.fulfillmentStatus || 'Processing'}
                           onChange={(e) => handleUpdateOrderStatus(ord.id, e.target.value)}
-                          className="bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-200 text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-cyan-400"
+                          className="bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-200 text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-amber-400"
                         >
                           <option value="Processing">Processing</option>
                           <option value="Printed">Printed</option>
@@ -1617,7 +1617,7 @@ export const Admin: React.FC = () => {
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                           u.role === 'admin'
                             ? 'bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/40'
-                            : 'bg-cyan-50 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-500/40'
+                            : 'bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-500/40'
                         }`}>
                           {u.role === 'admin' ? 'Administrator' : 'Customer'}
                         </span>
@@ -1716,7 +1716,7 @@ export const Admin: React.FC = () => {
                         value={settings.upiQrImage || ''}
                         onChange={(e) => setSettings({ ...settings, upiQrImage: e.target.value })}
                         placeholder="Image URL: /uploads/qr.png or https://..."
-                        className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400"
+                        className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400"
                       />
                     </div>
                   </div>
@@ -1731,7 +1731,7 @@ export const Admin: React.FC = () => {
                       value={settings.upiId || ''}
                       onChange={(e) => setSettings({ ...settings, upiId: e.target.value })}
                       placeholder="e.g. shreemanekar0@okaxis"
-                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 font-mono"
+                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
                     />
                   </div>
                   <div>
@@ -1741,7 +1741,7 @@ export const Admin: React.FC = () => {
                       value={settings.razorpayId || ''}
                       onChange={(e) => setSettings({ ...settings, razorpayId: e.target.value })}
                       placeholder="e.g. rzp_live_xxxxxxxx or rzp_test_xxxx"
-                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 font-mono"
+                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
                     />
                   </div>
                 </div>
@@ -1759,7 +1759,7 @@ export const Admin: React.FC = () => {
                         value={settings.accountHolderName || ''}
                         onChange={(e) => setSettings({ ...settings, accountHolderName: e.target.value })}
                         placeholder="e.g. SM 3D Technologies"
-                        className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400"
+                        className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400"
                       />
                     </div>
                     <div>
@@ -1769,7 +1769,7 @@ export const Admin: React.FC = () => {
                         value={settings.bankName || ''}
                         onChange={(e) => setSettings({ ...settings, bankName: e.target.value })}
                         placeholder="e.g. State Bank of India"
-                        className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400"
+                        className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400"
                       />
                     </div>
                     <div>
@@ -1779,7 +1779,7 @@ export const Admin: React.FC = () => {
                         value={settings.accountNumber || ''}
                         onChange={(e) => setSettings({ ...settings, accountNumber: e.target.value })}
                         placeholder="e.g. 928411860101"
-                        className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 font-mono"
+                        className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
                       />
                     </div>
                     <div>
@@ -1789,7 +1789,7 @@ export const Admin: React.FC = () => {
                         value={settings.ifscCode || ''}
                         onChange={(e) => setSettings({ ...settings, ifscCode: e.target.value })}
                         placeholder="e.g. SBIN0001234"
-                        className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 font-mono uppercase"
+                        className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 font-mono uppercase"
                       />
                     </div>
                   </div>
@@ -1852,7 +1852,7 @@ export const Admin: React.FC = () => {
                       orders.map((ord) => (
                         <tr key={ord.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition">
                           <td className="p-3.5">
-                            <span className="font-mono font-bold text-cyan-600 dark:text-cyan-400">{ord.id}</span>
+                            <span className="font-mono font-bold text-amber-500 dark:text-amber-400">{ord.id}</span>
                             <div className="text-[10px] text-gray-500 mt-0.5">
                               {ord.createdAt ? new Date(ord.createdAt).toLocaleString() : ''}
                             </div>
@@ -1964,7 +1964,7 @@ export const Admin: React.FC = () => {
                     type="text"
                     value={settings.storeName || ''}
                     onChange={(e) => setSettings({ ...settings, storeName: e.target.value })}
-                    className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                    className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 shadow-sm"
                   />
                 </div>
 
@@ -1974,7 +1974,7 @@ export const Admin: React.FC = () => {
                     type="text"
                     value={settings.storeTagline || ''}
                     onChange={(e) => setSettings({ ...settings, storeTagline: e.target.value })}
-                    className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                    className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 shadow-sm"
                   />
                 </div>
 
@@ -1985,7 +1985,7 @@ export const Admin: React.FC = () => {
                       type="number"
                       value={settings.maxPrintDimension || 160}
                       onChange={(e) => setSettings({ ...settings, maxPrintDimension: parseInt(e.target.value) || 160 })}
-                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 shadow-sm"
                     />
                   </div>
                   <div>
@@ -1994,7 +1994,7 @@ export const Admin: React.FC = () => {
                       type="number"
                       value={settings.shippingFee || 99}
                       onChange={(e) => setSettings({ ...settings, shippingFee: parseFloat(e.target.value) || 0 })}
-                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 shadow-sm"
                     />
                   </div>
                   <div>
@@ -2003,7 +2003,7 @@ export const Admin: React.FC = () => {
                       type="number"
                       value={settings.freeShippingThreshold || 500}
                       onChange={(e) => setSettings({ ...settings, freeShippingThreshold: parseFloat(e.target.value) || 0 })}
-                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 shadow-sm"
                     />
                   </div>
                 </div>
@@ -2015,7 +2015,7 @@ export const Admin: React.FC = () => {
                       type="text"
                       value={settings.whatsappNumber || ''}
                       onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })}
-                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 shadow-sm"
                     />
                   </div>
                   <div>
@@ -2024,7 +2024,7 @@ export const Admin: React.FC = () => {
                       type="email"
                       value={settings.supportEmail || ''}
                       onChange={(e) => setSettings({ ...settings, supportEmail: e.target.value })}
-                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 shadow-sm"
                     />
                   </div>
                 </div>
@@ -2037,7 +2037,7 @@ export const Admin: React.FC = () => {
                       placeholder="₹ (INR)"
                       value={settings.currency || '₹'}
                       onChange={(e) => setSettings({ ...settings, currency: e.target.value })}
-                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 shadow-sm"
                     />
                   </div>
                   <div>
@@ -2048,7 +2048,7 @@ export const Admin: React.FC = () => {
                       placeholder="18"
                       value={settings.taxRate !== undefined ? settings.taxRate : 18}
                       onChange={(e) => setSettings({ ...settings, taxRate: parseFloat(e.target.value) || 0 })}
-                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                      className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 shadow-sm"
                     />
                   </div>
                 </div>
@@ -2161,7 +2161,7 @@ export const Admin: React.FC = () => {
               <div>
                 <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <span>🚚 Nationwide Delivery Coverage Network</span>
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30">
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/30">
                     {deliveryCities.filter(c => c.active !== false).length} Active Cities
                   </span>
                 </h3>
@@ -2172,7 +2172,7 @@ export const Admin: React.FC = () => {
               <button
                 type="button"
                 onClick={() => { setActiveTab('delivery'); setSearchParams({ tab: 'delivery' }); }}
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold text-xs shadow-md shadow-blue-500/20 hover:from-blue-500 hover:to-cyan-500 transition flex items-center gap-2 shrink-0"
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-yellow-600 text-white font-semibold text-xs shadow-md shadow-blue-500/20 hover:from-blue-500 hover:to-yellow-500 transition flex items-center gap-2 shrink-0"
               >
                 Open Delivery Network Manager →
               </button>
@@ -2189,7 +2189,7 @@ export const Admin: React.FC = () => {
                 <div>
                   <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <span>🚚 Nationwide Delivery & Shipping Coverage</span>
-                    <span className="text-xs bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 px-2.5 py-0.5 rounded-full font-semibold">
+                    <span className="text-xs bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-semibold">
                       {deliveryCities.filter(c => c.active !== false).length} Active Destinations
                     </span>
                   </h2>
@@ -2200,7 +2200,7 @@ export const Admin: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleOpenAddCityModal}
-                  className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs shadow-lg shadow-cyan-500/25 transition flex items-center gap-2 shrink-0 self-start sm:self-auto"
+                  className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-blue-600 hover:from-amber-400 hover:to-blue-500 text-white font-semibold text-xs shadow-lg shadow-amber-500/25 transition flex items-center gap-2 shrink-0 self-start sm:self-auto"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                   Add New Delivery City
@@ -2227,7 +2227,7 @@ export const Admin: React.FC = () => {
                 </div>
                 <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-950/60 border border-gray-200 dark:border-gray-800">
                   <span className="text-gray-500 block text-[11px]">Fastest Turnaround</span>
-                  <span className="text-lg font-extrabold text-cyan-600 dark:text-cyan-400">1-2 Days (Local)</span>
+                  <span className="text-lg font-extrabold text-amber-500 dark:text-amber-400">1-2 Days (Local)</span>
                 </div>
               </div>
             </div>
@@ -2241,7 +2241,7 @@ export const Admin: React.FC = () => {
                     value={deliveryCitySearch}
                     onChange={(e) => setDeliveryCitySearch(e.target.value)}
                     placeholder="Search city, state, or PIN codes..."
-                    className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl text-xs text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
+                    className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl text-xs text-gray-900 dark:text-white focus:outline-none focus:border-amber-400"
                   />
                   <svg className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -2279,7 +2279,7 @@ export const Admin: React.FC = () => {
                     )}
                     <button
                       onClick={handleOpenAddCityModal}
-                      className="px-3.5 py-1.5 rounded-xl bg-cyan-600 text-white text-xs font-semibold shadow"
+                      className="px-3.5 py-1.5 rounded-xl bg-amber-600 text-white text-xs font-semibold shadow"
                     >
                       + Add New City
                     </button>
@@ -2319,7 +2319,7 @@ export const Admin: React.FC = () => {
                               city.estimatedDays?.includes('1-2')
                                 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
                                 : city.estimatedDays?.includes('2-3')
-                                ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30'
+                                ? 'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/30'
                                 : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30'
                             }`}>
                               ⚡ {city.estimatedDays || '2-4 Days'}
@@ -2343,7 +2343,7 @@ export const Admin: React.FC = () => {
                             <div className="flex items-center justify-end gap-1.5">
                               <button
                                 onClick={() => handleOpenEditCityModal(city)}
-                                className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-cyan-600 dark:text-cyan-400 transition"
+                                className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-amber-500 dark:text-amber-400 transition"
                                 title="Edit City Details"
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
@@ -2388,7 +2388,7 @@ export const Admin: React.FC = () => {
                     required
                     value={editingProduct.sku || ''}
                     onChange={(e) => setEditingProduct({ ...editingProduct, sku: e.target.value })}
-                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400"
                   />
                 </div>
                 <div>
@@ -2396,7 +2396,7 @@ export const Admin: React.FC = () => {
                   <select
                     value={editingProduct.category || 'Miniatures'}
                     onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
-                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400"
                   >
                     <option value="Miniatures">Miniatures</option>
                     <option value="Functional Parts">Functional Parts</option>
@@ -2414,7 +2414,7 @@ export const Admin: React.FC = () => {
                   value={editingProduct.name || ''}
                   onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
                   placeholder="e.g. Articulated Crystal Dragon"
-                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400"
                 />
               </div>
 
@@ -2424,7 +2424,7 @@ export const Admin: React.FC = () => {
                   rows={3}
                   value={editingProduct.description || ''}
                   onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
-                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400"
                 />
               </div>
 
@@ -2438,7 +2438,7 @@ export const Admin: React.FC = () => {
                     required
                     value={editingProduct.price || 0}
                     onChange={(e) => setEditingProduct({ ...editingProduct, price: parseFloat(e.target.value) || 0 })}
-                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400"
                   />
                 </div>
                 <div>
@@ -2449,7 +2449,7 @@ export const Admin: React.FC = () => {
                     required
                     value={editingProduct.stock !== undefined ? editingProduct.stock : 10}
                     onChange={(e) => setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value) || 0 })}
-                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400"
                   />
                 </div>
               </div>
@@ -2463,7 +2463,7 @@ export const Admin: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowAddFilamentModal(true)}
-                    className="text-[11px] font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 flex items-center gap-1"
+                    className="text-[11px] font-semibold text-amber-500 dark:text-amber-400 hover:text-amber-500 flex items-center gap-1"
                   >
                     <span>+ Add More Filament</span>
                   </button>
@@ -2473,7 +2473,7 @@ export const Admin: React.FC = () => {
                   <select
                     value={editingProduct.material || ''}
                     onChange={(e) => setEditingProduct({ ...editingProduct, material: e.target.value })}
-                    className="w-1/2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400"
+                    className="w-1/2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400"
                   >
                     <option value="">Choose Filament...</option>
                     {(settings.availableFilaments || ['PLA', 'PETG', 'ABS', 'CF-PETG', 'TPU', 'Marble PLA', 'Silk Rainbow PLA', 'Nylon', 'Resin']).map((f) => (
@@ -2486,7 +2486,7 @@ export const Admin: React.FC = () => {
                     value={editingProduct.material || ''}
                     onChange={(e) => setEditingProduct({ ...editingProduct, material: e.target.value })}
                     placeholder="Or type custom material..."
-                    className="w-1/2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400"
+                    className="w-1/2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400"
                   />
                 </div>
               </div>
@@ -2507,7 +2507,7 @@ export const Admin: React.FC = () => {
                       value={editLength}
                       onChange={(e) => handleDimChange('length', parseInt(e.target.value) || 1)}
                       placeholder="100"
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 font-mono"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
                     />
                   </div>
                   <div>
@@ -2520,7 +2520,7 @@ export const Admin: React.FC = () => {
                       value={editWidth}
                       onChange={(e) => handleDimChange('width', parseInt(e.target.value) || 1)}
                       placeholder="100"
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 font-mono"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
                     />
                   </div>
                   <div>
@@ -2533,7 +2533,7 @@ export const Admin: React.FC = () => {
                       value={editHeight}
                       onChange={(e) => handleDimChange('height', parseInt(e.target.value) || 1)}
                       placeholder="100"
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 font-mono"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
                     />
                   </div>
                 </div>
@@ -2564,7 +2564,7 @@ export const Admin: React.FC = () => {
                   )}
 
                   <div className="flex-1 space-y-1.5">
-                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-50 dark:bg-cyan-900/30 border border-cyan-200 dark:border-cyan-500/30 text-cyan-700 dark:text-cyan-300 text-xs font-semibold cursor-pointer hover:bg-cyan-100 dark:hover:bg-cyan-800/40 transition">
+                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-semibold cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-800/40 transition">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                       </svg>
@@ -2583,7 +2583,7 @@ export const Admin: React.FC = () => {
                       value={editingProduct.image || ''}
                       onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
                       placeholder="Or enter direct Image URL: /uploads/img.webp or https://..."
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-1.5 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-1.5 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400"
                     />
                   </div>
                 </div>
@@ -2599,7 +2599,7 @@ export const Admin: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setStlModalUrl(editingProduct.stlUrl || null)}
-                      className="text-[11px] font-semibold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1"
+                      className="text-[11px] font-semibold text-amber-500 dark:text-amber-400 hover:underline flex items-center gap-1"
                     >
                       👁️ Preview in 3D
                     </button>
@@ -2651,7 +2651,7 @@ export const Admin: React.FC = () => {
                   id="featured-toggle"
                   checked={editingProduct.featured || false}
                   onChange={(e) => setEditingProduct({ ...editingProduct, featured: e.target.checked })}
-                  className="rounded border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 text-cyan-500"
+                  className="rounded border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 text-amber-500"
                 />
                 <label htmlFor="featured-toggle" className="text-gray-700 dark:text-gray-300">Display in Featured Showcase on Home page</label>
               </div>
@@ -2666,7 +2666,7 @@ export const Admin: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold shadow-lg shadow-cyan-500/20"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-blue-600 text-white font-semibold shadow-lg shadow-amber-500/20"
                 >
                   Save Product
                 </button>
@@ -2687,7 +2687,7 @@ export const Admin: React.FC = () => {
 
             <p className="text-xs text-gray-600 dark:text-gray-400">
               Customer: <strong className="text-gray-900 dark:text-white">{quotingOrder.userName}</strong> ({quotingOrder.userEmail})<br />
-              Requested Material: <span className="text-cyan-600 dark:text-cyan-400">{quotingOrder.desiredMaterial}</span> • Infill: {quotingOrder.infillDensity}
+              Requested Material: <span className="text-amber-500 dark:text-amber-400">{quotingOrder.desiredMaterial}</span> • Infill: {quotingOrder.infillDensity}
             </p>
 
             <form onSubmit={handleSaveQuote} className="space-y-3 text-xs">
@@ -2737,11 +2737,11 @@ export const Admin: React.FC = () => {
       {/* 3D STL VIEWER MODAL */}
       {stlModalUrl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-          <div className="bg-white dark:bg-gray-900 border border-cyan-500/40 w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+          <div className="bg-white dark:bg-gray-900 border border-amber-500/40 w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl flex flex-col">
             <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
               <span className="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2">
-                <span className="text-cyan-500">⚡</span> Interactive 3D STL Inspection
-                <span className="text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                <span className="text-amber-500">⚡</span> Interactive 3D STL Inspection
+                <span className="text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">
                   Adaptive Auto-Fit Preview • No 160mm Limit
                 </span>
               </span>
@@ -2810,7 +2810,7 @@ export const Admin: React.FC = () => {
       {/* ADD NEW FILAMENT TYPE MODAL */}
       {showAddFilamentModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-gray-900 border border-cyan-500/40 w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-gray-900 border border-amber-500/40 w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2">
                 <span>🧵</span> Add Custom Filament
@@ -2837,7 +2837,7 @@ export const Admin: React.FC = () => {
                   value={newFilamentName}
                   onChange={(e) => setNewFilamentName(e.target.value)}
                   placeholder="e.g. Wood PLA"
-                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400"
                 />
               </div>
               <div className="flex justify-end gap-2 pt-1">
@@ -2850,7 +2850,7 @@ export const Admin: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-xs shadow-md shadow-cyan-500/20"
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-blue-600 text-white font-semibold text-xs shadow-md shadow-amber-500/20"
                 >
                   Add Filament
                 </button>
@@ -2863,7 +2863,7 @@ export const Admin: React.FC = () => {
       {/* ADD / EDIT DELIVERY CITY MODAL */}
       {deliveryCityModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-gray-900 border border-cyan-500/40 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-gray-900 border border-amber-500/40 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
                 <span>📍</span>
@@ -2896,7 +2896,7 @@ export const Admin: React.FC = () => {
                   value={cityForm.name}
                   onChange={(e) => setCityForm({ ...cityForm, name: e.target.value })}
                   placeholder="e.g. Chandrapur, Nagpur, Pune"
-                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 shadow-sm"
                 />
               </div>
 
@@ -2911,7 +2911,7 @@ export const Admin: React.FC = () => {
                     value={cityForm.state}
                     onChange={(e) => setCityForm({ ...cityForm, state: e.target.value })}
                     placeholder="e.g. Maharashtra"
-                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 shadow-sm"
                   />
                 </div>
 
@@ -2922,7 +2922,7 @@ export const Admin: React.FC = () => {
                   <select
                     value={cityForm.estimatedDays}
                     onChange={(e) => setCityForm({ ...cityForm, estimatedDays: e.target.value })}
-                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 shadow-sm"
                   >
                     <option value="1-2 Days">1-2 Days (Express / Local Hub)</option>
                     <option value="2-3 Days">2-3 Days (Standard Hub)</option>
@@ -2941,7 +2941,7 @@ export const Admin: React.FC = () => {
                   value={cityForm.pincodes}
                   onChange={(e) => setCityForm({ ...cityForm, pincodes: e.target.value })}
                   placeholder="e.g. 442401, 442402, 442403 or 'All Pincodes'"
-                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-amber-400 shadow-sm"
                 />
               </div>
 
@@ -2951,7 +2951,7 @@ export const Admin: React.FC = () => {
                     type="checkbox"
                     checked={cityForm.active}
                     onChange={(e) => setCityForm({ ...cityForm, active: e.target.checked })}
-                    className="w-4 h-4 text-cyan-600 rounded border-gray-300 dark:border-gray-700 focus:ring-cyan-500"
+                    className="w-4 h-4 text-amber-500 rounded border-gray-300 dark:border-gray-700 focus:ring-amber-500"
                   />
                   <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                     Active for customer checkout & storefront verification badge
@@ -2970,7 +2970,7 @@ export const Admin: React.FC = () => {
                 <button
                   type="submit"
                   disabled={citySubmitting}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs shadow-lg shadow-cyan-500/25 transition flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-blue-600 hover:from-amber-400 hover:to-blue-500 text-white font-semibold text-xs shadow-lg shadow-amber-500/25 transition flex items-center gap-2"
                 >
                   {citySubmitting ? (
                     <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />

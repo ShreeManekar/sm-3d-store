@@ -143,14 +143,14 @@ const Shop: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Toast Alert */}
         {toastMessage && (
-          <div className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-cyan-400/40 animate-fade-in">
-            <svg className="w-5 h-5 text-cyan-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-amber-500 to-yellow-600 text-gray-950 px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-amber-400/40 animate-fade-in font-bold">
+            <svg className="w-5 h-5 text-gray-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            <span className="text-sm font-semibold">{toastMessage}</span>
+            <span className="text-sm font-bold">{toastMessage}</span>
             <Link
               to="/cart"
-              className="ml-2 text-xs font-bold underline hover:text-cyan-200 uppercase tracking-wider"
+              className="ml-2 text-xs font-black underline hover:text-gray-800 uppercase tracking-wider"
             >
               View Cart &rarr;
             </Link>
@@ -160,11 +160,11 @@ const Shop: React.FC = () => {
         {/* Header & Breadcrumb */}
         <div className="mb-8">
           <nav className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-3" aria-label="Breadcrumb">
-            <Link to="/" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition">Home</Link>
+            <Link to="/" className="hover:text-amber-500 dark:hover:text-amber-400 transition">Home</Link>
             <span>/</span>
-            <span className="text-cyan-600 dark:text-cyan-400 font-medium">Shop Catalog</span>
+            <span className="text-amber-500 dark:text-amber-400 font-medium">Shop Catalog</span>
           </nav>
-          <span className="text-cyan-600 dark:text-cyan-400 font-semibold text-sm uppercase tracking-wider">Catalog</span>
+          <span className="text-amber-500 dark:text-amber-400 font-semibold text-sm uppercase tracking-wider">Catalog</span>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-1">
             <p className="text-gray-600 dark:text-gray-400 text-sm">
               Precision printed on tuned additive manufacturing hardware using high-grade filaments up to 160mm build volume.
@@ -180,7 +180,7 @@ const Shop: React.FC = () => {
         {searchQuery && (
           <div className="mb-6 flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2 text-sm max-w-fit shadow-sm">
             <span className="text-gray-600 dark:text-gray-400">Search results for:</span>
-            <span className="text-cyan-600 dark:text-cyan-400 font-semibold">"{searchQuery}"</span>
+            <span className="text-amber-500 font-semibold">"{searchQuery}"</span>
             <button
               onClick={clearSearch}
               className="ml-2 text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-white p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -199,10 +199,10 @@ const Shop: React.FC = () => {
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
                 selectedCategory === category
-                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/20'
-                  : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700 hover:text-cyan-600 dark:hover:text-white shadow-sm'
+                  ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-gray-950 shadow-md shadow-amber-500/20'
+                  : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-amber-500/40 hover:text-amber-500 dark:hover:text-white shadow-sm'
               }`}
             >
               {category}
@@ -223,7 +223,7 @@ const Shop: React.FC = () => {
                 clearSearch();
                 setSelectedCategory('All');
               }}
-              className="px-4 py-2 rounded-xl text-sm font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-cyan-600 dark:text-cyan-400 transition"
+              className="px-4 py-2 rounded-xl text-sm font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-amber-500 transition"
             >
               Reset Filters
             </button>
@@ -235,7 +235,7 @@ const Shop: React.FC = () => {
               return (
                 <div
                   key={product.id}
-                  className="group rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden hover:border-cyan-500/50 transition duration-300 flex flex-col justify-between shadow-md dark:shadow-lg"
+                  className="group rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden hover:border-amber-500/50 transition duration-300 flex flex-col justify-between shadow-md dark:shadow-xl dark:shadow-black/50"
                 >
                   <div>
                     <div className="h-56 overflow-hidden bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-2 relative">
@@ -249,7 +249,7 @@ const Shop: React.FC = () => {
                         }}
                       />
                       {qtyInCart > 0 && (
-                        <span className="absolute top-4 right-4 bg-cyan-500 text-gray-950 text-xs font-extrabold px-2 py-1 rounded-full shadow-lg">
+                        <span className="absolute top-4 right-4 bg-amber-500 text-gray-950 text-xs font-black px-2 py-1 rounded-full shadow-lg shadow-black/40">
                           {qtyInCart} in cart
                         </span>
                       )}
@@ -258,7 +258,7 @@ const Shop: React.FC = () => {
                       {product.stlUrl && (
                         <button
                           onClick={() => setActive3dProduct(product)}
-                          className="absolute bottom-3 left-3 bg-white/90 dark:bg-gray-900/90 hover:bg-cyan-500 hover:text-black text-cyan-600 dark:text-cyan-400 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-gray-200 dark:border-cyan-500/40 shadow-lg backdrop-blur flex items-center gap-1.5 transition"
+                          className="absolute bottom-3 left-3 bg-white/90 dark:bg-gray-900/90 hover:bg-amber-500 hover:text-gray-950 text-amber-500 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-gray-200 dark:border-amber-500/40 shadow-lg backdrop-blur flex items-center gap-1.5 transition"
                           title="Open Interactive 3D Model View"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,7 +269,7 @@ const Shop: React.FC = () => {
                       )}
                     </div>
                     <div className="p-5">
-                      <div className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 mb-1">{product.category}</div>
+                      <div className="text-xs font-semibold text-amber-500 mb-1">{product.category}</div>
                       <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-2">{product.name}</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{product.description}</p>
                       <div className="text-xs text-gray-500">Dimensions: {product.dimensions}</div>
@@ -277,12 +277,12 @@ const Shop: React.FC = () => {
                   </div>
 
                   <div className="p-5 pt-0 border-t border-gray-100 dark:border-gray-800/80 flex items-center justify-between mt-4">
-                    <span className="text-xl font-extrabold text-cyan-600 dark:text-cyan-400">₹{product.price}</span>
+                    <span className="text-xl font-extrabold text-amber-500">₹{product.price}</span>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleAddToCart(product, false)}
                         title="Add to cart and keep shopping"
-                        className="px-2.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-cyan-700 dark:text-cyan-300 border border-gray-200 dark:border-cyan-500/30 transition transform active:scale-95 flex items-center gap-1"
+                        className="px-2.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-amber-500 border border-gray-200 dark:border-amber-500/30 transition transform active:scale-95 flex items-center gap-1"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -291,7 +291,7 @@ const Shop: React.FC = () => {
                       </button>
                       <button
                         onClick={() => handleAddToCart(product, true)}
-                        className="px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md shadow-cyan-500/20 transition transform active:scale-95"
+                        className="px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-gray-950 shadow-md shadow-amber-500/20 transition transform active:scale-95"
                       >
                         Add to Cart &rarr;
                       </button>
@@ -306,11 +306,11 @@ const Shop: React.FC = () => {
         {/* 3D Model Inspection Modal */}
         {active3dProduct && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-cyan-500/40 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-amber-500/40 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl shadow-black/80 flex flex-col">
               <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
-                    <span className="text-cyan-600 dark:text-cyan-400">⚡</span> {active3dProduct.name}
+                    <span className="text-amber-500">⚡</span> {active3dProduct.name}
                   </h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{active3dProduct.category} • {active3dProduct.dimensions}</p>
                 </div>
@@ -332,13 +332,13 @@ const Shop: React.FC = () => {
               </div>
 
               <div className="p-4 bg-gray-50 dark:bg-gray-950/80 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
-                <span className="text-xl font-extrabold text-cyan-600 dark:text-cyan-400">₹{active3dProduct.price}</span>
+                <span className="text-xl font-extrabold text-amber-500">₹{active3dProduct.price}</span>
                 <button
                   onClick={() => {
                     handleAddToCart(active3dProduct, false);
                     setActive3dProduct(null);
                   }}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-xs shadow-lg shadow-cyan-500/20 hover:from-cyan-400 hover:to-blue-500 transition"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 text-gray-950 font-bold text-xs shadow-lg shadow-amber-500/20 hover:from-amber-400 hover:to-yellow-500 transition"
                 >
                   Add to Cart
                 </button>

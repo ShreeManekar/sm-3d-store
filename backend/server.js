@@ -680,6 +680,376 @@ app.get('/api/users', (req, res) => {
   res.json((db.users || []).map(stripSensitive));
 });
 
+// ── Materials Matrix Endpoint ──────────────────────────────────────────────
+const MATERIALS_DATA = [
+  {
+    id: 'mat_pla',
+    name: 'PLA+ (Polylactic Acid)',
+    shortCode: 'PLA',
+    category: 'Standard / Precision Detail',
+    tensileStrength: '55-65 MPa',
+    heatDeflection: '55 °C',
+    flexibility: 'Low (1.5% elongation)',
+    uvResistance: 'Moderate',
+    foodSafe: 'Food Contact Safe (Raw resin)',
+    finish: 'Smooth Satin / Aztec Gold Silk',
+    density: 1.24,
+    baseCostPerGram: 2.2,
+    leadTime: '24-48 Hours',
+    bestUses: ['Visual Prototypes', 'Articulated Miniatures', 'Architectural Models', 'Desk Accessories'],
+    pros: ['Ultra-fine 0.12mm layer capability', 'Zero warping', 'Crisp overhangs', 'Biodegradable eco-polymer'],
+    cons: ['Softens above 55°C', 'Brittle under repeated high-impact shocks']
+  },
+  {
+    id: 'mat_petg',
+    name: 'PETG (High-Strength Glycol)',
+    shortCode: 'PETG',
+    category: 'Engineering / Outdoor Functional',
+    tensileStrength: '50-58 MPa',
+    heatDeflection: '75 °C',
+    flexibility: 'Moderate (7% elongation)',
+    uvResistance: 'Excellent (Weatherproof)',
+    foodSafe: 'FDA Approved polymer',
+    finish: 'Semi-gloss industrial durable',
+    density: 1.27,
+    baseCostPerGram: 2.8,
+    leadTime: '24-48 Hours',
+    bestUses: ['Outdoor Enclosures', 'Waterproof Reservoirs', 'Snap-fit Hinges', 'Drone Mounts', 'Automotive Clamps'],
+    pros: ['Superior layer-to-layer weld strength', 'Chemically resistant to acids & oils', 'Weatherproof UV stability'],
+    cons: ['Slightly more flexible than PLA', 'Requires high temperature dry storage']
+  },
+  {
+    id: 'mat_abs',
+    name: 'ABS (Heat & Impact Resistant)',
+    shortCode: 'ABS',
+    category: 'High-Impact / Automotive',
+    tensileStrength: '42-48 MPa',
+    heatDeflection: '98 °C',
+    flexibility: 'High (10% elongation)',
+    uvResistance: 'Moderate',
+    foodSafe: 'Not Recommended',
+    finish: 'Matte (Acetone vapor-smoothable to glossy)',
+    density: 1.04,
+    baseCostPerGram: 3.2,
+    leadTime: '2-3 Days',
+    bestUses: ['Under-the-Hood Car Trim', 'Power Tool Casings', 'Electronics Housings', 'Machinable Fixtures'],
+    pros: ['Withstands heat up to 98°C', 'Can be acetone vapor-smoothed to mirror gloss', 'High ductile impact toughness'],
+    cons: ['Requires heated enclosure to print', 'Thermal contraction requires calibrated compensation']
+  },
+  {
+    id: 'mat_cf_petg',
+    name: 'Carbon Fiber PETG (CF-PETG)',
+    shortCode: 'CF-PETG',
+    category: 'Advanced Composite',
+    tensileStrength: '78-88 MPa',
+    heatDeflection: '84 °C',
+    flexibility: 'Ultra Rigid (<1% flex)',
+    uvResistance: 'Superior',
+    foodSafe: 'No',
+    finish: 'Stealth Matte Charcoal with micro-fiber texture',
+    density: 1.30,
+    baseCostPerGram: 4.8,
+    leadTime: '2-4 Days',
+    bestUses: ['UAV / Drone Airframes', 'Robotic Arms', 'Precision Measurement Jigs', 'Motorsport Brackets'],
+    pros: ['Exceptional strength-to-weight ratio', 'Virtually invisible layer seams', 'High dimensional stability'],
+    cons: ['Requires hardened tool-steel nozzles', 'Higher material cost']
+  },
+  {
+    id: 'mat_tpu',
+    name: 'TPU 95A (Flexible Elastomer)',
+    shortCode: 'TPU',
+    category: 'Flexible / Cushioning',
+    tensileStrength: '35-42 MPa',
+    heatDeflection: '60 °C',
+    flexibility: 'Extreme (450% elongation)',
+    uvResistance: 'High',
+    foodSafe: 'Specific industrial grades',
+    finish: 'Matte rubberized grip',
+    density: 1.21,
+    baseCostPerGram: 3.8,
+    leadTime: '2-4 Days',
+    bestUses: ['Vibration Dampers', 'Protective Bumpers', 'Sealing Gaskets', 'RC Tires', 'Ergonomic Grips'],
+    pros: ['Virtually tear-proof', 'High elasticity and bounceback', 'Resistant to greases and lubricants'],
+    cons: ['Slow print speed (25-35 mm/s)', 'Supports difficult to remove']
+  },
+  {
+    id: 'mat_nylon',
+    name: 'Nylon PA12',
+    shortCode: 'PA12',
+    category: 'Industrial Low-Friction',
+    tensileStrength: '65-72 MPa',
+    heatDeflection: '110 °C',
+    flexibility: 'Tough & Yielding',
+    uvResistance: 'Good',
+    foodSafe: 'Contact compliant grades',
+    finish: 'Industrial velvet matte',
+    density: 1.14,
+    baseCostPerGram: 5.5,
+    leadTime: '3-4 Days',
+    bestUses: ['Kinematic Gear Trains', 'Heavy-Duty Snap Clips', 'Bushings & Bearings', 'Functional End-Use Machinery'],
+    pros: ['Self-lubricating low friction coefficient', 'High fatigue cycle resistance', 'Continuous 110°C rating'],
+    cons: ['Highly hygroscopic (needs active drybox feeding)', 'Warps without specialized adhesive beds']
+  },
+  {
+    id: 'mat_resin',
+    name: 'Tough 8K Photopolymer Resin',
+    shortCode: 'Resin',
+    category: 'Ultra-High Detail Micro-SLA',
+    tensileStrength: '48-56 MPa',
+    heatDeflection: '65 °C',
+    flexibility: 'Rigid / Glass-like',
+    uvResistance: 'Requires clear UV-blocking topcoat',
+    foodSafe: 'No',
+    finish: 'Injection-mold smooth (0.025 - 0.05mm layers)',
+    density: 1.18,
+    baseCostPerGram: 6.0,
+    leadTime: '2-3 Days',
+    bestUses: ['Jewelry Master Molds', 'Tabletop Figurines & Miniatures', 'Medical & Dental Mockups', 'Fine Prototypes'],
+    pros: ['Micron-level sharpness', 'Zero visible layer lines', 'Glass-like intricate resolution'],
+    cons: ['Requires isopropyl wash & UV post-curing', 'More brittle than FDM filaments']
+  }
+];
+
+app.get('/api/materials', (req, res) => {
+  res.json(MATERIALS_DATA);
+});
+
+// ── Customer Reviews & Real Print Showcase ──────────────────────────────────
+const DEFAULT_REVIEWS = [
+  {
+    id: 'rev_1',
+    customerName: 'Aarav Mehta',
+    designation: 'Aerospace Engineering Student, IIT Bombay',
+    rating: 5,
+    verifiedBuyer: true,
+    productName: 'CF-PETG Lightweight Drone Gimbal',
+    category: 'Engineering & Drone Parts',
+    date: '2026-10-18',
+    image: '/assets/images/product_gearbox_1786179220985.webp',
+    review: 'Dimensional accuracy was within ±0.08mm! The carbon-fiber composite is exceptionally stiff with zero flex under 6S motor vibration. Saved our robotics team weeks of CNC machining time.',
+    material: 'Carbon Fiber PETG',
+    printTime: '8h 24m',
+    weight: '64g'
+  },
+  {
+    id: 'rev_2',
+    customerName: 'Priya Sundaram',
+    designation: 'Lead Interior Architect, Bengaluru',
+    rating: 5,
+    verifiedBuyer: true,
+    productName: 'Parametric Hexagon Planter & Water Reservoir',
+    category: 'Home & Decor',
+    date: '2026-10-21',
+    image: '/assets/images/product_planter_1786179235105.webp',
+    review: 'Ordered in Silk Aztec Gold. The water reservoir drainage tray fit together seamlessly with crisp watertight walls. Express dispatch arrived in Bengaluru in just 2 days with flawless packaging!',
+    material: 'Silk Aztec Gold PLA',
+    printTime: '11h 10m',
+    weight: '142g'
+  },
+  {
+    id: 'rev_3',
+    customerName: 'Vikram Rajput',
+    designation: 'Hardware Prototype Lead, Pune',
+    rating: 5,
+    verifiedBuyer: true,
+    productName: 'Dual Planetary Reduction Mechanism',
+    category: 'Robotics & Mechanisms',
+    date: '2026-10-24',
+    image: '/assets/images/product_dragon_1786179208256.webp',
+    review: 'The print-in-place tolerances are incredible. All 5 planetary gears rotated freely right off the build plate without any binding or manual sanding needed. Outstanding print calibration.',
+    material: 'High-Strength PETG',
+    printTime: '6h 45m',
+    weight: '98g'
+  },
+  {
+    id: 'rev_4',
+    customerName: 'Neha Deshmukh',
+    designation: 'Product Designer, Mumbai',
+    rating: 5,
+    verifiedBuyer: true,
+    productName: 'Ergonomic Studio Headphone Stand',
+    category: 'Desk Accessories',
+    date: '2026-10-25',
+    image: '/assets/images/product_headphone_stand_1786179253396.webp',
+    review: 'Rock solid base with zero wobble, gorgeous matte finish that looks like a factory-molded retail product. The integrated cable canal is super clean.',
+    material: 'Matte Jet Black PLA+',
+    printTime: '9h 15m',
+    weight: '185g'
+  }
+];
+
+app.get('/api/reviews', (req, res) => {
+  const db = loadDb();
+  const list = (db.reviews && db.reviews.length > 0) ? db.reviews : DEFAULT_REVIEWS;
+  res.json(list);
+});
+
+app.post('/api/reviews', (req, res) => {
+  const body = req.body || {};
+  const { customerName, productName, rating, review, material } = body;
+  if (!customerName || !productName || !review) {
+    return res.status(400).json({ error: 'Customer Name, Product Name, and Review are required' });
+  }
+
+  const db = loadDb();
+  db.reviews = db.reviews || [...DEFAULT_REVIEWS];
+  const newRev = {
+    id: `rev_${Date.now()}`,
+    customerName: customerName.trim(),
+    designation: body.designation || 'Verified 3D Printing Customer',
+    rating: Math.min(5, Math.max(1, parseInt(rating) || 5)),
+    verifiedBuyer: true,
+    productName: productName.trim(),
+    category: body.category || 'Custom Print',
+    date: new Date().toISOString().split('T')[0],
+    image: body.image || '/assets/images/product_dragon_1786179208256.webp',
+    review: review.trim(),
+    material: material || 'PLA+',
+    printTime: body.printTime || '5h 30m',
+    weight: body.weight || '80g'
+  };
+  db.reviews.unshift(newRev);
+  saveDb(db);
+  res.status(201).json({ message: 'Review added successfully', review: newRev });
+});
+
+// ── Live Order Production Tracking Pipeline ─────────────────────────────────
+app.get('/api/track/:orderId', (req, res) => {
+  const orderId = (req.params.orderId || '').trim();
+  if (!orderId) return res.status(400).json({ error: 'Order ID is required' });
+
+  const db = loadDb();
+  const order = (db.orders || []).find(o => o.id.toLowerCase() === orderId.toLowerCase());
+  const customOrder = (db.customOrders || []).find(c => c.id.toLowerCase() === orderId.toLowerCase());
+  const found = order || customOrder;
+
+  const stages = [
+    { key: 'slicing', title: 'File Slicing & Geometry Check', desc: 'Slicing G-code, optimizing layer heights & infill geometry', time: 'Day 1, 09:30 AM' },
+    { key: 'queued', title: 'Queued on 3D Printer Farm', desc: 'Assigned to calibrated bed with hardened 0.4mm nozzle', time: 'Day 1, 11:15 AM' },
+    { key: 'printing', title: 'In-Print (Active Additive Build)', desc: 'Active high-precision extrusion at 200mm/s', time: 'Day 1, 02:40 PM' },
+    { key: 'inspection', title: 'Quality & Tolerance Inspection', desc: 'Digital caliper verification (±0.15mm tolerance check)', time: 'Day 2, 10:00 AM' },
+    { key: 'postprocessing', title: 'Post-Processing & Curing', desc: 'Support removal, surface smoothing, and heat stabilization', time: 'Day 2, 01:20 PM' },
+    { key: 'packaging', title: 'Shockproof Protective Packaging', desc: 'Multi-layer bubble cushioning & sealed moisture-barrier box', time: 'Day 2, 04:30 PM' },
+    { key: 'dispatched', title: 'Dispatched & Courier In-Transit', desc: 'Handed over to express courier with door-to-door tracking', time: 'Day 3, 08:00 AM' }
+  ];
+
+  let currentStageIndex = 4; // Default to Quality Inspection stage
+  let statusText = 'Quality Inspection & Post-Processing';
+
+  if (found) {
+    const st = (found.fulfillmentStatus || found.status || '').toLowerCase();
+    if (st.includes('deliver')) {
+      currentStageIndex = 6;
+      statusText = 'Delivered / Out for Delivery';
+    } else if (st.includes('ship') || st.includes('transit')) {
+      currentStageIndex = 6;
+      statusText = 'In Transit with Express Courier';
+    } else if (st.includes('print') || st.includes('process')) {
+      currentStageIndex = 3;
+      statusText = 'Active 3D Printing & Quality Check';
+    } else if (st.includes('quote') || st.includes('request')) {
+      currentStageIndex = 1;
+      statusText = 'File Slicing & Engineering Verification';
+    }
+  }
+
+  const numPart = orderId.replace(/\D/g, '').slice(-6) || '782910';
+
+  res.json({
+    orderId,
+    found: !!found,
+    customerName: found?.userName || found?.shippingAddress?.name || 'Verified Customer',
+    destinationCity: found?.city || found?.shippingAddress?.city || 'Verified Direct Hub',
+    destinationState: found?.state || found?.shippingAddress?.state || 'Maharashtra',
+    courierPartner: 'BlueDart Express Air / Delhivery FastTrack',
+    trackingNumber: `SM3D-EXP-${numPart}IN`,
+    estimatedDelivery: '1-3 Business Days',
+    currentStageIndex,
+    statusText,
+    stages: stages.map((s, idx) => ({
+      ...s,
+      completed: idx <= currentStageIndex,
+      active: idx === currentStageIndex
+    })),
+    orderDetails: found ? {
+      total: found.total || found.quotePrice || 'Calculated at checkout',
+      itemsCount: found.items ? found.items.length : 1,
+      material: found.desiredMaterial || 'PLA+',
+      color: found.desiredColor || 'Silk Aztec Gold',
+      createdAt: found.createdAt || new Date().toISOString()
+    } : null
+  });
+});
+
+// ── Enterprise & Commercial RFQ Endpoint ────────────────────────────────────
+app.post('/api/rfq', (req, res) => {
+  const body = req.body || {};
+  const { companyName, contactName, email, phone, quantity, material, targetDate, projectNotes, ndaRequired } = body;
+
+  if (!contactName || !email || !phone) {
+    return res.status(400).json({ error: 'Contact Name, Email, and Phone number are required' });
+  }
+
+  const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+  if (cleanPhone.length !== 10) {
+    return res.status(400).json({ error: 'Valid 10-digit mobile number is required' });
+  }
+
+  const db = loadDb();
+  db.rfqs = db.rfqs || [];
+  const rfqItem = {
+    id: `RFQ-${Date.now().toString().slice(-6)}`,
+    companyName: (companyName || '').trim() || 'Independent Maker / Institution',
+    contactName: (contactName || '').trim(),
+    email: (email || '').trim().toLowerCase(),
+    phone: `+91 ${cleanPhone}`,
+    quantity: Math.max(1, parseInt(quantity) || 50),
+    material: material || 'PETG / Carbon Fiber',
+    targetDate: targetDate || 'Within 2 Weeks',
+    projectNotes: (projectNotes || '').trim(),
+    ndaRequired: !!ndaRequired,
+    status: 'Received',
+    createdAt: new Date().toISOString()
+  };
+
+  db.rfqs.push(rfqItem);
+  saveDb(db);
+  res.status(201).json({ message: 'Enterprise RFQ submitted successfully', rfq: rfqItem });
+});
+
+// ── FAQ Knowledge Base Endpoint ─────────────────────────────────────────────
+const FAQ_KNOWLEDGE_BASE = [
+  {
+    category: 'File Guidelines & Formats',
+    q: 'What 3D file formats do you accept for custom printing?',
+    a: 'We accept .STL and .3MF files directly through our web interface with support for files up to 100MB. For CAD native files (.STEP, .IGES, or SolidWorks parts), you can request an Enterprise RFQ or share them via WhatsApp.'
+  },
+  {
+    category: 'Print Tolerances & Fit',
+    q: 'What are your dimensional accuracy and tolerance guarantees?',
+    a: 'Our calibrated direct-drive printers maintain a standard dimensional tolerance of ±0.15mm for standard features, and down to ±0.08mm on precision mating surfaces. For moving assemblies or press-fit pins, we recommend a 0.25mm to 0.40mm clearance gap.'
+  },
+  {
+    category: 'Materials & Selection',
+    q: 'Which material should I choose: PLA+, PETG, or Carbon Fiber?',
+    a: 'Choose PLA+ for high aesthetic detail, smooth figurines, and indoor architectural display. Choose PETG for outdoor weatherproof enclosures, functional snap-fits, and chemical resistance. Choose Carbon Fiber PETG (CF-PETG) for high-rigidity drone arms, robotics, and load-bearing fixtures.'
+  },
+  {
+    category: 'Rush Production',
+    q: 'Can I get my parts printed and dispatched urgently?',
+    a: 'Yes! We offer Priority 24-48h Rush Dispatch for time-critical prototypes and academic deadlines. Standard production runs take 3-5 business days.'
+  },
+  {
+    category: 'Guarantee & Reprints',
+    q: 'What is your Free Reprint Guarantee?',
+    a: 'Every print undergoes optical and digital caliper inspection before boxing. If a part arrives defective, delaminated, or outside our stated tolerances, notify us within 48 hours for an immediate free reprint or full store credit.'
+  }
+];
+
+app.get('/api/faqs', (req, res) => {
+  res.json(FAQ_KNOWLEDGE_BASE);
+});
+
 // ── POST Routes ─────────────────────────────────────────────────────────────
 
 app.post('/api/auth/register', (req, res) => {
