@@ -452,7 +452,11 @@ const SQL_INJECTION_PATTERNS = [
   /(\bBENCHMARK\s*\()/i,
   /(\bPG_SLEEP\s*\()/i,
   /(admin'\s*--)/i,
-  /(';.*--)/i
+  /(';.*--)/i,
+  /(;\s*(cat|rm|ls|sh|bash|curl|wget)\b)/i,
+  /(\|\|\s*(cat|rm|ls|sh|bash|curl|wget)\b)/i,
+  /(&&\s*(cat|rm|ls|sh|bash|curl|wget)\b)/i,
+  /(\/etc\/(passwd|shadow))/i
 ];
 
 function containsSqlInjection(value) {
@@ -647,9 +651,13 @@ app.get('/api/products/:id', (req, res) => {
 });
 
 app.get('/api/custom-orders', (req, res) => {
+  const userEmail = req.query.userEmail;
+  if (!userEmail && !verifyAdminAccess(req)) {
+    return res.status(401).json({ error: 'Unauthorized: Admin authentication required to access custom orders directory' });
+  }
   const db = loadDb();
   let orders = db.customOrders || [];
-  if (req.query.userEmail) orders = orders.filter(o => o.userEmail === req.query.userEmail);
+  if (userEmail) orders = orders.filter(o => (o.userEmail || '').toLowerCase() === userEmail.toLowerCase());
   res.json(orders);
 });
 
@@ -661,9 +669,13 @@ app.get('/api/custom-orders/:id', (req, res) => {
 });
 
 app.get('/api/orders', (req, res) => {
+  const userEmail = req.query.userEmail;
+  if (!userEmail && !verifyAdminAccess(req)) {
+    return res.status(401).json({ error: 'Unauthorized: Admin authentication required to access customer orders directory' });
+  }
   const db = loadDb();
   let orders = db.orders || [];
-  if (req.query.userEmail) orders = orders.filter(o => o.userEmail === req.query.userEmail);
+  if (userEmail) orders = orders.filter(o => (o.userEmail || '').toLowerCase() === userEmail.toLowerCase());
   res.json(orders);
 });
 
@@ -1015,6 +1027,119 @@ app.post('/api/rfq', (req, res) => {
   db.rfqs.push(rfqItem);
   saveDb(db);
   res.status(201).json({ message: 'Enterprise RFQ submitted successfully', rfq: rfqItem });
+});
+
+app.get(['/api/rfq', '/api/rfqs'], (req, res) => {
+  if (!verifyAdminAccess(req)) {
+    return res.status(401).json({ error: 'Unauthorized: Admin authentication required' });
+  }
+  const db = loadDb();
+  res.json(db.rfqs || []);
+});
+
+app.put('/api/rfq/:id', (req, res) => {
+  if (!verifyAdminAccess(req)) {
+    return res.status(401).json({ error: 'Unauthorized: Admin authentication required' });
+  }
+  const db = loadDb();
+  db.rfqs = db.rfqs || [];
+  const idx = db.rfqs.findIndex(r => r.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'RFQ not found' });
+  db.rfqs[idx] = { ...db.rfqs[idx], ...req.body, updatedAt: new Date().toISOString() };
+  saveDb(db);
+  res.json({ message: 'RFQ updated successfully', rfq: db.rfqs[idx] });
+});
+
+app.delete('/api/rfq/:id', (req, res) => {
+  if (!verifyAdminAccess(req)) {
+    return res.status(401).json({ error: 'Unauthorized: Admin authentication required' });
+  }
+  const db = loadDb();
+  db.rfqs = (db.rfqs || []).filter(r => r.id !== req.params.id);
+  saveDb(db);
+  res.json({ success: true, message: 'RFQ deleted successfully' });
+});
+
+// ── Admin Financial Statements & Revenue Analytics (Admin Protected) ────────
+app.get('/api/admin/financial-summary', (req, res) => {
+  if (!verifyAdminAccess(req)) {
+    return res.status(401).json({ error: 'Unauthorized: Admin authentication required' });
+  }
+  const db = loadDb();
+  const orders = db.orders || [];
+  const customOrders = db.customOrders || [];
+
+  let totalRevenue = 0;
+  let paidRevenue = 0;
+  let pendingRevenue = 0;
+  let shippingTotal = 0;
+  const paymentMethods = {};
+  const statusCounts = {};
+
+  orders.forEach(o => {
+    const tot = Number(o.total) || 0;
+    const ship = Number(o.shippingFee) || 0;
+    totalRevenue += tot;
+    shippingTotal += ship;
+    if (o.paymentStatus === 'Paid') {
+      paidRevenue += tot;
+    } else {
+      pendingRevenue += tot;
+    }
+    const method = o.paymentMethod || 'Razorpay / UPI';
+    paymentMethods[method] = (paymentMethods[method] || 0) + tot;
+    const st = o.fulfillmentStatus || 'Pending';
+    statusCounts[st] = (statusCounts[st] || 0) + 1;
+  });
+
+  customOrders.forEach(c => {
+    if (c.quotePrice) {
+      const qp = Number(c.quotePrice);
+      if (c.status === 'Paid' || c.status === 'Completed' || c.status === 'Delivered') {
+        paidRevenue += qp;
+        totalRevenue += qp;
+      }
+    }
+  });
+
+  const avgOrderValue = orders.length > 0 ? Math.round(totalRevenue / orders.length) : 0;
+
+  res.json({
+    currency: db.settings?.currency || '₹',
+    totalRevenue,
+    paidRevenue,
+    pendingRevenue,
+    shippingTotal,
+    totalOrders: orders.length,
+    customOrdersCount: customOrders.length,
+    averageOrderValue: avgOrderValue,
+    paymentMethodsBreakdown: paymentMethods,
+    fulfillmentStatusBreakdown: statusCounts,
+    generatedAt: new Date().toISOString()
+  });
+});
+
+app.delete('/api/reviews/:id', (req, res) => {
+  if (!verifyAdminAccess(req)) {
+    return res.status(401).json({ error: 'Unauthorized: Admin authentication required' });
+  }
+  const db = loadDb();
+  db.reviews = (db.reviews || []).filter(r => r.id !== req.params.id);
+  saveDb(db);
+  res.json({ success: true, message: 'Review deleted successfully' });
+});
+
+app.put('/api/reviews/:id', (req, res) => {
+  if (!verifyAdminAccess(req)) {
+    return res.status(401).json({ error: 'Unauthorized: Admin authentication required' });
+  }
+  const db = loadDb();
+  db.reviews = db.reviews || [];
+  const idx = db.reviews.findIndex(r => r.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Review not found' });
+  db.reviews[idx] = { ...db.reviews[idx], ...req.body, updatedAt: new Date().toISOString() };
+  saveDb(db);
+  res.json({ message: 'Review updated successfully', review: db.reviews[idx] });
 });
 
 // ── FAQ Knowledge Base Endpoint ─────────────────────────────────────────────

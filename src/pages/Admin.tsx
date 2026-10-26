@@ -122,7 +122,7 @@ export interface DeliveryCity {
   pincodes?: string;
 }
 
-type TabType = 'overview' | 'products' | 'custom' | 'orders' | 'users' | 'payments' | 'settings' | 'delivery';
+type TabType = 'overview' | 'products' | 'custom' | 'orders' | 'users' | 'payments' | 'settings' | 'delivery' | 'rfqs' | 'reviews' | 'finances';
 
 export const Admin: React.FC = () => {
   const { currentUser, isAdmin, adminLogin, logout, getAdminHeaders } = useAuth();
@@ -131,7 +131,7 @@ export const Admin: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     const tabParam = searchParams.get('tab') as TabType;
-    if (tabParam && ['overview', 'products', 'custom', 'orders', 'users', 'payments', 'settings', 'delivery'].includes(tabParam)) {
+    if (tabParam && ['overview', 'products', 'custom', 'orders', 'users', 'payments', 'settings', 'delivery', 'rfqs', 'reviews', 'finances'].includes(tabParam)) {
       return tabParam;
     }
     return 'overview';
@@ -152,6 +152,10 @@ export const Admin: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [settings, setSettings] = useState<StoreSettings>({});
   const [deliveryCities, setDeliveryCities] = useState<DeliveryCity[]>([]);
+  const [rfqs, setRfqs] = useState<any[]>([]);
+  const [rfqSearch, setRfqSearch] = useState('');
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [financialSummary, setFinancialSummary] = useState<any>(null);
 
   // Delivery City Management States
   const [deliveryCitySearch, setDeliveryCitySearch] = useState('');
@@ -204,13 +208,16 @@ export const Admin: React.FC = () => {
     setLoading(true);
     const headers = getAdminHeaders();
     try {
-      const [pRes, cRes, oRes, uRes, sRes, dRes] = await Promise.all([
+      const [pRes, cRes, oRes, uRes, sRes, dRes, rfqRes, revRes, finRes] = await Promise.all([
         axios.get('/api/products').catch(() => ({ data: [] })),
-        axios.get('/api/custom-orders').catch(() => ({ data: [] })),
-        axios.get('/api/orders').catch(() => ({ data: [] })),
+        axios.get('/api/custom-orders', { headers }).catch(() => ({ data: [] })),
+        axios.get('/api/orders', { headers }).catch(() => ({ data: [] })),
         axios.get('/api/users', { headers }).catch(() => ({ data: [] })),
         axios.get('/api/settings').catch(() => ({ data: {} })),
         axios.get('/api/delivery-cities').catch(() => ({ data: { cities: [] } })),
+        axios.get('/api/rfqs', { headers }).catch(() => ({ data: [] })),
+        axios.get('/api/reviews').catch(() => ({ data: [] })),
+        axios.get('/api/admin/financial-summary', { headers }).catch(() => ({ data: null })),
       ]);
 
       setProducts(Array.isArray(pRes.data) ? pRes.data : []);
@@ -219,6 +226,9 @@ export const Admin: React.FC = () => {
       setUsers(Array.isArray(uRes.data) ? uRes.data : []);
       setSettings(sRes.data || {});
       setDeliveryCities(Array.isArray(dRes.data?.cities) ? dRes.data.cities : (Array.isArray(dRes.data) ? dRes.data : []));
+      setRfqs(Array.isArray(rfqRes.data) ? rfqRes.data : []);
+      setReviews(Array.isArray(revRes.data) ? revRes.data : []);
+      setFinancialSummary(finRes.data || null);
     } catch (err) {
       console.error('Failed to load admin data:', err);
     } finally {
@@ -235,7 +245,7 @@ export const Admin: React.FC = () => {
   // Sync activeTab and product edit modal with URL query parameters
   useEffect(() => {
     const tabParam = searchParams.get('tab') as TabType;
-    if (tabParam && ['overview', 'products', 'custom', 'orders', 'users', 'payments', 'settings', 'delivery'].includes(tabParam)) {
+    if (tabParam && ['overview', 'products', 'custom', 'orders', 'users', 'payments', 'settings', 'delivery', 'rfqs', 'reviews', 'finances'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
     const editId = searchParams.get('edit');
@@ -969,6 +979,113 @@ export const Admin: React.FC = () => {
     );
   });
 
+  // RFQ Management Handlers
+  const handleUpdateRfqStatus = async (rfqId: string, nextStatus: string) => {
+    const headers = getAdminHeaders();
+    try {
+      await axios.put(`/api/rfq/${rfqId}`, { status: nextStatus }, { headers });
+      setRfqs((prev) => prev.map((r) => r.id === rfqId ? { ...r, status: nextStatus } : r));
+      showToast(`RFQ ${rfqId} status updated to "${nextStatus}".`);
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Failed to update RFQ status.');
+    }
+  };
+
+  const handleDeleteRfq = async (rfqId: string) => {
+    if (!window.confirm(`Are you sure you want to delete inquiry "${rfqId}"?`)) return;
+    const headers = getAdminHeaders();
+    try {
+      await axios.delete(`/api/rfq/${rfqId}`, { headers });
+      setRfqs((prev) => prev.filter((r) => r.id !== rfqId));
+      showToast(`RFQ ${rfqId} deleted successfully.`);
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Failed to delete RFQ.');
+    }
+  };
+
+  const handleExportRfqsXlsx = () => {
+    if (rfqs.length === 0) {
+      alert('No RFQ records available to export.');
+      return;
+    }
+    const data = rfqs.map((r) => ({
+      'RFQ ID': r.id,
+      'Company Name': r.companyName || 'N/A',
+      'Contact Name': r.contactName || '',
+      'Email': r.email || '',
+      'Phone': r.phone || '',
+      'Quantity': r.quantity || 1,
+      'Material': r.material || '',
+      'Target Date': r.targetDate || '',
+      'NDA Required': r.ndaRequired ? 'Yes' : 'No',
+      'Status': r.status || 'Received',
+      'Project Notes': r.projectNotes || '',
+      'Created At': r.createdAt || '',
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Enterprise_RFQs');
+    XLSX.writeFile(workbook, `SM3D_Enterprise_RFQs_${new Date().toISOString().split('T')[0]}.xlsx`);
+    showToast('Exported Enterprise RFQs to Excel.');
+  };
+
+  // Reviews Moderation Handlers
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!window.confirm('Are you sure you want to remove this customer review?')) return;
+    const headers = getAdminHeaders();
+    try {
+      await axios.delete(`/api/reviews/${reviewId}`, { headers });
+      setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+      showToast('Customer review removed successfully.');
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Failed to delete review.');
+    }
+  };
+
+  // Financial Report Export
+  const handleExportFinancesXlsx = () => {
+    if (!orders || orders.length === 0) {
+      alert('No order records available to export.');
+      return;
+    }
+    const ordersData = orders.map((o) => ({
+      'Order ID': o.id,
+      'Customer': o.userName,
+      'Email': o.userEmail,
+      'Phone': o.userPhone,
+      'Subtotal (INR)': o.subtotal,
+      'Shipping Fee (INR)': o.shippingFee,
+      'Total (INR)': o.total,
+      'Payment Status': o.paymentStatus,
+      'Payment Method': o.paymentMethod,
+      'Transaction / Ref ID': o.upiTransactionId || o.paymentId || 'N/A',
+      'Fulfillment Status': o.fulfillmentStatus,
+      'City': o.shippingAddress?.city || '',
+      'State': o.shippingAddress?.state || '',
+      'Pincode': o.shippingAddress?.pincode || '',
+      'Order Date': o.createdAt,
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(ordersData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Financial_Ledger');
+    XLSX.writeFile(workbook, `SM3D_Financial_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+    showToast('Exported Financial Statements to Excel.');
+  };
+
+  // Filter RFQs
+  const filteredRfqs = rfqs.filter((r) => {
+    const q = rfqSearch.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      (r.id || '').toLowerCase().includes(q) ||
+      (r.companyName || '').toLowerCase().includes(q) ||
+      (r.contactName || '').toLowerCase().includes(q) ||
+      (r.email || '').toLowerCase().includes(q) ||
+      (r.material || '').toLowerCase().includes(q) ||
+      (r.status || '').toLowerCase().includes(q)
+    );
+  });
+
   // Filter products by query
   const filteredProducts = products.filter(
     (p) =>
@@ -1037,10 +1154,13 @@ export const Admin: React.FC = () => {
             { id: 'products', label: 'Products Catalog', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
             { id: 'custom', label: 'Custom Print Quotes', icon: 'M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
             { id: 'orders', label: 'Customer Orders', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
+            { id: 'finances', label: 'Financial Statements', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+            { id: 'rfqs', label: 'Enterprise RFQs', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+            { id: 'reviews', label: 'Customer Reviews', icon: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z' },
             { id: 'users', label: 'Users & Admins', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
-            { id: 'payments', label: 'Payments & Statements', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
-            { id: 'settings', label: 'Store & Machine Settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
+            { id: 'payments', label: 'Payments & Banking', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
             { id: 'delivery', label: 'Delivery & City Coverage', icon: 'M8 17a2 2 0 100 4 2 2 0 000-4zm10 0a2 2 0 100 4 2 2 0 000-4z M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h2' },
+            { id: 'settings', label: 'Store & Machine Settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -1061,6 +1181,16 @@ export const Admin: React.FC = () => {
               {tab.id === 'custom' && stats.pendingQuotesCount > 0 && (
                 <span className="w-5 h-5 rounded-full bg-amber-500 text-black font-extrabold text-[10px] flex items-center justify-center">
                   {stats.pendingQuotesCount}
+                </span>
+              )}
+              {tab.id === 'rfqs' && rfqs.length > 0 && (
+                <span className="w-5 h-5 rounded-full bg-blue-500 text-white font-extrabold text-[10px] flex items-center justify-center">
+                  {rfqs.length}
+                </span>
+              )}
+              {tab.id === 'reviews' && reviews.length > 0 && (
+                <span className="w-5 h-5 rounded-full bg-amber-500 text-black font-extrabold text-[10px] flex items-center justify-center">
+                  {reviews.length}
                 </span>
               )}
               {tab.id === 'delivery' && (
@@ -2361,6 +2491,371 @@ export const Admin: React.FC = () => {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 9. FINANCIAL STATEMENTS & REVENUE LEDGER TAB */}
+        {activeTab === 'finances' && (
+          <div className="space-y-6">
+            <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#0b0f17] border border-gray-200/80 dark:border-white/[0.08] shadow-xl">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-widest text-amber-500 mb-1">Financial Intelligence</div>
+                  <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <span>📊</span> Financial Statements & Revenue Analytics
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Audited Gross Merchandise Value (GMV), payment channel allocations, and transactional ledger.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleExportFinancesXlsx}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs shadow-md shadow-emerald-500/20 transition flex items-center gap-1.5 active:scale-95"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    <span>Export Statement (.xlsx)</span>
+                  </button>
+                  <button
+                    onClick={loadAllData}
+                    className="px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold text-xs border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                  >
+                    Refresh
+                  </button>
+                </div>
+              </div>
+
+              {/* 4 Financial Metric Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div className="p-5 rounded-2xl bg-gray-50 dark:bg-[#121824] border border-gray-200/80 dark:border-white/[0.08]">
+                  <div className="text-[10px] uppercase font-bold text-gray-400">Gross Revenue (GMV)</div>
+                  <div className="text-2xl font-black text-amber-500 font-mono mt-1">
+                    ₹{(financialSummary?.totalRevenue || stats.totalRevenue || 0).toLocaleString()}
+                  </div>
+                  <div className="text-[11px] text-gray-500 mt-1 flex items-center gap-1">
+                    <span>📦</span> Across {orders.length} orders
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-gray-50 dark:bg-[#121824] border border-gray-200/80 dark:border-white/[0.08]">
+                  <div className="text-[10px] uppercase font-bold text-gray-400">Paid Revenue Collected</div>
+                  <div className="text-2xl font-black text-emerald-500 font-mono mt-1">
+                    ₹{(financialSummary?.paidRevenue || 0).toLocaleString()}
+                  </div>
+                  <div className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
+                    <span>✓</span> Verified cash receipts
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-gray-50 dark:bg-[#121824] border border-gray-200/80 dark:border-white/[0.08]">
+                  <div className="text-[10px] uppercase font-bold text-gray-400">Pending / Awaiting Pay</div>
+                  <div className="text-2xl font-black text-yellow-500 font-mono mt-1">
+                    ₹{(financialSummary?.pendingRevenue || 0).toLocaleString()}
+                  </div>
+                  <div className="text-[11px] text-yellow-600 dark:text-yellow-400 mt-1 flex items-center gap-1">
+                    <span>⏳</span> In verification pipeline
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-gray-50 dark:bg-[#121824] border border-gray-200/80 dark:border-white/[0.08]">
+                  <div className="text-[10px] uppercase font-bold text-gray-400">Average Order Value (AOV)</div>
+                  <div className="text-2xl font-black text-purple-400 font-mono mt-1">
+                    ₹{(financialSummary?.averageOrderValue || 0).toLocaleString()}
+                  </div>
+                  <div className="text-[11px] text-gray-500 mt-1 flex items-center gap-1">
+                    <span>🚚</span> Shipping: ₹{(financialSummary?.shippingTotal || 0).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Analytical Charts & Breakdown */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                {/* Payment Channel Allocation */}
+                <div className="p-5 rounded-2xl bg-gray-50 dark:bg-[#121824] border border-gray-200/80 dark:border-white/[0.08]">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-1.5">
+                    <span>💳</span> Payment Channel Allocation
+                  </h3>
+                  <div className="space-y-3">
+                    {financialSummary?.paymentMethodsBreakdown && Object.keys(financialSummary.paymentMethodsBreakdown).length > 0 ? (
+                      Object.entries(financialSummary.paymentMethodsBreakdown).map(([method, amount]: [string, any]) => {
+                        const total = financialSummary.totalRevenue || 1;
+                        const pct = Math.round((Number(amount) / total) * 100);
+                        return (
+                          <div key={method} className="space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span className="font-medium text-gray-700 dark:text-gray-300">{method}</span>
+                              <span className="font-mono font-bold text-gray-900 dark:text-white">₹{amount.toLocaleString()} ({pct}%)</span>
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2 overflow-hidden">
+                              <div className="bg-gradient-to-r from-amber-500 to-yellow-500 h-2 rounded-full" style={{ width: `${Math.min(100, Math.max(5, pct))}%` }}></div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-xs text-gray-500 py-4 text-center">No payment transactions recorded yet.</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Fulfillment Status Breakdown */}
+                <div className="p-5 rounded-2xl bg-gray-50 dark:bg-[#121824] border border-gray-200/80 dark:border-white/[0.08]">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-1.5">
+                    <span>⚙️</span> Production & Fulfillment Pipeline
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    {financialSummary?.fulfillmentStatusBreakdown && Object.entries(financialSummary.fulfillmentStatusBreakdown).map(([status, count]: [string, any]) => (
+                      <div key={status} className="p-3 rounded-xl bg-white dark:bg-[#0b0f17] border border-gray-200 dark:border-gray-800">
+                        <div className="text-[10px] uppercase font-bold text-gray-400">{status}</div>
+                        <div className="text-lg font-black text-gray-900 dark:text-white font-mono mt-0.5">{count} orders</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Orders Ledger Table */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-1.5">
+                  <span>📜</span> Transactional Order Ledger
+                </h3>
+                <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-white/[0.08]">
+                  <table className="w-full text-left text-xs text-gray-600 dark:text-gray-300">
+                    <thead className="bg-gray-100 dark:bg-gray-900/90 text-gray-700 dark:text-gray-300 font-bold uppercase text-[10px]">
+                      <tr>
+                        <th className="py-3 px-4">Order ID</th>
+                        <th className="py-3 px-4">Customer</th>
+                        <th className="py-3 px-4">Amount</th>
+                        <th className="py-3 px-4">Method</th>
+                        <th className="py-3 px-4">Payment</th>
+                        <th className="py-3 px-4">Fulfillment</th>
+                        <th className="py-3 px-4">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                      {orders.map((o) => (
+                        <tr key={o.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition">
+                          <td className="py-3 px-4 font-mono font-bold text-amber-500">{o.id}</td>
+                          <td className="py-3 px-4">
+                            <div className="font-semibold text-gray-900 dark:text-white">{o.userName}</div>
+                            <div className="text-[10px] text-gray-400">{o.userEmail}</div>
+                          </td>
+                          <td className="py-3 px-4 font-mono font-bold text-gray-900 dark:text-white">₹{o.total}</td>
+                          <td className="py-3 px-4 text-[11px]">{o.paymentMethod}</td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              o.paymentStatus === 'Paid' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                            }`}>
+                              {o.paymentStatus}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                              {o.fulfillmentStatus}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-[10px] text-gray-400">
+                            {new Date(o.createdAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 10. ENTERPRISE RFQS TAB */}
+        {activeTab === 'rfqs' && (
+          <div className="space-y-6">
+            <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#0b0f17] border border-gray-200/80 dark:border-white/[0.08] shadow-xl">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-widest text-amber-500 mb-1">B2B Manufacturing</div>
+                  <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <span>🏢</span> Enterprise & Commercial RFQ Desk
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Review and quote enterprise inquiries, high-volume production runs, and NDA-protected institutional parts.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleExportRfqsXlsx}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition flex items-center gap-1.5 active:scale-95"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    <span>Export RFQs (.xlsx)</span>
+                  </button>
+                  <button
+                    onClick={loadAllData}
+                    className="px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold text-xs border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                  >
+                    Refresh
+                  </button>
+                </div>
+              </div>
+
+              {/* Search Bar */}
+              <div className="mb-6">
+                <input
+                  type="text"
+                  placeholder="Filter inquiries by company, contact, material, or RFQ ID..."
+                  value={rfqSearch}
+                  onChange={(e) => setRfqSearch(e.target.value)}
+                  className="w-full sm:max-w-md bg-gray-50 dark:bg-[#121824] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              {filteredRfqs.length === 0 ? (
+                <div className="text-center py-12 text-gray-500 text-xs">
+                  No Enterprise RFQs match your filter criteria.
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-white/[0.08]">
+                  <table className="w-full text-left text-xs text-gray-600 dark:text-gray-300">
+                    <thead className="bg-gray-100 dark:bg-gray-900/90 text-gray-700 dark:text-gray-300 font-bold uppercase text-[10px]">
+                      <tr>
+                        <th className="py-3 px-4">RFQ ID</th>
+                        <th className="py-3 px-4">Company & Contact</th>
+                        <th className="py-3 px-4">Units & Material</th>
+                        <th className="py-3 px-4">Target Timeline</th>
+                        <th className="py-3 px-4">NDA</th>
+                        <th className="py-3 px-4">Status</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                      {filteredRfqs.map((r) => (
+                        <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition">
+                          <td className="py-3.5 px-4 font-mono font-bold text-amber-500">{r.id}</td>
+                          <td className="py-3.5 px-4">
+                            <div className="font-bold text-gray-900 dark:text-white">{r.companyName || 'Independent'}</div>
+                            <div className="text-[11px] text-gray-500">{r.contactName} ({r.phone})</div>
+                            <div className="text-[10px] text-gray-400 font-mono">{r.email}</div>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <span className="font-mono font-bold text-amber-400 text-sm">{r.quantity} pcs</span>
+                            <div className="text-[11px] text-gray-400">{r.material}</div>
+                          </td>
+                          <td className="py-3.5 px-4 text-xs font-medium">
+                            {r.targetDate}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            {r.ndaRequired ? (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                                NDA Required
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-gray-400">Standard</span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <select
+                              value={r.status || 'Received'}
+                              onChange={(e) => handleUpdateRfqStatus(r.id, e.target.value)}
+                              className="bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg px-2.5 py-1 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:border-amber-400"
+                            >
+                              <option value="Received">Received</option>
+                              <option value="In Review">In Review</option>
+                              <option value="Quoted">Quoted</option>
+                              <option value="Fulfilled">Fulfilled</option>
+                              <option value="Closed">Closed</option>
+                            </select>
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <button
+                              onClick={() => handleDeleteRfq(r.id)}
+                              className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 transition"
+                              title="Delete RFQ record"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 11. REVIEWS MODERATION TAB */}
+        {activeTab === 'reviews' && (
+          <div className="space-y-6">
+            <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#0b0f17] border border-gray-200/80 dark:border-white/[0.08] shadow-xl">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-widest text-amber-500 mb-1">Customer Feedback</div>
+                  <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <span>⭐</span> Customer Reviews & Showcase Moderation
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Moderate customer ratings, verified purchase badges, and showcase photos displayed on the live website.
+                  </p>
+                </div>
+                <button
+                  onClick={loadAllData}
+                  className="px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold text-xs border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                >
+                  Refresh
+                </button>
+              </div>
+
+              {reviews.length === 0 ? (
+                <div className="text-center py-12 text-gray-500 text-xs">
+                  No reviews submitted yet.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {reviews.map((rev) => (
+                    <div
+                      key={rev.id}
+                      className="p-5 rounded-2xl bg-gray-50 dark:bg-[#121824] border border-gray-200/80 dark:border-white/[0.08] flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <span className="font-bold text-sm text-gray-900 dark:text-white">{rev.customerName}</span>
+                            <span className="ml-2 text-[10px] text-gray-400">{rev.date}</span>
+                          </div>
+                          <div className="flex text-amber-400 text-xs">
+                            {Array.from({ length: rev.rating || 5 }).map((_, i) => (
+                              <span key={i}>★</span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-[11px] font-semibold text-amber-500">{rev.productName}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold">
+                            {rev.material || 'PLA+'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed italic">
+                          "{rev.review}"
+                        </p>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-gray-200 dark:border-white/[0.06] flex items-center justify-between text-[11px]">
+                        <span className="text-gray-400">
+                          {rev.printTime && `Print: ${rev.printTime}`} {rev.weight && `• ${rev.weight}`}
+                        </span>
+                        <button
+                          onClick={() => handleDeleteReview(rev.id)}
+                          className="px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 font-semibold transition"
+                        >
+                          Remove Review
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

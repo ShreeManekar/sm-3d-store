@@ -199,10 +199,10 @@ const Shop: React.FC = () => {
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 ease-out active:scale-95 ${
                 selectedCategory === category
-                  ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-gray-950 shadow-md shadow-amber-500/20'
-                  : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-amber-500/40 hover:text-amber-500 dark:hover:text-white shadow-sm'
+                  ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-gray-950 shadow-md shadow-amber-500/25'
+                  : 'bg-white/80 dark:bg-[#0b0f17]/80 backdrop-blur border border-gray-200/80 dark:border-white/[0.08] text-gray-700 dark:text-gray-300 hover:border-amber-500/40 hover:text-amber-500 dark:hover:text-white shadow-sm'
               }`}
             >
               {category}
@@ -235,7 +235,7 @@ const Shop: React.FC = () => {
               return (
                 <div
                   key={product.id}
-                  className="group rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden hover:border-amber-500/50 transition duration-300 flex flex-col justify-between shadow-md dark:shadow-xl dark:shadow-black/50"
+                  className="group rounded-3xl bg-white dark:bg-[#0b0f17] border border-gray-200/80 dark:border-white/[0.08] overflow-hidden hover:border-amber-500/40 transition-all duration-500 ease-out flex flex-col justify-between shadow-sm hover:shadow-2xl hover:shadow-black/50 hover:-translate-y-1"
                 >
                   <div>
                     <div className="h-56 overflow-hidden bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-2 relative">

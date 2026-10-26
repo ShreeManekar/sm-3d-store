@@ -7,6 +7,22 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"SF Pro Display"',
+          '"SF Pro Text"',
+          '"SF Pro"',
+          'Inter',
+          'system-ui',
+          'sans-serif',
+        ],
+      },
+      transitionTimingFunction: {
+        'apple-ease': 'cubic-bezier(0.16, 1, 0.3, 1)',
+        'apple-spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      },
       colors: {
         darkBg: '#080b11',
         darkSurface: '#0b0f17',
@@ -16,6 +32,19 @@ module.exports = {
         goldDark: '#d97706',
         neonCyan: '#f59e0b', // fallback so any legacy neonCyan renders golden
         neonPurple: '#d97706',
+        appleGray: {
+          50: '#fbfbfd',
+          100: '#f5f5f7',
+          200: '#e8e8ed',
+          300: '#d2d2d7',
+          400: '#86868b',
+          500: '#6e6e73',
+          600: '#424245',
+          700: '#333336',
+          800: '#1d1d1f',
+          900: '#0b0f17',
+          950: '#080b11',
+        },
         gold: {
           50: '#fffbeb',
           100: '#fef3c7',
@@ -36,6 +65,8 @@ module.exports = {
         'gold-rim': '0 0 0 1px rgba(245, 158, 11, 0.3), 0 12px 35px -8px rgba(0, 0, 0, 0.85)',
         'dark-velvet': '0 20px 45px -15px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(245, 158, 11, 0.12)',
         'dark-deep': '0 25px 60px -15px rgba(0, 0, 0, 0.98)',
+        'apple-card': '0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08)',
+        'apple-glow': '0 0 40px -10px rgba(245, 158, 11, 0.22)',
       },
     },
   },

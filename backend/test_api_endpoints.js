@@ -285,6 +285,31 @@ async function runTests() {
   const faqsRes = await testEndpoint('GET', '/api/faqs');
   assert(faqsRes.status === 200 && Array.isArray(faqsRes.data) && faqsRes.data.length >= 4, 'GET /api/faqs returns knowledge base and DFAM guide');
 
+  console.log('\n--- 22. Strict Admin Data Protection (Orders, RFQs, Financial Summary) ---');
+  const unauthOrders = await testEndpoint('GET', '/api/orders');
+  assert(unauthOrders.status === 401, 'GET /api/orders without token returns 401 Unauthorized');
+
+  const authOrders = await testEndpoint('GET', '/api/orders', null, { 'Authorization': `Bearer ${adminToken}` });
+  assert(authOrders.status === 200 && Array.isArray(authOrders.data), 'GET /api/orders with adminToken returns orders array');
+
+  const unauthCustom = await testEndpoint('GET', '/api/custom-orders');
+  assert(unauthCustom.status === 401, 'GET /api/custom-orders without token returns 401 Unauthorized');
+
+  const authCustom = await testEndpoint('GET', '/api/custom-orders', null, { 'Authorization': `Bearer ${adminToken}` });
+  assert(authCustom.status === 200 && Array.isArray(authCustom.data), 'GET /api/custom-orders with adminToken returns custom orders array');
+
+  const unauthRfq = await testEndpoint('GET', '/api/rfq');
+  assert(unauthRfq.status === 401, 'GET /api/rfq without token returns 401 Unauthorized');
+
+  const authRfq = await testEndpoint('GET', '/api/rfq', null, { 'Authorization': `Bearer ${adminToken}` });
+  assert(authRfq.status === 200 && Array.isArray(authRfq.data), 'GET /api/rfq with adminToken returns RFQs list');
+
+  const unauthFinance = await testEndpoint('GET', '/api/admin/financial-summary');
+  assert(unauthFinance.status === 401, 'GET /api/admin/financial-summary without token returns 401 Unauthorized');
+
+  const authFinance = await testEndpoint('GET', '/api/admin/financial-summary', null, { 'Authorization': `Bearer ${adminToken}` });
+  assert(authFinance.status === 200 && authFinance.data && typeof authFinance.data.totalRevenue === 'number', 'GET /api/admin/financial-summary with adminToken returns financial statement');
+
   console.log(`\n========================================`);
   console.log(`Summary: ${passed} Passed, ${failed} Failed`);
   console.log(`========================================\n`);
