@@ -95,6 +95,7 @@ export const CustomPrint: React.FC = () => {
 
   // Submission & feedback
   const [loading, setLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string>('');
   const [submittedOrder, setSubmittedOrder] = useState<any | null>(null);
@@ -152,21 +153,20 @@ export const CustomPrint: React.FC = () => {
     setSelectedFile(file);
     setUploadedFileUrl('');
 
-    // Read buffer for 3D viewer
-    const isCadOnly = lower.endsWith('.step') || lower.endsWith('.stp');
-    if (!isCadOnly) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (reader.result instanceof ArrayBuffer) {
-          setFileBuffer(reader.result);
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    } else {
-      setFileBuffer(null);
-    }
+    // Read buffer for 3D viewer across all formats (.stl, .3mf, .obj, .step, .stp)
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.result instanceof ArrayBuffer) {
+        setFileBuffer(reader.result);
+      }
+    };
+    reader.onerror = () => {
+      console.warn('Could not read file buffer for 3D viewport');
+    };
+    reader.readAsArrayBuffer(file);
 
     // Immediately upload to server asynchronously with progress
+    setIsUploading(true);
     setUploadProgress(0);
     const dataReader = new FileReader();
     dataReader.onload = async () => {
@@ -194,7 +194,14 @@ export const CustomPrint: React.FC = () => {
         console.error('File upload failed:', err);
         setError(err.response?.data?.error || err.message || 'File upload failed. Please try again.');
         setUploadProgress(null);
+      } finally {
+        setIsUploading(false);
       }
+    };
+    dataReader.onerror = () => {
+      setError('Failed to read file from disk for upload.');
+      setIsUploading(false);
+      setUploadProgress(null);
     };
     dataReader.readAsDataURL(file);
 
@@ -274,7 +281,45 @@ export const CustomPrint: React.FC = () => {
   }, [calculatedWeightGrams, activeMat, layerHeight, postProcessing, isRushOrder, orientation]);
 
   // Add Custom Print directly to Cart
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    let fileUrl = uploadedFileUrl;
+    if (selectedFile && !fileUrl) {
+      setIsUploading(true);
+      setUploadProgress(0);
+      try {
+        const fileDataUri = await new Promise<string>((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve(r.result as string);
+          r.onerror = reject;
+          r.readAsDataURL(selectedFile);
+        });
+
+        const uploadRes = await axios.post('/api/upload', {
+          filename: selectedFile.name,
+          fileData: fileDataUri,
+        }, {
+          timeout: 300000,
+          headers: { 'Content-Type': 'application/json' },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              setUploadProgress(percent);
+            }
+          }
+        });
+        fileUrl = uploadRes.data?.fileUrl || '';
+        setUploadedFileUrl(fileUrl);
+        setUploadProgress(100);
+      } catch (err: any) {
+        console.error('File upload failed:', err);
+        setError(err.response?.data?.error || err.message || 'File upload failed. Please try again.');
+        setIsUploading(false);
+        return;
+      } finally {
+        setIsUploading(false);
+      }
+    }
+
     const orientationOpt = ORIENTATION_OPTIONS.find((o) => o.id === orientation) || ORIENTATION_OPTIONS[0];
     const customItem = {
       id: `custom_${Date.now()}`,
@@ -284,7 +329,7 @@ export const CustomPrint: React.FC = () => {
       description: `${activeMat.name} • ${color} • ${infill}% Infill • ${layerHeight}mm • ${orientationOpt.name} • ${dimL}×${dimW}×${dimH}mm${isRushOrder ? ' [24-48h Rush Dispatch]' : ''}`,
       image: '/assets/images/hero_3d_printer_1786179196218.webp',
       dimensions: `${dimL} × ${dimW} × ${dimH} mm`,
-      fileUrl: uploadedFileUrl || '',
+      fileUrl: fileUrl || '',
       fileName: selectedFile ? selectedFile.name : '',
     };
 
@@ -461,6 +506,7 @@ export const CustomPrint: React.FC = () => {
 
                 <StlViewer
                   fileBuffer={fileBuffer}
+                  fileName={selectedFile?.name}
                   stlUrl={!fileBuffer ? sampleUrl : undefined}
                   height={380}
                   maxBuildDimension={160}
@@ -836,10 +882,22 @@ export const CustomPrint: React.FC = () => {
                 <div className="space-y-3 pt-1">
                   <button
                     type="button"
+                    disabled={isUploading}
                     onClick={handleAddToCart}
-                    className="apple-btn-primary w-full py-4 px-6 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:brightness-105 text-gray-950 font-bold text-sm shadow-xl shadow-amber-500/25 transition flex items-center justify-center gap-2"
+                    className={`apple-btn-primary w-full py-4 px-6 rounded-full font-bold text-sm shadow-xl transition flex items-center justify-center gap-2 ${
+                      isUploading
+                        ? 'bg-gray-700 text-gray-300 cursor-not-allowed opacity-80'
+                        : 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:brightness-105 text-gray-950 shadow-amber-500/25'
+                    }`}
                   >
-                    <span>🛒 Add Custom Print to Cart (₹{calculatedPricing.finalPrice})</span>
+                    {isUploading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                        <span>Uploading 3D Model ({uploadProgress ?? 0}%)...</span>
+                      </>
+                    ) : (
+                      <span>🛒 Add Custom Print to Cart (₹{calculatedPricing.finalPrice})</span>
+                    )}
                   </button>
 
                   <div className="text-center text-[11px] text-gray-400 dark:text-zinc-500">— or request custom engineer review —</div>

@@ -334,6 +334,7 @@ const Shop: React.FC = () => {
               <div className="p-4 bg-gray-50 dark:bg-transparent">
                 <StlViewer
                   stlUrl={active3dProduct.stlUrl || '/assets/models/sample_dragon.stl'}
+                  fileName={active3dProduct.stlUrl || active3dProduct.name}
                   height={380}
                   noBuildLimit={true}
                   allowScaleAdjustment={true}

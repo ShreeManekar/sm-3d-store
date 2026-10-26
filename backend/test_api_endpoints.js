@@ -363,6 +363,15 @@ async function runTests() {
   assert(testOrderRes.status === 201, 'POST /api/orders creates test order for payment method verification');
   const testOrderId = testOrderRes.data.order.id;
 
+  // Test COD order defaults paymentStatus to 'Not Paid'
+  const codOrderRes = await testEndpoint('POST', '/api/orders', {
+    items: [{ productId: 'test_p1', name: 'Test Bracket', price: 150, quantity: 1 }],
+    userName: 'COD Customer',
+    userEmail: 'cod@test.com',
+    paymentMethod: 'COD'
+  });
+  assert(codOrderRes.status === 201 && codOrderRes.data.order.paymentStatus === 'Not Paid', 'POST /api/orders defaults paymentStatus to "Not Paid" for COD');
+
   const paymentOptions = ['Paid', 'Not Paid', 'COD', 'WhatsApp', 'Bank Account', 'UPI'];
   for (const opt of paymentOptions) {
     const updateRes = await testEndpoint('PUT', `/api/orders/${testOrderId}/status`, {

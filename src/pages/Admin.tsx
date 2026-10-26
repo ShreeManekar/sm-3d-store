@@ -325,10 +325,16 @@ export const Admin: React.FC = () => {
 
     const lower = file.name.toLowerCase();
     const is3d = lower.endsWith('.stl') || lower.endsWith('.3mf') || lower.endsWith('.obj') || lower.endsWith('.step') || lower.endsWith('.stp');
+    if (is3d) setIncludeModel(true);
     setUploadingImage(true);
     setImgUploadProgress(0);
 
     const reader = new FileReader();
+    reader.onerror = () => {
+      alert('Failed to read image file from disk.');
+      setUploadingImage(false);
+      setImgUploadProgress(null);
+    };
     reader.onload = async () => {
       try {
         const base64 = reader.result as string;
@@ -348,6 +354,7 @@ export const Admin: React.FC = () => {
         setEditingProduct((prev) => {
           if (!prev) return null;
           if (is3d) {
+            setIncludeModel(true);
             return {
               ...prev,
               stlUrl: url,
@@ -400,9 +407,15 @@ export const Admin: React.FC = () => {
       return;
     }
 
+    setIncludeModel(true);
     setUploadingStl(true);
     setStlUploadProgress(0);
     const reader = new FileReader();
+    reader.onerror = () => {
+      alert('Failed to read 3D model file from disk.');
+      setUploadingStl(false);
+      setStlUploadProgress(null);
+    };
     reader.onload = async () => {
       try {
         const base64 = reader.result as string;
@@ -419,6 +432,7 @@ export const Admin: React.FC = () => {
           }
         });
         const url = res.data.fileUrl;
+        setIncludeModel(true);
         setEditingProduct((prev) =>
           prev
             ? {
@@ -460,6 +474,10 @@ export const Admin: React.FC = () => {
 
     setUploadingQr(true);
     const reader = new FileReader();
+    reader.onerror = () => {
+      alert('Failed to read QR image file from disk.');
+      setUploadingQr(false);
+    };
     reader.onload = async () => {
       try {
         const base64 = reader.result as string;
@@ -698,49 +716,55 @@ export const Admin: React.FC = () => {
     const status = (ord.paymentStatus || '').trim().toLowerCase();
     const method = (ord.paymentMethod || '').trim().toLowerCase();
 
-    // Check paymentStatus first
-    if (status === 'paid' || status === 'completed') return 'Paid';
-    if (status === 'not paid' || status === 'unpaid' || status === 'pending') return 'Not Paid';
+    // 1. Direct status check
     if (status === 'cod') return 'COD';
     if (status === 'whatsapp') return 'WhatsApp';
     if (status === 'bank account' || status === 'account transfer') return 'Bank Account';
     if (status === 'upi') return 'UPI';
+    if (status === 'not paid' || status === 'unpaid' || status === 'pending') return 'Not Paid';
+    if (status === 'paid' || status === 'completed') {
+      if (method.includes('cod')) return 'COD';
+      return 'Paid';
+    }
 
-    // Fallback to paymentMethod
+    // 2. Fallback to paymentMethod
     if (method.includes('cod')) return 'COD';
     if (method.includes('whatsapp')) return 'WhatsApp';
     if (method.includes('bank') || method.includes('account')) return 'Bank Account';
     if (method.includes('upi')) return 'UPI';
+    if (method.includes('not paid') || method.includes('unpaid') || method.includes('pending')) return 'Not Paid';
     if (method.includes('paid')) return 'Paid';
-    if (method.includes('not paid') || method.includes('pending')) return 'Not Paid';
 
     return 'Paid';
   };
 
   const getPaymentBadge = (opt: string) => {
-    switch (opt) {
-      case 'Paid':
+    const normalized = (opt || '').trim().toLowerCase();
+    switch (normalized) {
+      case 'paid':
         return {
           badgeClass: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30',
           icon: '✓',
         };
-      case 'Not Paid':
+      case 'not paid':
+      case 'unpaid':
+      case 'pending':
         return {
           badgeClass: 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-500/30',
           icon: '✕',
         };
-      case 'COD':
+      case 'cod':
         return {
           badgeClass: 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-500/30',
           icon: '📦',
         };
-      case 'WhatsApp':
+      case 'whatsapp':
         return {
           badgeClass: 'bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-500/30',
           icon: '💬',
         };
-      case 'Bank Account':
-      case 'UPI':
+      case 'bank account':
+      case 'upi':
       default:
         return {
           badgeClass: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-500/30',
@@ -761,8 +785,12 @@ export const Admin: React.FC = () => {
     } else if (paymentValue === 'Not Paid') {
       paymentStatus = 'Not Paid';
       paymentMethod = existing?.paymentMethod || 'Not Paid';
+    } else if (paymentValue === 'COD') {
+      paymentStatus = 'Not Paid';
+      paymentMethod = 'COD';
     } else {
-      paymentStatus = paymentValue;
+      // WhatsApp, Bank Account, UPI
+      paymentStatus = (existing?.paymentStatus && existing.paymentStatus.toLowerCase().includes('not')) ? 'Not Paid' : 'Paid';
       paymentMethod = paymentValue;
     }
 
@@ -3485,6 +3513,7 @@ export const Admin: React.FC = () => {
             <div className="p-4">
               <StlViewer
                 stlUrl={stlModalUrl}
+                fileName={stlModalUrl || undefined}
                 height={460}
                 noBuildLimit={true}
                 allowScaleAdjustment={true}

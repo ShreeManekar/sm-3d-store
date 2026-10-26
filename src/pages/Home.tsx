@@ -352,20 +352,41 @@ const Home: React.FC = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                price={product.price}
-                imageUrl={product.image}
-                category={product.category}
-                description={product.description}
-                onAddToCart={() => handleAddToCart(product, false)}
-              />
-            ))}
-          </div>
+          {featuredProducts.length === 0 ? (
+            <div className="text-center py-14 px-6 rounded-3xl apple-glass border border-gray-200/80 dark:border-white/[0.08] shadow-lg max-w-xl mx-auto">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-3 border border-amber-500/25">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1.5">Catalog Being Updated</h3>
+              <p className="text-xs text-gray-600 dark:text-zinc-400 mb-5 leading-relaxed">
+                New precision 3D models are being curated. In the meantime, you can upload and slice your own custom 3D model with our instant quote engine.
+              </p>
+              <Link
+                to="/custom-print"
+                className="apple-btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-gray-950 font-bold text-xs shadow-md shadow-amber-500/20 hover:brightness-105 transition"
+              >
+                <span>Upload Custom 3D Model</span>
+                <span>&rarr;</span>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  price={product.price}
+                  imageUrl={product.image}
+                  category={product.category}
+                  description={product.description}
+                  onAddToCart={() => handleAddToCart(product, false)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

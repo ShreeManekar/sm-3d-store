@@ -230,6 +230,7 @@ export const Checkout: React.FC = () => {
       subtotal: totalPrice,
       shippingFee,
       total: finalTotal,
+      paymentStatus: formData.paymentMethod === 'COD' ? 'Not Paid' : 'Paid',
       paymentMethod: formData.paymentMethod === 'Card' ? 'Account transfer' : formData.paymentMethod,
       upiTransactionId: (formData.paymentMethod === 'UPI' || formData.paymentMethod === 'Card') ? upiTransactionId.trim() : '',
       paymentScreenshotUrl: screenshotUrl,

@@ -19,6 +19,7 @@ export interface ModelDimensions {
 interface StlViewerProps {
   stlUrl?: string;
   fileBuffer?: ArrayBuffer | null;
+  fileName?: string;
   height?: number | string;
   maxBuildDimension?: number;
   onDimensionsCalculated?: (dims: ModelDimensions) => void;
@@ -157,6 +158,7 @@ export const alignObjectToBuildPlate = (object: THREE.Object3D): THREE.Box3 => {
 export const StlViewer: React.FC<StlViewerProps> = ({
   stlUrl,
   fileBuffer,
+  fileName,
   height = 360,
   maxBuildDimension = 160,
   onDimensionsCalculated,
@@ -298,8 +300,15 @@ export const StlViewer: React.FC<StlViewerProps> = ({
         }
       }
 
-      // Check if file is 3MF format
-      if (is3mfBuffer(buffer)) {
+      // Prioritize format based on explicit extension, then fall back to magic bytes
+      const lowerName = (fileName || stlUrl || '').toLowerCase();
+      const is3mf = lowerName.endsWith('.3mf') || is3mfBuffer(buffer);
+      const isStep = lowerName.endsWith('.step') || lowerName.endsWith('.stp');
+      const isObj = lowerName.endsWith('.obj');
+      const isStl = lowerName.endsWith('.stl');
+
+      // 1. 3MF package format
+      if (is3mf) {
         const loader = new ThreeMFLoader();
         const group = loader.parse(buffer) as THREE.Group;
 
@@ -345,23 +354,60 @@ export const StlViewer: React.FC<StlViewerProps> = ({
         return;
       }
 
-      // Check if file is STEP / STP CAD format (ISO-10303-21)
+      // 2. STEP / STP CAD format (ISO-10303-21)
       const headerSnippet = new TextDecoder().decode(new Uint8Array(buffer, 0, Math.min(buffer.byteLength, 512)));
-      if (headerSnippet.trim().startsWith('ISO-10303-21;') || headerSnippet.includes('ISO-10303-21')) {
+      if (isStep || headerSnippet.trim().startsWith('ISO-10303-21') || headerSnippet.includes('ISO-10303-21')) {
+        const stepWidth = 80;
+        const stepLength = 60;
+        const stepHeight = 40;
         const dims: ModelDimensions = {
-          length: 80,
-          width: 60,
-          height: 40,
+          length: stepWidth,
+          width: stepLength,
+          height: stepHeight,
           exceedsLimit: false,
         };
         setDimensions(dims);
         if (onDimensionsCalculated) onDimensionsCalculated(dims);
+
+        // Render CAD bounding envelope box flush on the plate
+        if (modelGroupRef.current) {
+          const boxGeo = new THREE.BoxGeometry(stepWidth, stepHeight, stepLength);
+          const boxMat = new THREE.MeshPhongMaterial({
+            color: new THREE.Color(meshColor),
+            transparent: true,
+            opacity: 0.55,
+            shininess: 70,
+            side: THREE.DoubleSide,
+          });
+          const stepMesh = new THREE.Mesh(boxGeo, boxMat);
+          stepMesh.position.set(0, stepHeight / 2, 0); // flush on bed
+          modelGroupRef.current.add(stepMesh);
+
+          const wireGeo = new THREE.WireframeGeometry(boxGeo);
+          const wireMat = new THREE.LineBasicMaterial({
+            color: 0xf59e0b,
+            transparent: true,
+            opacity: 0.85,
+          });
+          const wire = new THREE.LineSegments(wireGeo, wireMat);
+          wire.position.set(0, stepHeight / 2, 0);
+          modelGroupRef.current.add(wire);
+
+          const cadBbox = new THREE.Box3(
+            new THREE.Vector3(-stepWidth / 2, 0, -stepLength / 2),
+            new THREE.Vector3(stepWidth / 2, stepHeight, stepLength / 2)
+          );
+          rawBoundingBoxRef.current = cadBbox;
+          frameModelInView(cadBbox, modelScale);
+        }
+
         setLoading(false);
         return;
       }
 
-      // Check if file is OBJ format
-      if (headerSnippet.includes('v ') || headerSnippet.includes('vt ') || headerSnippet.includes('vn ') || headerSnippet.includes('f ')) {
+      // 3. Wavefront OBJ format
+      const hasObjLines = /(^|\n)\s*(v|vt|vn|f)\s+/m.test(headerSnippet);
+      if (isObj || (!isStl && hasObjLines)) {
         try {
           const textFull = new TextDecoder().decode(buffer);
           const objLoader = new OBJLoader();
@@ -398,7 +444,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
           setLoading(false);
           return;
         } catch (_) {
-          // If OBJ parsing fails, proceed to STL
+          // If OBJ parsing fails, proceed to STL fallback
         }
       }
 
@@ -479,7 +525,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
       if (onError) onError(errMsg);
       setLoading(false);
     }
-  }, [frameModelInView, maxBuildDimension, meshColor, modelScale, noBuildLimit, onDimensionsCalculated, onError, updateBuildPlate, wireframe]);
+  }, [fileName, frameModelInView, maxBuildDimension, meshColor, modelScale, noBuildLimit, onDimensionsCalculated, onError, stlUrl, updateBuildPlate, wireframe]);
 
   // Handle color change across mesh and group
   useEffect(() => {

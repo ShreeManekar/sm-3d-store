@@ -589,6 +589,7 @@ app.use((req, res, next) => {
 app.use('/uploads', express.static(PUBLIC_UPLOADS));
 app.use('/uploads', express.static(DIST_UPLOADS));
 app.use('/uploads', express.static(ROOT_UPLOADS));
+app.use('/uploads', express.static(PARENT_UPLOADS));
 
 // Serve static files from Vite build output (dist)
 app.use(express.static(path.resolve(__dirname, '../dist')));
@@ -1092,7 +1093,9 @@ app.get('/api/admin/financial-summary', (req, res) => {
     const ship = Number(o.shippingFee) || 0;
     totalRevenue += tot;
     shippingTotal += ship;
-    if (o.paymentStatus === 'Paid') {
+    const ps = String(o.paymentStatus || '').trim().toLowerCase();
+    const isPaid = ['paid', 'completed', 'upi', 'whatsapp', 'bank account'].includes(ps);
+    if (isPaid) {
       paidRevenue += tot;
     } else {
       pendingRevenue += tot;
@@ -1460,7 +1463,7 @@ app.post('/api/orders', (req, res) => {
     subtotal: parseFloat(body.subtotal) || 0,
     shippingFee: parseFloat(body.shippingFee) || 0,
     total: parseFloat(body.total) || 0,
-    paymentStatus: body.paymentStatus || 'Paid',
+    paymentStatus: body.paymentStatus || (String(body.paymentMethod || '').toUpperCase() === 'COD' ? 'Not Paid' : 'Paid'),
     paymentMethod: body.paymentMethod || 'Razorpay',
     paymentId: body.paymentId || `pay_${crypto.randomBytes(8).toString('hex')}`,
     upiTransactionId: body.upiTransactionId || '',
