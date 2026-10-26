@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCart, ProductItem } from '../context/CartContext';
 import { GuaranteeBadges } from '../components/GuaranteeBadges';
-import { FilamentSwatches } from '../components/FilamentSwatches';
 import { ProductCard } from '../components/ProductCard';
 
 const DEFAULT_FEATURED: ProductItem[] = [
@@ -389,9 +388,6 @@ const Home: React.FC = () => {
           )}
         </div>
       </section>
-
-      {/* Filament Swatches & Surface Finish Showcase */}
-      <FilamentSwatches />
 
       {/* Volume Discount Tier Calculator Section */}
       <section className="py-16 border-t border-gray-200/80 dark:border-white/[0.06] text-inherit">
