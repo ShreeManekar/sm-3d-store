@@ -199,6 +199,51 @@ async function runTests() {
   });
   assert(uploadExcess.status === 413, 'POST /api/upload rejects files exceeding 100MB capacity limit with HTTP 413');
 
+  console.log('\n--- 16. Delivery Cities Coverage & Management Endpoints ---');
+  // 1. Public GET
+  const citiesRes = await testEndpoint('GET', '/api/delivery-cities');
+  assert(citiesRes.status === 200 && Array.isArray(citiesRes.data.cities) && citiesRes.data.count >= 40, 'GET /api/delivery-cities returns 200 and 40+ deliverable cities');
+
+  // 2. Filter active
+  const activeCitiesRes = await testEndpoint('GET', '/api/delivery-cities?active=true');
+  assert(activeCitiesRes.status === 200 && activeCitiesRes.data.cities.every(c => c.isActive), 'GET /api/delivery-cities?active=true returns only active cities');
+
+  // 3. Unauthorized POST
+  const unauthPost = await testEndpoint('POST', '/api/delivery-cities', { name: 'Test Hub City', state: 'Maharashtra' });
+  assert(unauthPost.status === 401, 'POST /api/delivery-cities without admin token returns 401 Unauthorized');
+
+  // 4. Authorized POST
+  const testCityName = `Hub_${Date.now()}`;
+  const newCityRes = await testEndpoint('POST', '/api/delivery-cities', {
+    name: testCityName,
+    state: 'Maharashtra',
+    turnaround: '1-2 Days',
+    pincodes: '442001',
+    isActive: true
+  }, { 'Authorization': `Bearer ${adminToken}` });
+  assert(newCityRes.status === 201 && newCityRes.data.city && newCityRes.data.city.name === testCityName, 'POST /api/delivery-cities creates new delivery city (201 Created)');
+  const newCityId = newCityRes.data && newCityRes.data.city ? newCityRes.data.city.id : null;
+
+  // 5. Conflict POST on duplicate
+  const dupCityRes = await testEndpoint('POST', '/api/delivery-cities', {
+    name: testCityName,
+    state: 'Maharashtra'
+  }, { 'Authorization': `Bearer ${adminToken}` });
+  assert(dupCityRes.status === 409, 'POST /api/delivery-cities rejects duplicate city name with 409 Conflict');
+
+  // 6. Authorized PUT
+  if (newCityId) {
+    const updateCityRes = await testEndpoint('PUT', `/api/delivery-cities/${newCityId}`, {
+      turnaround: 'Same Day Dispatch',
+      isActive: false
+    }, { 'Authorization': `Bearer ${adminToken}` });
+    assert(updateCityRes.status === 200 && updateCityRes.data.city.turnaround === 'Same Day Dispatch' && updateCityRes.data.city.isActive === false, 'PUT /api/delivery-cities/:id updates turnaround and active status');
+
+    // 7. Authorized DELETE
+    const deleteCityRes = await testEndpoint('DELETE', `/api/delivery-cities/${newCityId}`, null, { 'Authorization': `Bearer ${adminToken}` });
+    assert(deleteCityRes.status === 200 && deleteCityRes.data.success, 'DELETE /api/delivery-cities/:id deletes delivery city (200 OK)');
+  }
+
   console.log(`\n========================================`);
   console.log(`Summary: ${passed} Passed, ${failed} Failed`);
   console.log(`========================================\n`);

@@ -165,10 +165,15 @@ const Shop: React.FC = () => {
             <span className="text-cyan-600 dark:text-cyan-400 font-medium">Shop Catalog</span>
           </nav>
           <span className="text-cyan-600 dark:text-cyan-400 font-semibold text-sm uppercase tracking-wider">Catalog</span>
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">Shop Ready-Made 3D Prints</h1>
-          <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-            Precision printed on tuned additive manufacturing hardware using high-grade filaments up to 160mm build volume.
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-1">
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
+              Precision printed on tuned additive manufacturing hardware using high-grade filaments up to 160mm build volume.
+            </p>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-semibold shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>⚡ Pan-India Express Delivery: 40+ Cities Covered</span>
+            </div>
+          </div>
         </div>
 
         {/* Search Query Pill */}

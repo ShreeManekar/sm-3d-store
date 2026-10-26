@@ -110,9 +110,19 @@ export interface StoreSettings {
   accountHolderName?: string;
   techSpecs?: TechSpecs;
   availableFilaments?: string[];
+  deliveryCities?: DeliveryCity[];
 }
 
-type TabType = 'overview' | 'products' | 'custom' | 'orders' | 'users' | 'payments' | 'settings';
+export interface DeliveryCity {
+  id: string;
+  name: string;
+  state: string;
+  estimatedDays?: string;
+  active: boolean;
+  pincodes?: string;
+}
+
+type TabType = 'overview' | 'products' | 'custom' | 'orders' | 'users' | 'payments' | 'settings' | 'delivery';
 
 export const Admin: React.FC = () => {
   const { currentUser, isAdmin, adminLogin, logout, getAdminHeaders } = useAuth();
@@ -121,7 +131,7 @@ export const Admin: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     const tabParam = searchParams.get('tab') as TabType;
-    if (tabParam && ['overview', 'products', 'custom', 'orders', 'users', 'payments', 'settings'].includes(tabParam)) {
+    if (tabParam && ['overview', 'products', 'custom', 'orders', 'users', 'payments', 'settings', 'delivery'].includes(tabParam)) {
       return tabParam;
     }
     return 'overview';
@@ -141,6 +151,20 @@ export const Admin: React.FC = () => {
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [settings, setSettings] = useState<StoreSettings>({});
+  const [deliveryCities, setDeliveryCities] = useState<DeliveryCity[]>([]);
+
+  // Delivery City Management States
+  const [deliveryCitySearch, setDeliveryCitySearch] = useState('');
+  const [deliveryCityModalOpen, setDeliveryCityModalOpen] = useState(false);
+  const [editingCity, setEditingCity] = useState<DeliveryCity | null>(null);
+  const [cityForm, setCityForm] = useState({
+    name: '',
+    state: '',
+    estimatedDays: '2-4 Days',
+    active: true,
+    pincodes: ''
+  });
+  const [citySubmitting, setCitySubmitting] = useState(false);
 
   // Modals & Active Edit Entities
   const [productModalOpen, setProductModalOpen] = useState(false);
@@ -180,12 +204,13 @@ export const Admin: React.FC = () => {
     setLoading(true);
     const headers = getAdminHeaders();
     try {
-      const [pRes, cRes, oRes, uRes, sRes] = await Promise.all([
+      const [pRes, cRes, oRes, uRes, sRes, dRes] = await Promise.all([
         axios.get('/api/products').catch(() => ({ data: [] })),
         axios.get('/api/custom-orders').catch(() => ({ data: [] })),
         axios.get('/api/orders').catch(() => ({ data: [] })),
         axios.get('/api/users', { headers }).catch(() => ({ data: [] })),
         axios.get('/api/settings').catch(() => ({ data: {} })),
+        axios.get('/api/delivery-cities').catch(() => ({ data: { cities: [] } })),
       ]);
 
       setProducts(Array.isArray(pRes.data) ? pRes.data : []);
@@ -193,6 +218,7 @@ export const Admin: React.FC = () => {
       setOrders(Array.isArray(oRes.data) ? oRes.data : []);
       setUsers(Array.isArray(uRes.data) ? uRes.data : []);
       setSettings(sRes.data || {});
+      setDeliveryCities(Array.isArray(dRes.data?.cities) ? dRes.data.cities : (Array.isArray(dRes.data) ? dRes.data : []));
     } catch (err) {
       console.error('Failed to load admin data:', err);
     } finally {
@@ -209,7 +235,7 @@ export const Admin: React.FC = () => {
   // Sync activeTab and product edit modal with URL query parameters
   useEffect(() => {
     const tabParam = searchParams.get('tab') as TabType;
-    if (tabParam && ['overview', 'products', 'custom', 'orders', 'users', 'payments', 'settings'].includes(tabParam)) {
+    if (tabParam && ['overview', 'products', 'custom', 'orders', 'users', 'payments', 'settings', 'delivery'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
     const editId = searchParams.get('edit');
@@ -849,6 +875,100 @@ export const Admin: React.FC = () => {
     );
   }
 
+  // Delivery City Management Handlers
+  const handleOpenAddCityModal = () => {
+    setEditingCity(null);
+    setCityForm({
+      name: '',
+      state: 'Maharashtra',
+      estimatedDays: '2-3 Days',
+      active: true,
+      pincodes: ''
+    });
+    setDeliveryCityModalOpen(true);
+  };
+
+  const handleOpenEditCityModal = (city: DeliveryCity) => {
+    setEditingCity(city);
+    setCityForm({
+      name: city.name,
+      state: city.state || '',
+      estimatedDays: city.estimatedDays || '2-4 Days',
+      active: city.active !== false,
+      pincodes: city.pincodes || ''
+    });
+    setDeliveryCityModalOpen(true);
+  };
+
+  const handleSaveCity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cityForm.name.trim()) {
+      showToast('Please specify a valid city name.');
+      return;
+    }
+    setCitySubmitting(true);
+    const headers = getAdminHeaders();
+    try {
+      if (editingCity) {
+        const res = await axios.put(`/api/delivery-cities/${editingCity.id}`, cityForm, { headers });
+        setDeliveryCities((prev) =>
+          prev.map((c) => (c.id === editingCity.id ? res.data.city : c))
+        );
+        showToast(`City "${cityForm.name}" updated successfully!`);
+      } else {
+        const res = await axios.post('/api/delivery-cities', cityForm, { headers });
+        setDeliveryCities((prev) => [...prev, res.data.city]);
+        showToast(`City "${cityForm.name}" added to delivery coverage!`);
+      }
+      setDeliveryCityModalOpen(false);
+      setEditingCity(null);
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Failed to save delivery city.');
+    } finally {
+      setCitySubmitting(false);
+    }
+  };
+
+  const handleToggleCityActive = async (city: DeliveryCity) => {
+    const headers = getAdminHeaders();
+    const newStatus = !city.active;
+    try {
+      await axios.put(`/api/delivery-cities/${city.id}`, { active: newStatus }, { headers });
+      setDeliveryCities((prev) =>
+        prev.map((c) => (c.id === city.id ? { ...c, active: newStatus } : c))
+      );
+      showToast(`${city.name} marked as ${newStatus ? 'Active' : 'Inactive'}.`);
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Failed to update city status.');
+    }
+  };
+
+  const handleDeleteCity = async (id: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to remove "${name}" from the active delivery coverage network?`)) {
+      return;
+    }
+    const headers = getAdminHeaders();
+    try {
+      await axios.delete(`/api/delivery-cities/${id}`, { headers });
+      setDeliveryCities((prev) => prev.filter((c) => c.id !== id));
+      showToast(`City "${name}" removed from delivery coverage.`);
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Failed to remove delivery city.');
+    }
+  };
+
+  // Filter delivery cities
+  const filteredDeliveryCities = deliveryCities.filter((c) => {
+    const q = deliveryCitySearch.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      (c.name || '').toLowerCase().includes(q) ||
+      (c.state || '').toLowerCase().includes(q) ||
+      (c.pincodes || '').toLowerCase().includes(q) ||
+      (c.estimatedDays || '').toLowerCase().includes(q)
+    );
+  });
+
   // Filter products by query
   const filteredProducts = products.filter(
     (p) =>
@@ -920,6 +1040,7 @@ export const Admin: React.FC = () => {
             { id: 'users', label: 'Users & Admins', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
             { id: 'payments', label: 'Payments & Statements', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
             { id: 'settings', label: 'Store & Machine Settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
+            { id: 'delivery', label: 'Delivery & City Coverage', icon: 'M8 17a2 2 0 100 4 2 2 0 000-4zm10 0a2 2 0 100 4 2 2 0 000-4z M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h2' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -942,6 +1063,11 @@ export const Admin: React.FC = () => {
                   {stats.pendingQuotesCount}
                 </span>
               )}
+              {tab.id === 'delivery' && (
+                <span className="px-1.5 py-0.5 rounded-full bg-cyan-500 text-gray-950 font-extrabold text-[10px] flex items-center justify-center shadow">
+                  {deliveryCities.filter(c => c.active !== false).length}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -949,8 +1075,8 @@ export const Admin: React.FC = () => {
         {/* 1. OVERVIEW TAB */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* 4 Metric Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* 5 Metric Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="p-5 rounded-2xl bg-white dark:bg-gray-900/90 border border-gray-200 dark:border-gray-800 shadow-sm flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
                   <span className="text-xl font-bold">₹</span>
@@ -996,6 +1122,24 @@ export const Admin: React.FC = () => {
                   <div className="text-2xl font-extrabold text-gray-900 dark:text-white">{stats.registeredUsersCount}</div>
                 </div>
               </div>
+
+              <div
+                onClick={() => { setActiveTab('delivery'); setSearchParams({ tab: 'delivery' }); }}
+                className="p-5 rounded-2xl bg-white dark:bg-gray-900/90 border border-gray-200 dark:border-gray-800 shadow-sm flex items-center gap-4 cursor-pointer hover:border-cyan-500/50 transition group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 group-hover:scale-110 transition">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Delivery Coverage</span>
+                  <div className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">
+                    {deliveryCities.filter(c => c.active !== false).length} <span className="text-xs font-semibold text-gray-500">Cities</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Quick Actions & Recent Orders Row */}
@@ -1035,6 +1179,18 @@ export const Admin: React.FC = () => {
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                   Create New Product Listing
+                </button>
+                <button
+                  onClick={() => { setActiveTab('delivery'); setSearchParams({ tab: 'delivery' }); }}
+                  className="w-full py-2.5 px-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition text-xs font-semibold flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 17a2 2 0 100 4 2 2 0 000-4zm10 0a2 2 0 100 4 2 2 0 000-4zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h2" /></svg>
+                    <span>Delivery Cities Network</span>
+                  </div>
+                  <span className="font-bold text-[10px] bg-blue-500/20 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded-full">
+                    {deliveryCities.filter(c => c.active !== false).length} Active
+                  </span>
                 </button>
                 <button
                   onClick={handleExportOrdersToExcel}
@@ -1999,6 +2155,215 @@ export const Admin: React.FC = () => {
                 </button>
               </form>
             </div>
+
+            {/* Delivery Cities Coverage Quick Navigation Banner */}
+            <div className="p-6 rounded-3xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <span>🚚 Nationwide Delivery Coverage Network</span>
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30">
+                    {deliveryCities.filter(c => c.active !== false).length} Active Cities
+                  </span>
+                </h3>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Manage the full directory of deliverable destinations, turnaround estimates, and expand to new cities.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setActiveTab('delivery'); setSearchParams({ tab: 'delivery' }); }}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold text-xs shadow-md shadow-blue-500/20 hover:from-blue-500 hover:to-cyan-500 transition flex items-center gap-2 shrink-0"
+              >
+                Open Delivery Network Manager →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 8. DELIVERY & CITY COVERAGE TAB */}
+        {activeTab === 'delivery' && (
+          <div className="space-y-6">
+            {/* Header Card */}
+            <div className="p-6 rounded-3xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <span>🚚 Nationwide Delivery & Shipping Coverage</span>
+                    <span className="text-xs bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 px-2.5 py-0.5 rounded-full font-semibold">
+                      {deliveryCities.filter(c => c.active !== false).length} Active Destinations
+                    </span>
+                  </h2>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    Manage the list of cities shown to customers on the storefront, check delivery availability, and add new delivery hubs nationwide.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleOpenAddCityModal}
+                  className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs shadow-lg shadow-cyan-500/25 transition flex items-center gap-2 shrink-0 self-start sm:self-auto"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                  Add New Delivery City
+                </button>
+              </div>
+
+              {/* Stats Bar */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 text-xs">
+                <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-950/60 border border-gray-200 dark:border-gray-800">
+                  <span className="text-gray-500 block text-[11px]">Total Configured</span>
+                  <span className="text-lg font-extrabold text-gray-900 dark:text-white">{deliveryCities.length} Cities</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-950/60 border border-gray-200 dark:border-gray-800">
+                  <span className="text-gray-500 block text-[11px]">Active Delivering</span>
+                  <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
+                    {deliveryCities.filter(c => c.active !== false).length} Cities
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-950/60 border border-gray-200 dark:border-gray-800">
+                  <span className="text-gray-500 block text-[11px]">States Covered</span>
+                  <span className="text-lg font-extrabold text-blue-600 dark:text-blue-400">
+                    {[...new Set(deliveryCities.map(c => c.state).filter(Boolean))].length} States / UTs
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-950/60 border border-gray-200 dark:border-gray-800">
+                  <span className="text-gray-500 block text-[11px]">Fastest Turnaround</span>
+                  <span className="text-lg font-extrabold text-cyan-600 dark:text-cyan-400">1-2 Days (Local)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* City Table and Search */}
+            <div className="p-6 rounded-3xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 shadow-xl space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="relative flex-1 max-w-sm">
+                  <input
+                    type="text"
+                    value={deliveryCitySearch}
+                    onChange={(e) => setDeliveryCitySearch(e.target.value)}
+                    placeholder="Search city, state, or PIN codes..."
+                    className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl text-xs text-gray-900 dark:text-white focus:outline-none focus:border-cyan-400"
+                  />
+                  <svg className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  {deliveryCitySearch && (
+                    <button
+                      onClick={() => setDeliveryCitySearch('')}
+                      className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 text-xs"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                <div className="text-xs text-gray-500">
+                  Showing <strong>{filteredDeliveryCities.length}</strong> of {deliveryCities.length} cities
+                </div>
+              </div>
+
+              {filteredDeliveryCities.length === 0 ? (
+                <div className="text-center py-12 border border-dashed border-gray-200 dark:border-gray-800 rounded-2xl p-6">
+                  <span className="text-3xl block mb-2">🏙️</span>
+                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">No delivery cities found</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {deliveryCitySearch ? `No locations match "${deliveryCitySearch}".` : 'No cities have been configured yet.'}
+                  </p>
+                  <div className="mt-4 flex items-center justify-center gap-2">
+                    {deliveryCitySearch && (
+                      <button
+                        onClick={() => setDeliveryCitySearch('')}
+                        className="px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-semibold"
+                      >
+                        Reset Search
+                      </button>
+                    )}
+                    <button
+                      onClick={handleOpenAddCityModal}
+                      className="px-3.5 py-1.5 rounded-xl bg-cyan-600 text-white text-xs font-semibold shadow"
+                    >
+                      + Add New City
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border border-gray-100 dark:border-gray-800">
+                  <table className="w-full text-left text-xs text-gray-600 dark:text-gray-300">
+                    <thead className="bg-gray-50 dark:bg-gray-950/80 text-gray-700 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800 uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th className="py-3 px-4">City Destination</th>
+                        <th className="py-3 px-4">State / Region</th>
+                        <th className="py-3 px-4">Est. Turnaround</th>
+                        <th className="py-3 px-4">Coverage Status</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60">
+                      {filteredDeliveryCities.map((city) => (
+                        <tr key={city.id} className="hover:bg-gray-50/70 dark:hover:bg-gray-950/40 transition">
+                          <td className="py-3.5 px-4 font-semibold text-gray-900 dark:text-white">
+                            <div className="flex items-center gap-2">
+                              <span>📍</span>
+                              <div>
+                                <span className="font-bold">{city.name}</span>
+                                {city.pincodes && (
+                                  <span className="block text-[10px] text-gray-500 font-mono">PIN: {city.pincodes}</span>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4 font-medium text-gray-700 dark:text-gray-300">
+                            {city.state || 'All India'}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+                              city.estimatedDays?.includes('1-2')
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                                : city.estimatedDays?.includes('2-3')
+                                ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30'
+                                : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30'
+                            }`}>
+                              ⚡ {city.estimatedDays || '2-4 Days'}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <button
+                              onClick={() => handleToggleCityActive(city)}
+                              title={city.active !== false ? 'Click to pause delivery' : 'Click to resume delivery'}
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition ${
+                                city.active !== false
+                                  ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30'
+                                  : 'bg-gray-200 dark:bg-gray-800 text-gray-500 border border-gray-300 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-700'
+                              }`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${city.active !== false ? 'bg-emerald-500' : 'bg-gray-400'}`}></span>
+                              {city.active !== false ? 'Active Delivery' : 'Paused / Inactive'}
+                            </button>
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => handleOpenEditCityModal(city)}
+                                className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-cyan-600 dark:text-cyan-400 transition"
+                                title="Edit City Details"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteCity(city.id, city.name)}
+                                className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 transition"
+                                title="Delete City"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -2488,6 +2853,130 @@ export const Admin: React.FC = () => {
                   className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-xs shadow-md shadow-cyan-500/20"
                 >
                   Add Filament
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ADD / EDIT DELIVERY CITY MODAL */}
+      {deliveryCityModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-gray-900 border border-cyan-500/40 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
+                <span>📍</span>
+                <span>{editingCity ? `Edit Delivery City: ${editingCity.name}` : 'Add New Delivery City'}</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => { setDeliveryCityModalOpen(false); setEditingCity(null); }}
+                className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              {editingCity
+                ? 'Update shipping parameters and turnaround for this delivery destination.'
+                : 'Expand SM 3D shipping coverage by adding a new city or regional hub.'}
+            </p>
+
+            <form onSubmit={handleSaveCity} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  City Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  value={cityForm.name}
+                  onChange={(e) => setCityForm({ ...cityForm, name: e.target.value })}
+                  placeholder="e.g. Chandrapur, Nagpur, Pune"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    State / Territory *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={cityForm.state}
+                    onChange={(e) => setCityForm({ ...cityForm, state: e.target.value })}
+                    placeholder="e.g. Maharashtra"
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    Est. Turnaround *
+                  </label>
+                  <select
+                    value={cityForm.estimatedDays}
+                    onChange={(e) => setCityForm({ ...cityForm, estimatedDays: e.target.value })}
+                    className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                  >
+                    <option value="1-2 Days">1-2 Days (Express / Local Hub)</option>
+                    <option value="2-3 Days">2-3 Days (Standard Hub)</option>
+                    <option value="2-4 Days">2-4 Days (Metro / Zonal)</option>
+                    <option value="3-5 Days">3-5 Days (Regional / Nationwide)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Specific PIN Codes or Hub Notes (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={cityForm.pincodes}
+                  onChange={(e) => setCityForm({ ...cityForm, pincodes: e.target.value })}
+                  placeholder="e.g. 442401, 442402, 442403 or 'All Pincodes'"
+                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-cyan-400 shadow-sm"
+                />
+              </div>
+
+              <div className="pt-2">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={cityForm.active}
+                    onChange={(e) => setCityForm({ ...cityForm, active: e.target.checked })}
+                    className="w-4 h-4 text-cyan-600 rounded border-gray-300 dark:border-gray-700 focus:ring-cyan-500"
+                  />
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Active for customer checkout & storefront verification badge
+                  </span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-3 border-t border-gray-100 dark:border-gray-800">
+                <button
+                  type="button"
+                  onClick={() => { setDeliveryCityModalOpen(false); setEditingCity(null); }}
+                  className="px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={citySubmitting}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs shadow-lg shadow-cyan-500/25 transition flex items-center gap-2"
+                >
+                  {citySubmitting ? (
+                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <span>{editingCity ? 'Update City' : 'Add City to Network'}</span>
+                  )}
                 </button>
               </div>
             </form>

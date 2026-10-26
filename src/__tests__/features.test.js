@@ -588,5 +588,65 @@ endsolid precision_bracket`;
       expect(unrestricted.exceedsLimit).toBe(false);
     });
   });
+
+  describe('Delivery Cities Coverage & Storefront Selection', () => {
+    const mockCities = [
+      { id: 'city_1', name: 'Chandrapur', state: 'Maharashtra', turnaround: '1-2 Days', pincodes: '442401', isActive: true },
+      { id: 'city_2', name: 'Mumbai', state: 'Maharashtra', turnaround: '2-3 Days', pincodes: '400001, 400050', isActive: true },
+      { id: 'city_3', name: 'Bengaluru', state: 'Karnataka', turnaround: '2-3 Days', pincodes: '560001', isActive: true },
+      { id: 'city_4', name: 'Discontinued Hub', state: 'Test State', turnaround: '5-7 Days', pincodes: '999999', isActive: false },
+    ];
+
+    test('filters and counts only active delivery cities for storefront', () => {
+      const activeCities = mockCities.filter((c) => c.isActive);
+      expect(activeCities.length).toBe(3);
+      expect(activeCities.map((c) => c.name)).toEqual(['Chandrapur', 'Mumbai', 'Bengaluru']);
+    });
+
+    test('searches delivery cities by name, state, or PIN code case-insensitively', () => {
+      const filterCities = (cities, query) => {
+        const q = query.trim().toLowerCase();
+        if (!q) return cities;
+        return cities.filter(
+          (c) =>
+            c.name.toLowerCase().includes(q) ||
+            c.state.toLowerCase().includes(q) ||
+            (c.pincodes && c.pincodes.toLowerCase().includes(q))
+        );
+      };
+
+      expect(filterCities(mockCities, 'mumbai')).toHaveLength(1);
+      expect(filterCities(mockCities, 'maharashtra')).toHaveLength(2);
+      expect(filterCities(mockCities, '442401')).toHaveLength(1);
+      expect(filterCities(mockCities, 'nonexistent')).toHaveLength(0);
+    });
+
+    test('validates turnaround time and delivery badge text', () => {
+      const formatDeliveryBadge = (city) => {
+        if (!city || !city.isActive) return 'Check availability';
+        return `Delivers in ${city.turnaround}`;
+      };
+
+      expect(formatDeliveryBadge(mockCities[0])).toBe('Delivers in 1-2 Days');
+      expect(formatDeliveryBadge(mockCities[3])).toBe('Check availability');
+    });
+
+    test('matches checkout city input to verified hub', () => {
+      const matchHub = (inputCity, cities) => {
+        if (!inputCity) return null;
+        const normalized = inputCity.trim().toLowerCase();
+        return cities.find((c) => c.isActive && c.name.toLowerCase() === normalized) || null;
+      };
+
+      const match = matchHub('mumbai', mockCities);
+      expect(match).not.toBeNull();
+      expect(match.state).toBe('Maharashtra');
+      expect(match.turnaround).toBe('2-3 Days');
+
+      const noMatch = matchHub('Gotham', mockCities);
+      expect(noMatch).toBeNull();
+    });
+  });
 });
+
 

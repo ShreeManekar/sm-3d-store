@@ -55,6 +55,11 @@ export const Checkout: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState<OrderConfirmationData | null>(null);
 
+  // Delivery coverage cities for autocomplete & verification
+  const [deliveryCities, setDeliveryCities] = useState<any[]>([]);
+  const [selectedCityCoverage, setSelectedCityCoverage] = useState<any | null>(null);
+  const [showCitiesModal, setShowCitiesModal] = useState(false);
+
   useEffect(() => {
     let isMounted = true;
     axios.get('/api/settings')
@@ -65,8 +70,28 @@ export const Checkout: React.FC = () => {
         }
       })
       .catch(() => {});
+
+    axios.get('/api/delivery-cities')
+      .then((res) => {
+        if (!isMounted) return;
+        const list = Array.isArray(res.data?.cities) ? res.data.cities : (Array.isArray(res.data) ? res.data : []);
+        setDeliveryCities(list);
+      })
+      .catch(() => {});
+
     return () => { isMounted = false; };
   }, []);
+
+  useEffect(() => {
+    if (!formData.city.trim() || deliveryCities.length === 0) {
+      setSelectedCityCoverage(null);
+      return;
+    }
+    const match = deliveryCities.find(
+      (c) => c.active !== false && c.name.toLowerCase() === formData.city.trim().toLowerCase()
+    );
+    setSelectedCityCoverage(match || null);
+  }, [formData.city, deliveryCities]);
 
   useEffect(() => {
     if (currentUser) {
@@ -463,16 +488,57 @@ export const Checkout: React.FC = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">City *</label>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">City *</label>
+                        {deliveryCities.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setShowCitiesModal(true)}
+                            className="text-[10px] text-cyan-600 dark:text-cyan-400 hover:underline font-bold"
+                          >
+                            {deliveryCities.filter(c => c.active !== false).length}+ Cities
+                          </button>
+                        )}
+                      </div>
                       <input
                         type="text"
                         name="city"
                         required
-                        placeholder="e.g. Chandrapur"
+                        list="supported-delivery-cities"
+                        placeholder="e.g. Chandrapur, Nagpur, Pune"
                         value={formData.city}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const matched = deliveryCities.find(
+                            (c) => c.active !== false && c.name.toLowerCase() === val.trim().toLowerCase()
+                          );
+                          setFormData((prev) => ({
+                            ...prev,
+                            city: val,
+                            state: matched?.state && !prev.state ? matched.state : prev.state
+                          }));
+                        }}
                         className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-cyan-400"
                       />
+                      <datalist id="supported-delivery-cities">
+                        {deliveryCities
+                          .filter((c) => c.active !== false)
+                          .map((c) => (
+                            <option key={c.id} value={c.name}>
+                              {c.state} ({c.estimatedDays || '2-4 Days'})
+                            </option>
+                          ))}
+                      </datalist>
+
+                      {selectedCityCoverage ? (
+                        <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                          <span>✓ Verified Hub ({selectedCityCoverage.estimatedDays || '2-4 Days'})</span>
+                        </div>
+                      ) : formData.city.trim() ? (
+                        <div className="mt-1 text-[11px] text-gray-500">
+                          <span>Standard courier dispatch to this PIN/City</span>
+                        </div>
+                      ) : null}
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">State *</label>
@@ -770,6 +836,74 @@ export const Checkout: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* DELIVERY CITIES COVERAGE SELECTION MODAL */}
+      {showCitiesModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 w-full max-w-xl rounded-3xl p-6 shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
+                  <span>🚚 Deliverable Destinations</span>
+                  <span className="text-xs bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full font-bold">
+                    {deliveryCities.filter(c => c.active !== false).length} Cities
+                  </span>
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">Click your city to automatically fill shipping details.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCitiesModal(false)}
+                className="text-gray-400 hover:text-gray-700 dark:hover:text-white text-base p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                {deliveryCities
+                  .filter((c) => c.active !== false)
+                  .map((city) => (
+                    <button
+                      key={city.id}
+                      type="button"
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          city: city.name,
+                          state: city.state || prev.state
+                        }));
+                        setShowCitiesModal(false);
+                      }}
+                      className="p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-left hover:border-cyan-500/50 hover:bg-cyan-500/5 transition flex items-center justify-between group"
+                    >
+                      <div>
+                        <span className="font-bold text-gray-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 block">
+                          {city.name}
+                        </span>
+                        <span className="text-[10px] text-gray-500">{city.state}</span>
+                      </div>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                        {city.estimatedDays || '2-4 Days'}
+                      </span>
+                    </button>
+                  ))}
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs">
+              <span className="text-[11px] text-gray-500">Don't see your city? We deliver nationwide via Speed Post.</span>
+              <button
+                type="button"
+                onClick={() => setShowCitiesModal(false)}
+                className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

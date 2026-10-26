@@ -14,6 +14,7 @@ export interface TechSpecsData {
 
 export const Footer: React.FC = () => {
   const { isAdmin, isEditorMode } = useAuth();
+  const [deliveryCount, setDeliveryCount] = useState<number>(40);
   const [techSpecs, setTechSpecs] = useState<TechSpecsData>({
     buildVolume: '160 × 160 × 160 mm',
     layerHeight: '0.12 - 0.28 mm',
@@ -38,6 +39,14 @@ export const Footer: React.FC = () => {
         }
       })
       .catch(() => {});
+
+    axios.get('/api/delivery-cities')
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.data?.count) setDeliveryCount(res.data.count);
+      })
+      .catch(() => {});
+
     return () => { isMounted = false; };
   }, []);
 
@@ -54,6 +63,10 @@ export const Footer: React.FC = () => {
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Precision additive manufacturing & on-demand custom 3D printing up to 160mm build volume.
           </p>
+          <div className="mt-3 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Delivering to <strong>{deliveryCount}+ Cities</strong> across India</span>
+          </div>
         </div>
 
         <div>

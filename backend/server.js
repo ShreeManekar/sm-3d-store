@@ -28,10 +28,55 @@ function hashPassword(password, salt) {
   return { hash: h, salt };
 }
 
+// Default delivery cities coverage
+const DEFAULT_DELIVERY_CITIES = [
+  { id: 'city_1', name: 'Chandrapur', state: 'Maharashtra', estimatedDays: '1-2 Days', active: true },
+  { id: 'city_2', name: 'Nagpur', state: 'Maharashtra', estimatedDays: '1-2 Days', active: true },
+  { id: 'city_3', name: 'Mumbai', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_4', name: 'Pune', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_5', name: 'Nashik', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_6', name: 'Thane', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_7', name: 'Navi Mumbai', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_8', name: 'Aurangabad (Chhatrapati Sambhajinagar)', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_9', name: 'Amravati', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_10', name: 'Kolhapur', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_11', name: 'Solapur', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_12', name: 'Hyderabad', state: 'Telangana', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_13', name: 'Bengaluru', state: 'Karnataka', estimatedDays: '2-4 Days', active: true },
+  { id: 'city_14', name: 'Chennai', state: 'Tamil Nadu', estimatedDays: '2-4 Days', active: true },
+  { id: 'city_15', name: 'New Delhi', state: 'Delhi NCR', estimatedDays: '2-4 Days', active: true },
+  { id: 'city_16', name: 'Noida', state: 'Uttar Pradesh', estimatedDays: '2-4 Days', active: true },
+  { id: 'city_17', name: 'Gurugram', state: 'Haryana', estimatedDays: '2-4 Days', active: true },
+  { id: 'city_18', name: 'Ahmedabad', state: 'Gujarat', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_19', name: 'Surat', state: 'Gujarat', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_20', name: 'Vadodara', state: 'Gujarat', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_21', name: 'Rajkot', state: 'Gujarat', estimatedDays: '3-4 Days', active: true },
+  { id: 'city_22', name: 'Indore', state: 'Madhya Pradesh', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_23', name: 'Bhopal', state: 'Madhya Pradesh', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_24', name: 'Jabalpur', state: 'Madhya Pradesh', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_25', name: 'Raipur', state: 'Chhattisgarh', estimatedDays: '2-3 Days', active: true },
+  { id: 'city_26', name: 'Jaipur', state: 'Rajasthan', estimatedDays: '3-4 Days', active: true },
+  { id: 'city_27', name: 'Kolkata', state: 'West Bengal', estimatedDays: '3-4 Days', active: true },
+  { id: 'city_28', name: 'Lucknow', state: 'Uttar Pradesh', estimatedDays: '3-4 Days', active: true },
+  { id: 'city_29', name: 'Kanpur', state: 'Uttar Pradesh', estimatedDays: '3-4 Days', active: true },
+  { id: 'city_30', name: 'Varanasi', state: 'Uttar Pradesh', estimatedDays: '3-4 Days', active: true },
+  { id: 'city_31', name: 'Chandigarh', state: 'Punjab / Chandigarh', estimatedDays: '3-4 Days', active: true },
+  { id: 'city_32', name: 'Ludhiana', state: 'Punjab', estimatedDays: '3-4 Days', active: true },
+  { id: 'city_33', name: 'Kochi', state: 'Kerala', estimatedDays: '3-4 Days', active: true },
+  { id: 'city_34', name: 'Thiruvananthapuram', state: 'Kerala', estimatedDays: '3-4 Days', active: true },
+  { id: 'city_35', name: 'Coimbatore', state: 'Tamil Nadu', estimatedDays: '3-4 Days', active: true },
+  { id: 'city_36', name: 'Visakhapatnam', state: 'Andhra Pradesh', estimatedDays: '3-4 Days', active: true },
+  { id: 'city_37', name: 'Vijayawada', state: 'Andhra Pradesh', estimatedDays: '3-4 Days', active: true },
+  { id: 'city_38', name: 'Bhubaneswar', state: 'Odisha', estimatedDays: '3-4 Days', active: true },
+  { id: 'city_39', name: 'Patna', state: 'Bihar', estimatedDays: '3-5 Days', active: true },
+  { id: 'city_40', name: 'Dehradun', state: 'Uttarakhand', estimatedDays: '3-5 Days', active: true }
+];
+
 // Default initial database in case db.json doesn't exist
 function getDefaultDb() {
   const adminHash = hashPassword(MASTER_ADMIN_PASSWORD, '2526015f26549a12');
   return {
+    deliveryCities: DEFAULT_DELIVERY_CITIES,
     settings: {
       maxPrintDimension: 160,
       storeName: 'SM 3D Store',
@@ -63,7 +108,8 @@ function getDefaultDb() {
         printSpeed: 'Up to 250 mm/s',
         notes: 'Industrial Grade Direct Drive Extrusion'
       },
-      availableFilaments: ['PLA', 'PETG', 'ABS', 'CF-PETG', 'TPU', 'Marble PLA', 'Silk Rainbow PLA', 'Nylon', 'Resin']
+      availableFilaments: ['PLA', 'PETG', 'ABS', 'CF-PETG', 'TPU', 'Marble PLA', 'Silk Rainbow PLA', 'Nylon', 'Resin'],
+      deliveryCities: DEFAULT_DELIVERY_CITIES
     },
     products: [
       {
@@ -282,6 +328,18 @@ function loadDb() {
   if (!Array.isArray(db.customOrders)) db.customOrders = [];
   if (!Array.isArray(db.orders)) db.orders = [];
   if (!db.settings) db.settings = {};
+
+  // Ensure delivery cities collection exists
+  if (!Array.isArray(db.deliveryCities)) {
+    if (Array.isArray(db.settings.deliveryCities)) {
+      db.deliveryCities = db.settings.deliveryCities;
+    } else {
+      db.deliveryCities = [...DEFAULT_DELIVERY_CITIES];
+    }
+  }
+  if (!Array.isArray(db.settings.deliveryCities)) {
+    db.settings.deliveryCities = db.deliveryCities;
+  }
 
   // Ensure admin user is always present
   let admin = db.users.find(u => u.email === 'shreemanekar0@gmail.com' && u.role === 'admin');
@@ -538,6 +596,30 @@ app.get('/api/health', (req, res) => {
 app.get('/api/settings', (req, res) => {
   const db = loadDb();
   res.json(db.settings || {});
+});
+
+app.get('/api/delivery-cities', (req, res) => {
+  const db = loadDb();
+  const rawCities = db.deliveryCities || db.settings?.deliveryCities || [];
+  const normalized = rawCities.map(c => {
+    const isAct = c.active !== false && c.isActive !== false;
+    const days = c.estimatedDays || c.turnaround || '2-4 Days';
+    return {
+      ...c,
+      active: isAct,
+      isActive: isAct,
+      estimatedDays: days,
+      turnaround: days
+    };
+  });
+  const activeOnly = req.query.active === 'true';
+  const filtered = activeOnly ? normalized.filter(c => c.active) : normalized;
+  const activeCount = normalized.filter(c => c.active).length;
+  res.json({
+    count: activeCount,
+    totalCount: normalized.length,
+    cities: filtered
+  });
 });
 
 app.get('/api/products', (req, res) => {
@@ -959,14 +1041,98 @@ app.post('/api/upload', (req, res) => {
   }
 });
 
+app.post('/api/delivery-cities', (req, res) => {
+  if (!verifyAdminAccess(req)) return res.status(401).json({ error: 'Unauthorized: Admin token required' });
+  const { name, state, estimatedDays, turnaround, active, isActive, pincodes } = req.body || {};
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    return res.status(400).json({ error: 'City name is required' });
+  }
+  const db = loadDb();
+  if (!Array.isArray(db.deliveryCities)) db.deliveryCities = [];
+  if (!db.settings) db.settings = {};
+
+  const trimmedName = name.trim();
+  const trimmedState = (state || '').trim();
+  const existing = db.deliveryCities.find(c =>
+    c.name.toLowerCase() === trimmedName.toLowerCase() &&
+    (!trimmedState || !c.state || c.state.toLowerCase() === trimmedState.toLowerCase())
+  );
+  if (existing) {
+    return res.status(409).json({ error: `City "${trimmedName}" already exists in delivery coverage.` });
+  }
+
+  const isCityActive = active !== undefined ? Boolean(active) : (isActive !== undefined ? Boolean(isActive) : true);
+  const days = (estimatedDays || turnaround || '2-4 Days').trim();
+
+  const newCity = {
+    id: 'city_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+    name: trimmedName,
+    state: trimmedState || 'All India',
+    estimatedDays: days,
+    turnaround: days,
+    active: isCityActive,
+    isActive: isCityActive,
+    pincodes: (pincodes || '').trim()
+  };
+
+  db.deliveryCities.push(newCity);
+  db.settings.deliveryCities = db.deliveryCities;
+  saveDb(db);
+
+  const activeCount = db.deliveryCities.filter(c => c.active !== false && c.isActive !== false).length;
+  res.status(201).json({
+    message: 'Delivery city added successfully',
+    city: newCity,
+    count: activeCount
+  });
+});
+
 // ── PUT Routes ──────────────────────────────────────────────────────────────
 
 app.put('/api/settings', (req, res) => {
   if (!verifyAdminAccess(req)) return res.status(401).json({ error: 'Unauthorized: Admin token required' });
   const db = loadDb();
   db.settings = { ...(db.settings || {}), ...(req.body || {}) };
+  if (Array.isArray(req.body.deliveryCities)) {
+    db.deliveryCities = req.body.deliveryCities;
+  }
   saveDb(db);
   res.json({ message: 'Settings updated', settings: db.settings });
+});
+
+app.put('/api/delivery-cities/:id', (req, res) => {
+  if (!verifyAdminAccess(req)) return res.status(401).json({ error: 'Unauthorized: Admin token required' });
+  const db = loadDb();
+  if (!Array.isArray(db.deliveryCities)) db.deliveryCities = [];
+  const index = db.deliveryCities.findIndex(c => c.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Delivery city not found' });
+  }
+
+  const city = db.deliveryCities[index];
+  const { name, state, estimatedDays, turnaround, active, isActive, pincodes } = req.body || {};
+  if (name && typeof name === 'string' && name.trim()) city.name = name.trim();
+  if (state !== undefined) city.state = typeof state === 'string' ? state.trim() : city.state;
+  if (estimatedDays !== undefined || turnaround !== undefined) {
+    const days = (estimatedDays || turnaround || '2-4 Days').trim();
+    city.estimatedDays = days;
+    city.turnaround = days;
+  }
+  if (active !== undefined) {
+    city.active = Boolean(active);
+    city.isActive = city.active;
+  } else if (isActive !== undefined) {
+    city.active = Boolean(isActive);
+    city.isActive = city.active;
+  }
+  if (pincodes !== undefined) city.pincodes = typeof pincodes === 'string' ? pincodes.trim() : city.pincodes;
+
+  db.deliveryCities[index] = city;
+  if (db.settings) db.settings.deliveryCities = db.deliveryCities;
+  saveDb(db);
+
+  const activeCount = db.deliveryCities.filter(c => c.active !== false && c.isActive !== false).length;
+  res.json({ message: 'Delivery city updated successfully', city, count: activeCount });
 });
 
 app.put('/api/products/:id', (req, res) => {
@@ -1100,6 +1266,22 @@ app.delete('/api/users/:id', (req, res) => {
   db.users = (db.users || []).filter(u => u.id !== req.params.id);
   saveDb(db);
   res.json({ message: 'Customer account deleted' });
+});
+
+app.delete('/api/delivery-cities/:id', (req, res) => {
+  if (!verifyAdminAccess(req)) return res.status(401).json({ error: 'Unauthorized: Admin token required' });
+  const db = loadDb();
+  if (!Array.isArray(db.deliveryCities)) db.deliveryCities = [];
+  const initialLen = db.deliveryCities.length;
+  db.deliveryCities = db.deliveryCities.filter(c => c.id !== req.params.id);
+  if (db.deliveryCities.length === initialLen) {
+    return res.status(404).json({ error: 'Delivery city not found' });
+  }
+  if (db.settings) db.settings.deliveryCities = db.deliveryCities;
+  saveDb(db);
+
+  const activeCount = db.deliveryCities.filter(c => c.active !== false && c.isActive !== false).length;
+  res.json({ success: true, message: 'Delivery city deleted successfully', count: activeCount });
 });
 
 // ── Global Error Handling (Payload size & JSON parsing) ─────────────────────
