@@ -216,7 +216,7 @@ export const Admin: React.FC = () => {
         axios.get('/api/settings').catch(() => ({ data: {} })),
         axios.get('/api/delivery-cities').catch(() => ({ data: { cities: [] } })),
         axios.get('/api/rfqs', { headers }).catch(() => ({ data: [] })),
-        axios.get('/api/reviews').catch(() => ({ data: [] })),
+        axios.get('/api/reviews', { headers }).catch(() => ({ data: [] })),
         axios.get('/api/admin/financial-summary', { headers }).catch(() => ({ data: null })),
       ]);
 

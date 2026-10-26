@@ -630,7 +630,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
   };
 
   return (
-    <div className="relative rounded-2xl overflow-hidden border border-gray-800 bg-[#050811] shadow-2xl flex flex-col">
+    <div className="relative rounded-3xl overflow-hidden border border-gray-200/80 dark:border-white/[0.08] bg-[#050811] shadow-2xl flex flex-col">
       {/* 3D Canvas Mount Point */}
       <div
         ref={mountRef}
@@ -640,7 +640,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
 
       {/* Loading overlay */}
       {loading && (
-        <div className="absolute inset-0 bg-[#080b11]/85 backdrop-blur-sm flex flex-col items-center justify-center text-amber-400 gap-3 z-20">
+        <div className="absolute inset-0 bg-[#080b11]/85 backdrop-blur-md flex flex-col items-center justify-center text-amber-400 gap-3 z-20">
           <div className="w-9 h-9 border-2 border-amber-400 border-t-transparent rounded-full animate-spin shadow-lg shadow-amber-500/20" />
           <p className="text-xs font-semibold tracking-wider uppercase text-amber-300">Loading 3D Model...</p>
         </div>
@@ -648,7 +648,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
 
       {/* Error overlay */}
       {error && (
-        <div className="absolute inset-0 bg-red-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-red-200 p-6 text-center z-20">
+        <div className="absolute inset-0 bg-red-950/85 backdrop-blur-md flex flex-col items-center justify-center text-red-200 p-6 text-center z-20">
           <svg className="w-8 h-8 text-red-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
@@ -658,24 +658,24 @@ export const StlViewer: React.FC<StlViewerProps> = ({
       )}
 
       {/* Toolbar & Detected Dimensions Header */}
-      <div className="p-3 bg-[#0b0f17]/95 border-t border-amber-500/20 flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xl">
+      <div className="p-3.5 apple-glass border-t border-gray-200/80 dark:border-white/[0.08] flex flex-wrap items-center justify-between gap-3 text-xs">
         {/* Dimensions Pill & Size Info */}
         {dimensions && (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-gray-400">Model Dimensions:</span>
-            <span className="font-mono font-bold text-amber-300 bg-[#121824] px-2.5 py-0.5 rounded-lg border border-amber-500/30 shadow-sm">
+            <span className="text-gray-500 dark:text-zinc-400 font-medium">Model Dimensions:</span>
+            <span className="font-mono font-bold text-amber-500 dark:text-amber-300 bg-gray-100/80 dark:bg-black/40 px-3 py-1 rounded-full border border-gray-200/80 dark:border-white/[0.08] shadow-sm">
               {dimensions.length} × {dimensions.width} × {dimensions.height} mm
             </span>
             {noBuildLimit ? (
-              <span className="px-2 py-0.5 bg-amber-500/15 text-amber-300 border border-amber-500/30 rounded-lg font-semibold text-[11px] flex items-center gap-1">
+              <span className="px-2.5 py-1 bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/25 rounded-full font-semibold text-[11px] flex items-center gap-1">
                 <span>⚡</span> Centered • No 160mm Limit
               </span>
             ) : dimensions.exceedsLimit ? (
-              <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-lg font-semibold text-[11px]">
+              <span className="px-2.5 py-1 bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30 rounded-full font-semibold text-[11px]">
                 ⚠️ Exceeds {maxBuildDimension}mm (Multi-part assembly recommended)
               </span>
             ) : (
-              <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg font-semibold text-[11px]">
+              <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 rounded-full font-semibold text-[11px]">
                 ✓ Fits 160mm Plate
               </span>
             )}
@@ -723,7 +723,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
                 type="button"
                 onClick={fitToCenter}
                 title="Auto-fit and center model in view"
-                className="px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 border border-amber-500/30 text-[11px] font-semibold flex items-center gap-1 transition"
+                className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-500 dark:text-amber-300 hover:bg-amber-500/20 border border-amber-500/25 text-[11px] font-semibold flex items-center gap-1 transition-all duration-300 active:scale-95"
               >
                 <span>⛶</span> Center & Fit
               </button>
@@ -738,7 +738,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
                 onClick={() => setMeshColor(color)}
                 style={{ backgroundColor: color }}
                 title={`Color ${color}`}
-                className={`w-4 h-4 rounded-full border ${meshColor === color ? 'border-amber-300 scale-125 ring-1 ring-amber-400' : 'border-transparent'} transition`}
+                className={`w-4 h-4 rounded-full border ${meshColor === color ? 'border-amber-400 scale-125 ring-2 ring-amber-400/40' : 'border-transparent'} transition-transform duration-300`}
               />
             ))}
           </div>
@@ -746,10 +746,10 @@ export const StlViewer: React.FC<StlViewerProps> = ({
           {/* Wireframe toggle */}
           <button
             onClick={() => setWireframe(!wireframe)}
-            className={`px-2 py-1 rounded-lg border text-[11px] font-medium transition ${
+            className={`px-3 py-1 rounded-full border text-[11px] font-medium transition-all duration-300 active:scale-95 ${
               wireframe
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
-                : 'bg-gray-800/80 text-gray-400 border-gray-700 hover:text-white'
+                ? 'bg-amber-500/20 text-amber-500 dark:text-amber-300 border-amber-500/40 shadow-sm'
+                : 'bg-gray-100 dark:bg-zinc-800/80 text-gray-700 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 hover:text-amber-500'
             }`}
           >
             Wireframe {wireframe ? 'ON' : 'OFF'}
@@ -758,10 +758,10 @@ export const StlViewer: React.FC<StlViewerProps> = ({
           {/* Auto-rotate toggle */}
           <button
             onClick={() => setAutoRotate(!autoRotate)}
-            className={`px-2 py-1 rounded-lg border text-[11px] font-medium transition ${
+            className={`px-3 py-1 rounded-full border text-[11px] font-medium transition-all duration-300 active:scale-95 ${
               autoRotate
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
-                : 'bg-gray-800/80 text-gray-400 border-gray-700 hover:text-white'
+                ? 'bg-amber-500/20 text-amber-500 dark:text-amber-300 border-amber-500/40 shadow-sm'
+                : 'bg-gray-100 dark:bg-zinc-800/80 text-gray-700 dark:text-zinc-400 border-gray-300 dark:border-zinc-700 hover:text-amber-500'
             }`}
           >
             Rotate {autoRotate ? 'ON' : 'OFF'}
@@ -770,7 +770,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
           {/* Reset View */}
           <button
             onClick={resetCamera}
-            className="px-2 py-1 rounded-lg border bg-gray-800/80 text-gray-300 border-gray-700 hover:text-white text-[11px] font-medium transition"
+            className="px-3 py-1 rounded-full border bg-gray-100 dark:bg-zinc-800/80 text-gray-700 dark:text-zinc-300 border-gray-300 dark:border-zinc-700 hover:text-amber-500 text-[11px] font-medium transition-all duration-300 active:scale-95"
           >
             Reset
           </button>

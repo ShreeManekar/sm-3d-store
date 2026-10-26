@@ -344,14 +344,14 @@ export const CustomPrint: React.FC = () => {
         </nav>
 
         {/* Title */}
-        <div className="text-center max-w-3xl mx-auto space-y-2">
-          <span className="inline-block py-1 px-3.5 rounded-full text-xs font-bold tracking-wider uppercase bg-amber-500/10 text-amber-500 border border-amber-500/30">
+        <div className="text-center max-w-3xl mx-auto space-y-3">
+          <span className="inline-block py-1 px-4 rounded-full text-[11px] font-bold tracking-wider uppercase bg-amber-500/10 text-amber-500 border border-amber-500/25 backdrop-blur-md">
             Automated Slicing & Instant Pricing Engine
           </span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-            Instant 3D Print <span className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent">Quote & Model Analyzer</span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-950 dark:text-white tracking-tight leading-[1.08]">
+            Instant 3D Print <span className="apple-gold-gradient">Quote & Model Analyzer</span>
           </h1>
-          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-zinc-400 font-normal">
             Upload your STL or 3MF file for instant bounding box detection, weight in grams, manifold check, and instant pricing with direct cart checkout.
           </p>
         </div>
@@ -360,30 +360,30 @@ export const CustomPrint: React.FC = () => {
         <GuaranteeBadges />
 
         {submittedOrder ? (
-          <div className="rounded-3xl border border-amber-500/40 bg-[#0b0f17] p-8 sm:p-12 text-center shadow-2xl text-white max-w-2xl mx-auto space-y-4">
-            <div className="w-16 h-16 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-2 border border-amber-500/40">
+          <div className="rounded-3xl apple-glass p-8 sm:p-12 text-center shadow-2xl text-inherit max-w-2xl mx-auto space-y-4 border border-amber-500/30">
+            <div className="w-16 h-16 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center mx-auto mb-2 border border-amber-500/30">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-widest">
+            <span className="text-xs font-mono font-bold text-amber-500 uppercase tracking-widest">
               Request ID: {submittedOrder.id || 'ORD-REQ'}
             </span>
-            <h2 className="text-2xl font-extrabold text-white">Quote Request Confirmed!</h2>
-            <p className="text-gray-300 text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
-              Our engineering team has received your model. Fabrication configured in <strong className="text-amber-400">{submittedOrder.desiredMaterial}</strong> ({submittedOrder.desiredColor}) at <strong className="text-amber-400">{submittedOrder.infillDensity}</strong> infill with an estimated price of <strong className="text-white">₹{submittedOrder.quotePrice}</strong>.
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Quote Request Confirmed!</h2>
+            <p className="text-gray-600 dark:text-zinc-300 text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
+              Our engineering team has received your model. Fabrication configured in <strong className="text-amber-500">{submittedOrder.desiredMaterial}</strong> ({submittedOrder.desiredColor}) at <strong className="text-amber-500">{submittedOrder.infillDensity}</strong> infill with an estimated price of <strong className="text-gray-900 dark:text-white">₹{submittedOrder.quotePrice}</strong>.
             </p>
 
             <div className="flex flex-wrap justify-center gap-3 pt-4">
               <Link
                 to={`/track?orderId=${encodeURIComponent(submittedOrder.id || 'cust_101')}`}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 text-gray-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition"
+                className="apple-btn-primary px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-gray-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition"
               >
                 Track Fabrication Status &rarr;
               </Link>
               <button
                 onClick={() => { setSubmittedOrder(null); setSelectedFile(null); setFileBuffer(null); }}
-                className="px-5 py-2.5 rounded-xl bg-gray-800 text-gray-300 hover:text-white text-xs font-semibold border border-gray-700 transition"
+                className="apple-btn-primary px-6 py-3 rounded-full apple-glass text-gray-700 dark:text-zinc-300 hover:text-amber-500 text-xs font-semibold border border-gray-200/80 dark:border-white/[0.08] transition"
               >
                 Configure Another Model
               </button>
@@ -394,15 +394,15 @@ export const CustomPrint: React.FC = () => {
             {/* Left Column: 3D STL Viewer & Model File Inspector */}
             <div className="lg:col-span-7 space-y-6">
               {/* 3D Canvas Card */}
-              <div className="rounded-3xl border border-amber-500/30 bg-[#0b0f17] p-5 shadow-2xl shadow-black/95 text-white">
-                <div className="flex items-center justify-between mb-3">
+              <div className="rounded-3xl apple-glass p-5 sm:p-6 shadow-2xl border border-gray-200/80 dark:border-white/[0.08] text-inherit">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
-                    <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                    <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
                       Interactive 3D Model Inspector (Three.js)
                     </h3>
                   </div>
-                  <span className="text-[11px] text-gray-400">Drag to rotate • Wheel to zoom</span>
+                  <span className="text-[11px] text-gray-500 dark:text-zinc-400">Drag to rotate • Wheel to zoom</span>
                 </div>
 
                 <StlViewer
@@ -466,51 +466,51 @@ export const CustomPrint: React.FC = () => {
               </div>
 
               {/* 3D Model File Inspector Metrics Card */}
-              <div className="p-6 rounded-3xl bg-[#0b0f17] border border-amber-500/20 shadow-2xl shadow-black/95 text-white space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-gray-800">
+              <div className="p-6 rounded-3xl apple-glass border border-gray-200/80 dark:border-white/[0.08] shadow-2xl text-inherit space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-gray-200/80 dark:border-white/[0.08]">
                   <div>
-                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest block">Model Analysis</span>
-                    <h3 className="text-base font-bold text-white">3D File Inspection & Geometry Metrics</h3>
+                    <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest block">Model Analysis</span>
+                    <h3 className="text-base font-bold text-gray-900 dark:text-white tracking-tight">3D File Inspection & Geometry Metrics</h3>
                   </div>
-                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold text-[11px] flex items-center gap-1">
+                  <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] flex items-center gap-1">
                     <span>✓</span> Watertight Manifold
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="p-3 rounded-2xl bg-[#121824] border border-gray-800">
-                    <span className="text-[10px] text-gray-400 block font-semibold">Bounding Box</span>
-                    <strong className="text-white font-mono">{dimL} × {dimW} × {dimH} mm</strong>
+                  <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08]">
+                    <span className="text-[10px] text-gray-500 dark:text-zinc-400 block font-semibold">Bounding Box</span>
+                    <strong className="text-gray-900 dark:text-white font-mono">{dimL} × {dimW} × {dimH} mm</strong>
                   </div>
 
-                  <div className="p-3 rounded-2xl bg-[#121824] border border-gray-800">
-                    <span className="text-[10px] text-gray-400 block font-semibold">Solid Volume</span>
-                    <strong className="text-amber-400 font-mono">{volumeCm3} cm³</strong>
+                  <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08]">
+                    <span className="text-[10px] text-gray-500 dark:text-zinc-400 block font-semibold">Solid Volume</span>
+                    <strong className="text-amber-500 font-mono">{volumeCm3} cm³</strong>
                   </div>
 
-                  <div className="p-3 rounded-2xl bg-[#121824] border border-gray-800">
-                    <span className="text-[10px] text-gray-400 block font-semibold">Surface Area</span>
-                    <strong className="text-gray-200 font-mono">{surfaceAreaCm2} cm²</strong>
+                  <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08]">
+                    <span className="text-[10px] text-gray-500 dark:text-zinc-400 block font-semibold">Surface Area</span>
+                    <strong className="text-gray-700 dark:text-zinc-200 font-mono">{surfaceAreaCm2} cm²</strong>
                   </div>
 
-                  <div className="p-3 rounded-2xl bg-[#121824] border border-gray-800">
-                    <span className="text-[10px] text-gray-400 block font-semibold">Calculated Weight</span>
-                    <strong className="text-amber-300 font-mono text-sm">{calculatedWeightGrams} grams</strong>
+                  <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08]">
+                    <span className="text-[10px] text-gray-500 dark:text-zinc-400 block font-semibold">Calculated Weight</span>
+                    <strong className="text-amber-500 font-mono text-sm">{calculatedWeightGrams} grams</strong>
                   </div>
 
-                  <div className="p-3 rounded-2xl bg-[#121824] border border-gray-800">
-                    <span className="text-[10px] text-gray-400 block font-semibold">Estimated Layers</span>
-                    <strong className="text-gray-200 font-mono">{estimatedLayerCount} layers</strong>
+                  <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08]">
+                    <span className="text-[10px] text-gray-500 dark:text-zinc-400 block font-semibold">Estimated Layers</span>
+                    <strong className="text-gray-700 dark:text-zinc-200 font-mono">{estimatedLayerCount} layers</strong>
                   </div>
 
-                  <div className="p-3 rounded-2xl bg-[#121824] border border-gray-800">
-                    <span className="text-[10px] text-gray-400 block font-semibold">Est. Print Time</span>
-                    <strong className="text-emerald-400 font-mono">{estimatedPrintTime}</strong>
+                  <div className="p-3.5 rounded-2xl bg-gray-50/70 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08]">
+                    <span className="text-[10px] text-gray-500 dark:text-zinc-400 block font-semibold">Est. Print Time</span>
+                    <strong className="text-emerald-500 font-mono">{estimatedPrintTime}</strong>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#080b11] border border-gray-800 text-[11px] text-gray-400 flex items-center gap-2">
-                  <span className="text-emerald-400 font-bold">✓</span>
+                <div className="p-3 rounded-2xl bg-gray-50/50 dark:bg-black/20 border border-gray-200/60 dark:border-white/[0.06] text-[11px] text-gray-500 dark:text-zinc-400 flex items-center gap-2">
+                  <span className="text-emerald-500 font-bold">✓</span>
                   <span>Mesh Integrity Check: 0 non-manifold edges, zero inverted vertex normals detected.</span>
                 </div>
               </div>
@@ -518,13 +518,13 @@ export const CustomPrint: React.FC = () => {
 
             {/* Right Column: Print Parameters & Live Quote Engine */}
             <div className="lg:col-span-5 space-y-6">
-              <div className="p-6 rounded-3xl bg-[#0b0f17] border border-amber-500/30 shadow-2xl shadow-black/95 text-white space-y-5">
-                <div className="pb-3 border-b border-gray-800 flex items-center justify-between">
+              <div className="p-6 rounded-3xl apple-glass border border-gray-200/80 dark:border-white/[0.08] shadow-2xl text-inherit space-y-5">
+                <div className="pb-3 border-b border-gray-200/80 dark:border-white/[0.08] flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest block">Parameters</span>
-                    <h3 className="text-lg font-bold text-white">Fabrication Configuration</h3>
+                    <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest block">Parameters</span>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Fabrication Configuration</h3>
                   </div>
-                  <Link to="/materials" className="text-amber-400 hover:underline text-xs font-semibold">
+                  <Link to="/materials" className="text-amber-500 hover:underline text-xs font-semibold">
                     Materials Guide &rarr;
                   </Link>
                 </div>
@@ -726,50 +726,50 @@ export const CustomPrint: React.FC = () => {
                 </div>
 
                 {/* Live Instant Price Card */}
-                <div className="p-4 rounded-2xl bg-gradient-to-br from-[#121824] to-[#1a2337] border border-amber-500/40 shadow-xl space-y-2">
-                  <div className="flex justify-between items-center text-xs text-gray-400">
+                <div className="p-5 rounded-2xl apple-glass border border-amber-500/30 shadow-xl space-y-2.5">
+                  <div className="flex justify-between items-center text-xs text-gray-500 dark:text-zinc-400">
                     <span>Material ({calculatedWeightGrams}g):</span>
-                    <span>₹{calculatedPricing.rawMaterialCost}</span>
+                    <span className="font-mono text-gray-800 dark:text-zinc-200">₹{calculatedPricing.rawMaterialCost}</span>
                   </div>
-                  <div className="flex justify-between items-center text-xs text-gray-400">
+                  <div className="flex justify-between items-center text-xs text-gray-500 dark:text-zinc-400">
                     <span>Machine Calibration & Slicing:</span>
-                    <span>₹{calculatedPricing.machineCost}</span>
+                    <span className="font-mono text-gray-800 dark:text-zinc-200">₹{calculatedPricing.machineCost}</span>
                   </div>
                   {calculatedPricing.postProcessingFee > 0 && (
-                    <div className="flex justify-between items-center text-xs text-gray-400">
+                    <div className="flex justify-between items-center text-xs text-gray-500 dark:text-zinc-400">
                       <span>Post-Processing:</span>
-                      <span>+₹{calculatedPricing.postProcessingFee}</span>
+                      <span className="font-mono text-amber-500">+₹{calculatedPricing.postProcessingFee}</span>
                     </div>
                   )}
                   {calculatedPricing.rushFee > 0 && (
-                    <div className="flex justify-between items-center text-xs text-amber-400">
+                    <div className="flex justify-between items-center text-xs text-amber-500">
                       <span>Priority Rush Fee:</span>
-                      <span>+₹{calculatedPricing.rushFee}</span>
+                      <span className="font-mono font-bold">+₹{calculatedPricing.rushFee}</span>
                     </div>
                   )}
 
-                  <div className="pt-2 border-t border-gray-700/80 flex justify-between items-center">
+                  <div className="pt-2.5 border-t border-gray-200/80 dark:border-white/[0.08] flex justify-between items-center">
                     <div>
-                      <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider block">Instant Quote Price</span>
-                      <strong className="text-2xl font-extrabold text-amber-400 font-mono">₹{calculatedPricing.finalPrice}</strong>
+                      <span className="text-[10px] text-gray-500 dark:text-zinc-400 uppercase font-bold tracking-wider block">Instant Quote Price</span>
+                      <strong className="text-2xl font-extrabold text-amber-500 font-mono">₹{calculatedPricing.finalPrice}</strong>
                     </div>
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold uppercase">
+                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 font-bold uppercase">
                       All Inclusive
                     </span>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="space-y-2.5 pt-1">
+                <div className="space-y-3 pt-1">
                   <button
                     type="button"
                     onClick={handleAddToCart}
-                    className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-gray-950 font-extrabold text-sm shadow-xl shadow-amber-500/25 transition transform active:scale-95 flex items-center justify-center gap-2"
+                    className="apple-btn-primary w-full py-4 px-6 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:brightness-105 text-gray-950 font-bold text-sm shadow-xl shadow-amber-500/25 transition flex items-center justify-center gap-2"
                   >
                     <span>🛒 Add Custom Print to Cart (₹{calculatedPricing.finalPrice})</span>
                   </button>
 
-                  <div className="text-center text-[11px] text-gray-500">— or request custom engineer review —</div>
+                  <div className="text-center text-[11px] text-gray-400 dark:text-zinc-500">— or request custom engineer review —</div>
 
                   <form onSubmit={handleSubmit} className="space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">

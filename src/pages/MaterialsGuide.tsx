@@ -212,13 +212,13 @@ const MaterialsGuide: React.FC = () => {
 
         {/* Header Title */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <span className="inline-block py-1 px-3.5 rounded-full text-xs font-bold tracking-wider uppercase bg-amber-500/10 text-amber-500 border border-amber-500/30">
+          <span className="inline-block py-1 px-4 rounded-full text-[11px] font-bold tracking-wider uppercase bg-amber-500/10 text-amber-500 border border-amber-500/25 backdrop-blur-md">
             Engineering & Metallurgy Matrix
           </span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-            Comprehensive <span className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent">3D Material Guide</span> & Matrix
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-950 dark:text-white tracking-tight leading-[1.08]">
+            Comprehensive <span className="apple-gold-gradient">3D Material Guide</span> & Matrix
           </h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-zinc-400 leading-relaxed font-normal">
             Select the optimal polymer, elastomer, or carbon-fiber composite for your application. Compare tensile strength, heat deflection, UV durability, and mechanical properties.
           </p>
         </div>
@@ -227,17 +227,17 @@ const MaterialsGuide: React.FC = () => {
         <GuaranteeBadges />
 
         {/* Filter & Search Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#0b0f17] border border-amber-500/20 shadow-xl shadow-black/80">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-5 rounded-3xl apple-glass border border-gray-200/80 dark:border-white/[0.08] shadow-xl">
           <div className="flex flex-wrap items-center gap-2">
             {categories.map((cat) => (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 active:scale-95 ${
                   selectedCategory === cat
-                    ? 'bg-amber-500 text-gray-950 shadow-md shadow-amber-500/25'
-                    : 'bg-[#121824] text-gray-300 hover:text-white hover:bg-gray-800 border border-gray-800'
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-gray-950 shadow-md shadow-amber-500/25'
+                    : 'bg-gray-100 dark:bg-black/30 text-gray-700 dark:text-zinc-300 hover:text-amber-500 border border-gray-200/80 dark:border-white/[0.08]'
                 }`}
               >
                 {cat}
@@ -251,9 +251,9 @@ const MaterialsGuide: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by property, use-case..."
-              className="w-full pl-9 pr-3 py-2 bg-[#121824] border border-gray-700 rounded-xl text-xs text-white placeholder-gray-400 focus:outline-none focus:border-amber-400"
+              className="w-full pl-9 pr-4 py-2.5 bg-gray-50 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08] rounded-full text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-amber-500"
             />
-            <svg className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
@@ -267,51 +267,51 @@ const MaterialsGuide: React.FC = () => {
               <div
                 key={mat.id}
                 onClick={() => setActiveMaterial(mat)}
-                className={`rounded-3xl p-6 transition duration-300 flex flex-col justify-between cursor-pointer border ${
+                className={`apple-glass apple-card-hover rounded-3xl p-6 transition-all duration-500 ease-out flex flex-col justify-between cursor-pointer border ${
                   isSelected
-                    ? 'bg-[#0b0f17] border-amber-500/60 ring-2 ring-amber-500/25 shadow-2xl shadow-amber-500/10'
-                    : 'bg-[#0b0f17]/90 border-gray-800/80 hover:border-amber-500/40 shadow-xl shadow-black/80'
+                    ? 'border-amber-500/60 ring-2 ring-amber-500/25 shadow-2xl shadow-amber-500/10'
+                    : 'border-gray-200/80 dark:border-white/[0.08] hover:border-amber-500/40 shadow-sm hover:shadow-2xl'
                 }`}
               >
                 <div>
-                  <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-start justify-between mb-4">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/90 block">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-amber-500 block">
                         {mat.category}
                       </span>
-                      <h3 className="text-xl font-extrabold text-white mt-0.5">{mat.name}</h3>
+                      <h3 className="text-xl font-extrabold text-gray-900 dark:text-white mt-1 tracking-tight">{mat.name}</h3>
                     </div>
-                    <span className="px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 font-mono font-bold text-xs">
+                    <span className="px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/25 text-amber-500 font-mono font-bold text-xs">
                       {mat.shortCode}
                     </span>
                   </div>
 
                   {/* Spec Badges Grid */}
-                  <div className="grid grid-cols-2 gap-2 my-4 text-xs">
-                    <div className="p-2.5 rounded-xl bg-[#121824] border border-gray-800/80">
-                      <span className="text-[10px] text-gray-400 block">Tensile Strength</span>
-                      <strong className="text-gray-100 font-mono">{mat.tensileStrength}</strong>
+                  <div className="grid grid-cols-2 gap-2.5 my-4 text-xs">
+                    <div className="p-3 rounded-2xl bg-gray-50/70 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08]">
+                      <span className="text-[10px] text-gray-500 dark:text-zinc-400 block font-semibold">Tensile Strength</span>
+                      <strong className="text-gray-900 dark:text-zinc-100 font-mono">{mat.tensileStrength}</strong>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-[#121824] border border-gray-800/80">
-                      <span className="text-[10px] text-gray-400 block">Heat Deflection</span>
-                      <strong className="text-amber-300 font-mono">{mat.heatDeflection}</strong>
+                    <div className="p-3 rounded-2xl bg-gray-50/70 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08]">
+                      <span className="text-[10px] text-gray-500 dark:text-zinc-400 block font-semibold">Heat Deflection</span>
+                      <strong className="text-amber-500 font-mono">{mat.heatDeflection}</strong>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-[#121824] border border-gray-800/80">
-                      <span className="text-[10px] text-gray-400 block">Flexibility</span>
-                      <span className="text-gray-200 text-[11px] truncate block">{mat.flexibility}</span>
+                    <div className="p-3 rounded-2xl bg-gray-50/70 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08]">
+                      <span className="text-[10px] text-gray-500 dark:text-zinc-400 block font-semibold">Flexibility</span>
+                      <span className="text-gray-800 dark:text-zinc-200 text-[11px] truncate block font-medium">{mat.flexibility}</span>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-[#121824] border border-gray-800/80">
-                      <span className="text-[10px] text-gray-400 block">UV Resistance</span>
-                      <span className="text-emerald-400 text-[11px] font-semibold">{mat.uvResistance}</span>
+                    <div className="p-3 rounded-2xl bg-gray-50/70 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08]">
+                      <span className="text-[10px] text-gray-500 dark:text-zinc-400 block font-semibold">UV Resistance</span>
+                      <span className="text-emerald-500 text-[11px] font-semibold">{mat.uvResistance}</span>
                     </div>
                   </div>
 
                   {/* Best Uses Chips */}
                   <div className="space-y-1.5 mb-4">
-                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Best Applications:</span>
+                    <span className="text-[11px] font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider block">Best Applications:</span>
                     <div className="flex flex-wrap gap-1.5">
                       {mat.bestUses.map((use, idx) => (
-                        <span key={idx} className="text-[11px] px-2 py-0.5 rounded-lg bg-gray-800/90 text-gray-300 border border-gray-700/60">
+                        <span key={idx} className="text-[11px] px-2.5 py-1 rounded-full bg-gray-100 dark:bg-black/40 text-gray-700 dark:text-zinc-300 border border-gray-200/80 dark:border-white/[0.08]">
                           {use}
                         </span>
                       ))}
@@ -320,10 +320,10 @@ const MaterialsGuide: React.FC = () => {
                 </div>
 
                 {/* Card Footer Action */}
-                <div className="pt-4 border-t border-gray-800 flex items-center justify-between mt-2">
+                <div className="pt-4 border-t border-gray-200/80 dark:border-white/[0.08] flex items-center justify-between mt-2">
                   <div>
-                    <span className="text-[10px] text-gray-400 block">Lead Time</span>
-                    <span className="text-xs font-bold text-white">{mat.leadTime}</span>
+                    <span className="text-[10px] text-gray-500 dark:text-zinc-400 block">Lead Time</span>
+                    <span className="text-xs font-bold text-gray-900 dark:text-white">{mat.leadTime}</span>
                   </div>
                   <button
                     type="button"
@@ -331,7 +331,7 @@ const MaterialsGuide: React.FC = () => {
                       e.stopPropagation();
                       handleQuoteInMaterial(mat);
                     }}
-                    className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-gray-950 font-bold text-xs shadow-md shadow-amber-500/20 transition transform active:scale-95"
+                    className="apple-btn-primary px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-105 text-gray-950 font-bold text-xs shadow-md shadow-amber-500/20 transition"
                   >
                     Quote in {mat.shortCode} &rarr;
                   </button>

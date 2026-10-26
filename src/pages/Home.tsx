@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useCart, ProductItem } from '../context/CartContext';
 import { GuaranteeBadges } from '../components/GuaranteeBadges';
 import { FilamentSwatches } from '../components/FilamentSwatches';
+import { ProductCard } from '../components/ProductCard';
 
 const DEFAULT_FEATURED: ProductItem[] = [
   {
@@ -182,36 +183,36 @@ const Home: React.FC = () => {
         <div className="absolute top-20 right-10 w-96 h-96 bg-yellow-500/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Text & CTAs */}
             <div>
-              <div className="flex flex-wrap items-center gap-2.5 mb-4">
-                <span className="inline-block py-1 px-3 rounded-full text-xs font-bold tracking-wider uppercase bg-amber-500/10 text-amber-500 border border-amber-500/30">
+              <div className="flex flex-wrap items-center gap-2.5 mb-5">
+                <span className="inline-block py-1 px-3.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-amber-500/10 text-amber-500 border border-amber-500/25 backdrop-blur-md">
                   Precision Additive Manufacturing
                 </span>
                 <button
                   type="button"
                   onClick={() => setShowDeliveryModal(true)}
-                  className="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 transition shadow-sm cursor-pointer group"
+                  className="inline-flex items-center gap-1.5 py-1 px-3.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 transition shadow-sm cursor-pointer group"
                 >
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                   <span>🚚 Delivering Across <strong>{deliveryCityCount}+ Cities</strong> Nationwide</span>
-                  <span className="text-[10px] underline ml-0.5 group-hover:translate-x-0.5 transition font-bold">Check City &rarr;</span>
+                  <span className="text-[10px] underline ml-0.5 group-hover:translate-x-0.5 transition font-bold">&rarr;</span>
                 </button>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-tight mb-6">
-                Crafting Ideas Into <span className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent">Precision 3D</span> Physical Reality
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-950 dark:text-white leading-[1.06] mb-6">
+                Crafting Ideas Into <span className="apple-gold-gradient">Precision 3D</span> Physical Reality
               </h1>
 
-              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-xl leading-relaxed">
-                Instant 3D model slicing, industrial engineering materials (PLA+, PETG, Carbon Fiber, TPU, Resin), and door-to-door delivery with a 100% precision fit guarantee.
+              <p className="text-base sm:text-lg text-gray-600 dark:text-zinc-300 mb-8 max-w-xl leading-relaxed font-normal">
+                Instant 3D model slicing, industrial engineering materials (PLA+, PETG, Carbon Fiber, TPU, Resin), and door-to-door express dispatch with a 100% precision fit guarantee.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   to="/custom-print"
-                  className="inline-flex justify-center items-center px-6 py-3.5 rounded-2xl font-bold text-gray-950 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 shadow-xl shadow-amber-500/25 transition transform hover:-translate-y-0.5"
+                  className="apple-btn-primary inline-flex justify-center items-center px-7 py-4 rounded-full font-bold text-gray-950 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:brightness-105 shadow-xl shadow-amber-500/25 transition-all duration-300"
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -221,7 +222,7 @@ const Home: React.FC = () => {
 
                 <Link
                   to="/shop"
-                  className="inline-flex justify-center items-center px-6 py-3.5 rounded-2xl font-semibold text-gray-900 dark:text-gray-200 bg-white dark:bg-[#0b0f17] border border-gray-300 dark:border-amber-500/30 hover:border-amber-500 hover:text-amber-500 transition transform hover:-translate-y-0.5 shadow-md shadow-black/40"
+                  className="apple-btn-primary inline-flex justify-center items-center px-7 py-4 rounded-full font-semibold text-gray-900 dark:text-zinc-200 apple-glass hover:border-amber-500/40 hover:text-amber-500 transition-all duration-300 shadow-md"
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -231,7 +232,7 @@ const Home: React.FC = () => {
               </div>
 
               {/* Trust Subtext */}
-              <div className="flex flex-wrap items-center gap-4 mt-8 text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex flex-wrap items-center gap-5 mt-8 text-xs text-gray-500 dark:text-zinc-400 font-medium">
                 <div className="flex items-center gap-1.5">
                   <span className="text-amber-500 font-bold">✓</span>
                   <span>±0.15mm Tolerance</span>
@@ -249,12 +250,12 @@ const Home: React.FC = () => {
 
             {/* Hero Media / Image */}
             <div className="relative">
-              <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-500 to-yellow-600 opacity-20 blur-xl"></div>
-              <div className="relative rounded-3xl overflow-hidden border border-gray-200 dark:border-amber-500/30 bg-[#0b0f17] shadow-2xl shadow-black/95">
+              <div className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-amber-500/30 to-yellow-500/10 blur-2xl opacity-60"></div>
+              <div className="relative rounded-3xl overflow-hidden border border-gray-200/80 dark:border-white/[0.1] bg-[#0b0f17] shadow-2xl">
                 <img
                   src="/assets/images/hero_3d_printer_1786179196218.webp"
                   alt="3D Printer in Action"
-                  className="w-full h-auto object-cover transform hover:scale-105 transition duration-700"
+                  className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700 ease-out"
                   loading="eager"
                 />
               </div>
@@ -269,62 +270,70 @@ const Home: React.FC = () => {
       </section>
 
       {/* Features Row */}
-      <section className="py-14 border-t border-gray-200 dark:border-amber-500/10 bg-gray-100/60 dark:bg-[#080b11]">
+      <section className="py-14 border-t border-gray-200/80 dark:border-white/[0.06] bg-gray-50/50 dark:bg-[#080b11]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="p-6 rounded-3xl border border-gray-200 dark:border-amber-500/20 bg-white dark:bg-[#0b0f17] shadow-xl shadow-black/80 hover:border-amber-500/50 transition">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4 border border-amber-500/30">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                </svg>
+            <div className="apple-glass apple-card-hover p-6 rounded-3xl border border-gray-200/80 dark:border-white/[0.08] flex flex-col justify-between">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4 border border-amber-500/25">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1.5 tracking-tight">160mm Max Build Volume</h3>
+                <p className="text-xs text-gray-600 dark:text-zinc-400 leading-relaxed">
+                  Precision single-piece prints up to 160×160×160mm with smart modular split options for oversized mechanical assemblies.
+                </p>
               </div>
-              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1.5">160mm Max Build Volume</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                Precision single-piece prints up to 160×160×160mm with smart modular split options for oversized mechanical assemblies.
-              </p>
             </div>
 
-            <div className="p-6 rounded-3xl border border-gray-200 dark:border-amber-500/20 bg-white dark:bg-[#0b0f17] shadow-xl shadow-black/80 hover:border-amber-500/50 transition">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4 border border-amber-500/30">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            <div className="apple-glass apple-card-hover p-6 rounded-3xl border border-gray-200/80 dark:border-white/[0.08] flex flex-col justify-between">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4 border border-amber-500/25">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1.5 tracking-tight">7 Calibrated Materials</h3>
+                <p className="text-xs text-gray-600 dark:text-zinc-400 leading-relaxed">
+                  PLA+, PETG, ABS, Carbon Fiber, TPU 95A, Nylon PA12, and 8K SLA Resin for industrial-grade strength and finish.
+                </p>
               </div>
-              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1.5">7 Calibrated Materials</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                PLA+, PETG, ABS, Carbon Fiber, TPU 95A, Nylon PA12, and 8K SLA Resin for industrial-grade strength and finish.
-              </p>
             </div>
 
-            <div className="p-6 rounded-3xl border border-gray-200 dark:border-amber-500/20 bg-white dark:bg-[#0b0f17] shadow-xl shadow-black/80 hover:border-amber-500/50 transition">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4 border border-amber-500/30">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+            <div className="apple-glass apple-card-hover p-6 rounded-3xl border border-gray-200/80 dark:border-white/[0.08] flex flex-col justify-between">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4 border border-amber-500/25">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1.5 tracking-tight">Instant Slicing & Quoting</h3>
+                <p className="text-xs text-gray-600 dark:text-zinc-400 leading-relaxed">
+                  Upload STL/3MF files for automatic bounding box detection, weight in grams, manifold check, and instant pricing.
+                </p>
               </div>
-              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1.5">Instant Slicing & Quoting</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                Upload STL/3MF files for automatic bounding box detection, weight in grams, manifold check, and instant pricing.
-              </p>
             </div>
 
             <div
               onClick={() => setShowDeliveryModal(true)}
-              className="p-6 rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 via-amber-500/5 to-transparent shadow-xl shadow-black/80 hover:border-emerald-500/60 transition cursor-pointer group"
+              className="apple-glass apple-card-hover p-6 rounded-3xl border border-emerald-500/25 flex flex-col justify-between cursor-pointer group"
             >
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-4 group-hover:scale-105 transition border border-emerald-500/30">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300 border border-emerald-500/25">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white tracking-tight">Shipping to {deliveryCityCount}+ Hubs</h3>
+                  <span className="text-xs font-bold text-emerald-500 group-hover:translate-x-1 transition-transform duration-300">&rarr;</span>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-zinc-400 leading-relaxed">
+                  Express 1-4 day delivery across India with shockproof bubble packaging and live tracking telemetry.
+                </p>
               </div>
-              <div className="flex items-center justify-between mb-1.5">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white">Shipping to {deliveryCityCount}+ Hubs</h3>
-                <span className="text-xs font-bold text-emerald-500 group-hover:translate-x-1 transition">&rarr;</span>
-              </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                Express 1-4 day delivery across India with shockproof bubble packaging and live tracking telemetry.
-              </p>
             </div>
           </div>
         </div>
@@ -344,54 +353,18 @@ const Home: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((product) => {
-              const qtyInCart = getItemQuantityInCart(product.id);
-              return (
-                <div
-                  key={product.id}
-                  className="group rounded-3xl bg-white dark:bg-[#0b0f17] border border-gray-200 dark:border-amber-500/20 overflow-hidden hover:border-amber-500/50 transition duration-300 flex flex-col justify-between shadow-xl shadow-black/80"
-                >
-                  <Link to="/shop" className="block focus:outline-none">
-                    <div className="h-48 overflow-hidden bg-gray-50 dark:bg-[#121824] flex items-center justify-center p-2 relative">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition duration-500"
-                      />
-                      {qtyInCart > 0 && (
-                        <span className="absolute top-3 right-3 bg-amber-500 text-gray-950 text-xs font-black px-2.5 py-0.5 rounded-full shadow-lg">
-                          {qtyInCart} in cart
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-5">
-                      <div className="text-[11px] font-bold text-amber-500 uppercase tracking-wider mb-1">{product.category}</div>
-                      <h3 className="font-bold text-gray-900 dark:text-white mb-1 group-hover:text-amber-400 transition">{product.name}</h3>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">{product.description}</p>
-                    </div>
-                  </Link>
-
-                  <div className="p-5 pt-0 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between mt-2">
-                    <span className="text-lg font-extrabold text-amber-500 font-mono">₹{product.price}</span>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => handleAddToCart(product, false)}
-                        title="Add to cart"
-                        className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#121824] hover:bg-gray-800 text-amber-400 border border-amber-500/30 transition transform active:scale-95 flex items-center gap-1"
-                      >
-                        + Add
-                      </button>
-                      <button
-                        onClick={() => handleAddToCart(product, true)}
-                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-gray-950 shadow-md shadow-amber-500/20 transition transform active:scale-95"
-                      >
-                        Buy &rarr;
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {featuredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                price={product.price}
+                imageUrl={product.image}
+                category={product.category}
+                description={product.description}
+                onAddToCart={() => handleAddToCart(product, false)}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -400,15 +373,15 @@ const Home: React.FC = () => {
       <FilamentSwatches />
 
       {/* Volume Discount Tier Calculator Section */}
-      <section className="py-16 bg-[#080b11] border-t border-amber-500/20 text-white">
+      <section className="py-16 border-t border-gray-200/80 dark:border-white/[0.06] text-inherit">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="p-8 sm:p-12 rounded-3xl bg-[#0b0f17] border border-amber-500/30 shadow-2xl shadow-black/95">
+          <div className="p-8 sm:p-12 rounded-3xl apple-glass border border-gray-200/80 dark:border-white/[0.08] shadow-2xl">
             <div className="max-w-2xl mb-8">
-              <span className="text-xs font-bold text-amber-400 uppercase tracking-widest block mb-1">
+              <span className="text-[11px] font-bold text-amber-500 uppercase tracking-widest block mb-1">
                 Batch & Commercial Manufacturing
               </span>
-              <h2 className="text-3xl font-extrabold text-white">Scale Up with Volume Tier Savings</h2>
-              <p className="text-xs sm:text-sm text-gray-400 mt-2">
+              <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Scale Up with Volume Tier Savings</h2>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-zinc-400 mt-2 leading-relaxed">
                 Need multiple units for robotics competitions, product packaging, or hardware validation? Get instant discounts up to 35% on batch orders.
               </p>
             </div>
@@ -416,8 +389,8 @@ const Home: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-gray-300 font-medium">Batch Quantity:</span>
-                  <span className="font-mono text-xl font-extrabold text-amber-400">{bulkQty} Units</span>
+                  <span className="text-gray-700 dark:text-zinc-300 font-medium">Batch Quantity:</span>
+                  <span className="font-mono text-xl font-extrabold text-amber-500">{bulkQty} Units</span>
                 </div>
                 <input
                   type="range"
@@ -426,17 +399,17 @@ const Home: React.FC = () => {
                   step="5"
                   value={bulkQty}
                   onChange={(e) => setBulkQty(Number(e.target.value))}
-                  className="w-full accent-amber-500 h-2 bg-gray-800 rounded-lg cursor-pointer"
+                  className="w-full accent-amber-500 h-2 bg-gray-200 dark:bg-zinc-800 rounded-lg cursor-pointer"
                 />
 
-                <div className="p-4 rounded-2xl bg-[#121824] border border-gray-800 flex items-center justify-between text-xs">
+                <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08] flex items-center justify-between text-xs">
                   <div>
-                    <span className="text-gray-400 block text-[10px] uppercase font-bold">Automatic Discount</span>
-                    <strong className="text-lg text-emerald-400 font-mono">{getBulkDiscount(bulkQty)}% OFF</strong>
+                    <span className="text-gray-500 dark:text-zinc-400 block text-[10px] uppercase font-bold">Automatic Discount</span>
+                    <strong className="text-lg text-emerald-500 font-mono">{getBulkDiscount(bulkQty)}% OFF</strong>
                   </div>
                   <Link
                     to={`/rfq?qty=${bulkQty}`}
-                    className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-bold text-xs transition"
+                    className="apple-btn-primary px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-105 text-gray-950 font-bold text-xs transition shadow-md shadow-amber-500/20"
                   >
                     Request Enterprise Quote &rarr;
                   </Link>
@@ -444,25 +417,25 @@ const Home: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="p-4 rounded-2xl bg-[#121824] border border-gray-800">
-                  <div className="text-[10px] text-gray-400 uppercase font-bold">10-49 Units</div>
-                  <div className="text-base font-extrabold text-white mt-0.5">15% Discount</div>
-                  <p className="text-[10px] text-gray-400 mt-1">Small batches & team kits</p>
+                <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08]">
+                  <div className="text-[10px] text-gray-500 dark:text-zinc-400 uppercase font-bold">10-49 Units</div>
+                  <div className="text-base font-extrabold text-gray-900 dark:text-white mt-0.5 tracking-tight">15% Discount</div>
+                  <p className="text-[10px] text-gray-500 dark:text-zinc-400 mt-1">Small batches & team kits</p>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#121824] border border-gray-800">
-                  <div className="text-[10px] text-gray-400 uppercase font-bold">50-199 Units</div>
-                  <div className="text-base font-extrabold text-white mt-0.5">25% Discount</div>
-                  <p className="text-[10px] text-gray-400 mt-1">Commercial pre-orders</p>
+                <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08]">
+                  <div className="text-[10px] text-gray-500 dark:text-zinc-400 uppercase font-bold">50-199 Units</div>
+                  <div className="text-base font-extrabold text-gray-900 dark:text-white mt-0.5 tracking-tight">25% Discount</div>
+                  <p className="text-[10px] text-gray-500 dark:text-zinc-400 mt-1">Commercial pre-orders</p>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#121824] border border-gray-800">
-                  <div className="text-[10px] text-gray-400 uppercase font-bold">200+ Units</div>
-                  <div className="text-base font-extrabold text-amber-400 mt-0.5">35% Discount</div>
-                  <p className="text-[10px] text-gray-400 mt-1">Enterprise OEM contract</p>
+                <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08]">
+                  <div className="text-[10px] text-gray-500 dark:text-zinc-400 uppercase font-bold">200+ Units</div>
+                  <div className="text-base font-extrabold text-amber-500 mt-0.5 tracking-tight">35% Discount</div>
+                  <p className="text-[10px] text-gray-500 dark:text-zinc-400 mt-1">Enterprise OEM contract</p>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#121824] border border-gray-800">
-                  <div className="text-[10px] text-gray-400 uppercase font-bold">NDA Protected</div>
-                  <div className="text-base font-extrabold text-white mt-0.5">100% Confidential</div>
-                  <p className="text-[10px] text-gray-400 mt-1">IP & proprietary CAD security</p>
+                <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-black/30 border border-gray-200/80 dark:border-white/[0.08]">
+                  <div className="text-[10px] text-gray-500 dark:text-zinc-400 uppercase font-bold">NDA Protected</div>
+                  <div className="text-base font-extrabold text-gray-900 dark:text-white mt-0.5 tracking-tight">100% Confidential</div>
+                  <p className="text-[10px] text-gray-500 dark:text-zinc-400 mt-1">IP & proprietary CAD security</p>
                 </div>
               </div>
             </div>

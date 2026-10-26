@@ -260,8 +260,8 @@ export const Checkout: React.FC = () => {
     return (
       <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-transparent text-inherit animate-fadeIn">
         <div className="max-w-3xl mx-auto">
-          <div className="rounded-3xl border border-amber-500/40 bg-white dark:bg-gray-900/90 p-8 sm:p-10 text-center shadow-2xl shadow-black/80 backdrop-blur text-gray-900 dark:text-white">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-emerald-500/20 border border-emerald-500/30">
+          <div className="rounded-3xl border border-amber-500/30 apple-glass p-8 sm:p-12 text-center shadow-2xl backdrop-blur-xl text-gray-900 dark:text-white transition-all duration-500 ease-apple">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-emerald-500/10 border border-emerald-500/30">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
@@ -270,41 +270,41 @@ export const Checkout: React.FC = () => {
             <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
               Request Received Successfully
             </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mt-1 mb-3 leading-snug">
+            <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-gray-900 dark:text-white mt-1 mb-3 leading-snug">
               Your order request is collected succesfully, will be contacted soon for further delivery instructions
             </h1>
-            <p className="text-gray-600 dark:text-gray-300 text-sm max-w-lg mx-auto mb-6">
+            <p className="text-gray-600 dark:text-gray-300 text-sm max-w-lg mx-auto mb-6 leading-relaxed">
               Our 3D printing engineering team has received your order specifications and will reach out via WhatsApp or email for slicing review and courier dispatch.
             </p>
 
             {/* Order Details Card */}
-            <div className="p-5 rounded-2xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-left mb-6 max-w-lg mx-auto space-y-3 shadow-inner">
-              <div className="flex justify-between items-center text-xs pb-2 border-b border-gray-200 dark:border-gray-800">
-                <span className="text-gray-500">Order Reference</span>
+            <div className="p-6 rounded-2xl bg-gray-100/70 dark:bg-white/[0.04] border border-gray-200/60 dark:border-white/[0.08] text-left mb-6 max-w-lg mx-auto space-y-3">
+              <div className="flex justify-between items-center text-xs pb-2 border-b border-gray-200/60 dark:border-white/[0.08]">
+                <span className="text-gray-500 dark:text-gray-400 font-medium">Order Reference</span>
                 <span className="font-mono font-bold text-amber-500">{confirmedOrder.orderId}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-500">Date</span>
-                <span className="font-medium text-gray-900 dark:text-white">{confirmedOrder.placedAt}</span>
+                <span className="text-gray-500 dark:text-gray-400 font-medium">Date</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{confirmedOrder.placedAt}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-500">Payment Option</span>
+                <span className="text-gray-500 dark:text-gray-400 font-medium">Payment Option</span>
                 <span className="font-semibold text-gray-900 dark:text-white">{confirmedOrder.paymentMethod}</span>
               </div>
               {confirmedOrder.upiTransactionId && (
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-gray-500">UPI / Reference ID</span>
-                  <span className="font-mono text-amber-500">{confirmedOrder.upiTransactionId}</span>
+                  <span className="text-gray-500 dark:text-gray-400 font-medium">UPI / Reference ID</span>
+                  <span className="font-mono text-amber-500 font-semibold">{confirmedOrder.upiTransactionId}</span>
                 </div>
               )}
-              <div className="text-xs pt-1 border-t border-gray-200 dark:border-gray-800">
-                <span className="text-gray-500 block mb-1">Shipping Destination:</span>
+              <div className="text-xs pt-1.5 border-t border-gray-200/60 dark:border-white/[0.08]">
+                <span className="text-gray-500 dark:text-gray-400 block mb-1 font-medium">Shipping Destination:</span>
                 <span className="font-medium text-gray-900 dark:text-white leading-relaxed">{confirmedOrder.address}</span>
               </div>
 
               {/* Items List */}
-              <div className="pt-2 border-t border-gray-200 dark:border-gray-800 space-y-1.5">
-                <span className="text-xs text-gray-500 font-semibold block mb-1">Items in Production:</span>
+              <div className="pt-2 border-t border-gray-200/60 dark:border-white/[0.08] space-y-1.5">
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold block mb-1">Items in Production:</span>
                 <div className="max-h-36 overflow-y-auto space-y-1">
                   {confirmedOrder.items.map((item) => (
                     <div key={item.id} className="flex justify-between text-xs py-0.5">
@@ -317,9 +317,9 @@ export const Checkout: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center pt-3 border-t border-gray-200 dark:border-gray-800">
+              <div className="flex justify-between items-center pt-3 border-t border-gray-200/60 dark:border-white/[0.08]">
                 <span className="text-sm font-bold text-gray-900 dark:text-white">Total Amount</span>
-                <span className="text-xl font-extrabold text-amber-500">₹{confirmedOrder.finalTotal}</span>
+                <span className="text-2xl font-extrabold text-amber-500">₹{confirmedOrder.finalTotal}</span>
               </div>
             </div>
 
@@ -327,13 +327,13 @@ export const Checkout: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
                 to="/shop"
-                className="px-6 py-3 rounded-xl font-bold text-gray-950 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 shadow-lg shadow-amber-500/20 transition transform hover:-translate-y-0.5"
+                className="apple-btn-primary px-7 py-3 rounded-2xl font-bold text-gray-950 shadow-lg shadow-amber-500/20 transition-all duration-300 ease-apple active:scale-95"
               >
                 Continue Shopping
               </Link>
               <Link
                 to="/account"
-                className="px-6 py-3 rounded-xl font-semibold text-amber-500 bg-gray-100 dark:bg-gray-900 border border-amber-500/30 hover:bg-gray-200 dark:hover:bg-gray-800 transition transform hover:-translate-y-0.5"
+                className="px-7 py-3 rounded-2xl font-semibold text-amber-500 bg-gray-100/80 dark:bg-white/[0.05] border border-amber-500/30 hover:bg-gray-200 dark:hover:bg-white/[0.1] transition-all duration-300 ease-apple active:scale-95"
               >
                 View My Account & Orders
               </Link>
@@ -395,14 +395,20 @@ export const Checkout: React.FC = () => {
         </nav>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">Checkout & Order Placement</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+          <span className="inline-flex items-center gap-1.5 py-1 px-3.5 rounded-full text-xs font-semibold tracking-wide uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20 backdrop-blur-md mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            Secure Encrypted Checkout
+          </span>
+          <h1 className="text-3xl sm:text-5xl font-extrabold font-display tracking-tight text-gray-900 dark:text-white leading-[1.1]">
+            Checkout & <span className="apple-gold-gradient">Order Placement</span>
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base mt-2 max-w-2xl font-normal leading-relaxed">
             Provide your shipping details below to schedule production and delivery.
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-950/70 border border-red-300 dark:border-red-500/40 text-red-700 dark:text-red-300 text-sm flex items-center gap-3 shadow-sm animate-shake">
+          <div className="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-300 text-sm flex items-center gap-3 shadow-sm animate-shake">
             <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -411,7 +417,7 @@ export const Checkout: React.FC = () => {
         )}
 
         {copyFeedback && (
-          <div className="fixed bottom-6 right-6 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl shadow-2xl border border-amber-500/40 text-xs font-semibold animate-fadeIn flex items-center gap-2">
+          <div className="fixed bottom-6 right-6 z-50 bg-gray-950/90 text-white px-5 py-3 rounded-2xl shadow-2xl border border-amber-500/40 text-xs font-semibold animate-fadeIn flex items-center gap-2 backdrop-blur-md">
             <span className="text-emerald-400">✓</span> {copyFeedback}
           </div>
         )}
@@ -421,8 +427,8 @@ export const Checkout: React.FC = () => {
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Contact Information */}
-              <div className="p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm text-gray-900 dark:text-white">
-                <h2 className="text-lg font-bold flex items-center gap-2">
+              <div className="p-6 sm:p-8 rounded-3xl apple-glass border border-gray-200/80 dark:border-white/[0.08] space-y-4 shadow-xl backdrop-blur-xl text-gray-900 dark:text-white transition-all duration-300 ease-apple">
+                <h2 className="text-lg font-bold font-display flex items-center gap-2.5">
                   <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-500 text-xs flex items-center justify-center font-bold">1</span>
                   Contact Information
                 </h2>
@@ -436,7 +442,7 @@ export const Checkout: React.FC = () => {
                       placeholder="e.g. Shree Manekar"
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                      className="w-full bg-gray-50/80 dark:bg-white/[0.04] border border-gray-300/80 dark:border-white/[0.1] rounded-xl px-4 py-3 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 transition"
                     />
                   </div>
                   <div>
@@ -448,7 +454,7 @@ export const Checkout: React.FC = () => {
                       placeholder="e.g. shree@example.com"
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                      className="w-full bg-gray-50/80 dark:bg-white/[0.04] border border-gray-300/80 dark:border-white/[0.1] rounded-xl px-4 py-3 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 transition"
                     />
                   </div>
                   <div className="sm:col-span-2">
@@ -460,15 +466,15 @@ export const Checkout: React.FC = () => {
                       placeholder="+91 98765 43210"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                      className="w-full bg-gray-50/80 dark:bg-white/[0.04] border border-gray-300/80 dark:border-white/[0.1] rounded-xl px-4 py-3 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 font-mono transition"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Delivery Address */}
-              <div className="p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm text-gray-900 dark:text-white">
-                <h2 className="text-lg font-bold flex items-center gap-2">
+              <div className="p-6 sm:p-8 rounded-3xl apple-glass border border-gray-200/80 dark:border-white/[0.08] space-y-4 shadow-xl backdrop-blur-xl text-gray-900 dark:text-white transition-all duration-300 ease-apple">
+                <h2 className="text-lg font-bold font-display flex items-center gap-2.5">
                   <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-500 text-xs flex items-center justify-center font-bold">2</span>
                   Delivery Address
                 </h2>
@@ -482,7 +488,7 @@ export const Checkout: React.FC = () => {
                       placeholder="e.g. Flat 301, Lakeview Residency, Civil Lines"
                       value={formData.street}
                       onChange={handleChange}
-                      className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                      className="w-full bg-gray-50/80 dark:bg-white/[0.04] border border-gray-300/80 dark:border-white/[0.1] rounded-xl px-4 py-3 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 transition"
                     />
                   </div>
 
@@ -518,7 +524,7 @@ export const Checkout: React.FC = () => {
                             state: matched?.state && !prev.state ? matched.state : prev.state
                           }));
                         }}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                        className="w-full bg-gray-50/80 dark:bg-white/[0.04] border border-gray-300/80 dark:border-white/[0.1] rounded-xl px-4 py-3 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 transition"
                       />
                       <datalist id="supported-delivery-cities">
                         {deliveryCities
@@ -535,7 +541,7 @@ export const Checkout: React.FC = () => {
                           <span>✓ Verified Hub ({selectedCityCoverage.estimatedDays || '2-4 Days'})</span>
                         </div>
                       ) : formData.city.trim() ? (
-                        <div className="mt-1 text-[11px] text-gray-500">
+                        <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
                           <span>Standard courier dispatch to this PIN/City</span>
                         </div>
                       ) : null}
@@ -549,7 +555,7 @@ export const Checkout: React.FC = () => {
                         placeholder="e.g. Maharashtra"
                         value={formData.state}
                         onChange={handleChange}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                        className="w-full bg-gray-50/80 dark:bg-white/[0.04] border border-gray-300/80 dark:border-white/[0.1] rounded-xl px-4 py-3 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 transition"
                       />
                     </div>
                     <div>
@@ -561,7 +567,7 @@ export const Checkout: React.FC = () => {
                         placeholder="e.g. 442401"
                         value={formData.pincode}
                         onChange={handleChange}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                        className="w-full bg-gray-50/80 dark:bg-white/[0.04] border border-gray-300/80 dark:border-white/[0.1] rounded-xl px-4 py-3 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 font-mono transition"
                       />
                     </div>
                   </div>
@@ -569,8 +575,8 @@ export const Checkout: React.FC = () => {
               </div>
 
               {/* Payment Method */}
-              <div className="p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-4 shadow-sm text-gray-900 dark:text-white">
-                <h2 className="text-lg font-bold flex items-center gap-2">
+              <div className="p-6 sm:p-8 rounded-3xl apple-glass border border-gray-200/80 dark:border-white/[0.08] space-y-4 shadow-xl backdrop-blur-xl text-gray-900 dark:text-white transition-all duration-300 ease-apple">
+                <h2 className="text-lg font-bold font-display flex items-center gap-2.5">
                   <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-500 text-xs flex items-center justify-center font-bold">3</span>
                   Payment Method
                 </h2>
@@ -583,10 +589,10 @@ export const Checkout: React.FC = () => {
                   ].map((method) => (
                     <label
                       key={method.id}
-                      className={`p-4 rounded-xl border cursor-pointer transition flex flex-col justify-between ${
+                      className={`p-4 rounded-2xl border cursor-pointer transition-all duration-300 ease-apple flex flex-col justify-between ${
                         formData.paymentMethod === method.id
                           ? 'bg-amber-500/10 border-amber-400 text-gray-900 dark:text-white shadow-sm ring-1 ring-amber-500/30'
-                          : 'bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700'
+                          : 'bg-gray-100/50 dark:bg-white/[0.03] border-gray-200/60 dark:border-white/[0.06] text-gray-700 dark:text-gray-300 hover:border-amber-500/40'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -597,7 +603,7 @@ export const Checkout: React.FC = () => {
                           value={method.id}
                           checked={formData.paymentMethod === method.id}
                           onChange={handleChange}
-                          className="accent-amber-500 w-4 h-4"
+                          className="accent-amber-500 w-4 h-4 cursor-pointer"
                         />
                       </div>
                       <span className="text-xs text-gray-500 dark:text-gray-400">{method.desc}</span>
@@ -607,10 +613,10 @@ export const Checkout: React.FC = () => {
 
                 {/* DYNAMIC PAYMENT VERIFICATION CARD (for UPI & Account Transfer) */}
                 {(formData.paymentMethod === 'UPI' || formData.paymentMethod === 'Card') && (
-                  <div className="mt-4 p-5 rounded-2xl bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 border border-amber-500/30 space-y-4 animate-fadeIn">
+                  <div className="mt-4 p-6 rounded-2xl bg-gray-100/70 dark:bg-white/[0.04] border border-gray-200/60 dark:border-white/[0.08] space-y-4 animate-fadeIn">
                     <div className="flex flex-col sm:flex-row items-center gap-6">
                       {/* QR Scanner Display */}
-                      <div className="flex flex-col items-center p-3 rounded-2xl bg-white dark:bg-black border border-gray-200 dark:border-gray-800 shadow-md">
+                      <div className="flex flex-col items-center p-4 rounded-2xl bg-white dark:bg-black/60 border border-gray-200/80 dark:border-white/[0.1] shadow-md">
                         <img
                           src={qrCodeUrl}
                           alt="Admin UPI Scanner QR"
@@ -623,14 +629,14 @@ export const Checkout: React.FC = () => {
 
                       {/* Payment Details */}
                       <div className="flex-1 space-y-2 text-xs">
-                        <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30">
-                          <span className="text-gray-500 dark:text-gray-400 block text-[10px] uppercase font-bold">Admin Official UPI ID</span>
+                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                          <span className="text-gray-500 dark:text-gray-400 block text-[10px] uppercase font-bold tracking-wider">Admin Official UPI ID</span>
                           <div className="flex items-center justify-between mt-1">
                             <span className="font-mono font-bold text-sm text-amber-500">{activeUpiId}</span>
                             <button
                               type="button"
                               onClick={() => handleCopy(activeUpiId, 'UPI ID')}
-                              className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-gray-950 font-bold text-[11px] transition shadow"
+                              className="apple-btn-primary px-3 py-1 rounded-lg text-gray-950 font-bold text-[11px] shadow-sm transition-all duration-300 ease-apple active:scale-95"
                             >
                               Copy UPI ID
                             </button>
@@ -638,11 +644,11 @@ export const Checkout: React.FC = () => {
                         </div>
 
                         {formData.paymentMethod === 'Card' && (
-                          <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 space-y-1.5 text-xs">
+                          <div className="p-3.5 rounded-xl bg-purple-500/10 border border-purple-500/20 space-y-1.5 text-xs">
                             <div className="font-bold text-purple-700 dark:text-purple-300 text-xs flex items-center gap-1.5">
                               <span>🏦</span> Admin Bank Account Details (IMPS / NEFT)
                             </div>
-                            <div className="text-[11px] text-gray-600 dark:text-gray-300">
+                            <div className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
                               <span className="font-medium text-gray-500">Holder:</span> {storeSettings.accountHolderName || 'SM 3D Technologies'}<br />
                               <span className="font-medium text-gray-500">Bank:</span> {storeSettings.bankName || 'State Bank of India'}<br />
                               <span className="font-medium text-gray-500">A/C Number:</span> <span className="font-mono font-bold text-gray-900 dark:text-white">{storeSettings.accountNumber || '928411860101'}</span>
@@ -671,7 +677,7 @@ export const Checkout: React.FC = () => {
                     </div>
 
                     {/* UPI Transaction ID Input with Paste Button */}
-                    <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
+                    <div className="pt-2 border-t border-gray-200/60 dark:border-white/[0.08]">
                       <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-1">
                         UPI Transaction ID / UTR Number (12+ Digits) *
                       </label>
@@ -684,18 +690,18 @@ export const Checkout: React.FC = () => {
                           value={upiTransactionId}
                           onChange={(e) => setUpiTransactionId(e.target.value.replace(/\D/g, ''))}
                           placeholder="Enter 12+ digit transaction number (e.g. 428912345678)"
-                          className="w-full bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl pl-3 pr-20 py-2.5 text-gray-900 dark:text-white font-mono text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                          className="w-full bg-white/80 dark:bg-white/[0.04] border border-gray-300/80 dark:border-white/[0.1] rounded-xl pl-4 pr-20 py-2.5 text-gray-900 dark:text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 transition"
                         />
                         <button
                           type="button"
                           onClick={handlePasteUpi}
-                          className="absolute right-2 px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold transition shadow-sm border border-gray-300 dark:border-gray-700"
+                          className="absolute right-2 px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/[0.08] dark:hover:bg-white/[0.12] text-gray-700 dark:text-gray-300 text-xs font-bold transition shadow-sm border border-gray-300/80 dark:border-white/[0.1]"
                           title="Paste from clipboard"
                         >
                           📋 Paste
                         </button>
                       </div>
-                      <div className="flex justify-between items-center mt-1 text-[11px] text-gray-500">
+                      <div className="flex justify-between items-center mt-1 text-[11px] text-gray-500 dark:text-gray-400">
                         <span>Digits entered: {upiTransactionId.length} (minimum 12 numbers required)</span>
                         {upiTransactionId.length >= 12 && (
                           <span className="text-emerald-500 font-semibold">✓ Valid length</span>
@@ -709,7 +715,7 @@ export const Checkout: React.FC = () => {
                         Upload Screenshot of Payment (Optional)
                       </label>
                       <div className="flex items-center gap-3">
-                        <label className="px-4 py-2 rounded-xl bg-white dark:bg-gray-950 border border-dashed border-gray-300 dark:border-gray-700 hover:border-amber-500 text-amber-500 text-xs font-semibold cursor-pointer transition flex items-center gap-2">
+                        <label className="px-4 py-2.5 rounded-xl bg-white/80 dark:bg-white/[0.04] border border-dashed border-gray-300/80 dark:border-white/[0.15] hover:border-amber-500 text-amber-500 text-xs font-semibold cursor-pointer transition-all duration-300 ease-apple flex items-center gap-2">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                           </svg>
@@ -735,22 +741,22 @@ export const Checkout: React.FC = () => {
               </div>
 
               {/* Order Notes */}
-              <div className="p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-3 shadow-sm text-gray-900 dark:text-white">
-                <label className="block text-sm font-bold">Order Notes / Custom Requests (Optional)</label>
+              <div className="p-6 sm:p-8 rounded-3xl apple-glass border border-gray-200/80 dark:border-white/[0.08] space-y-3 shadow-xl backdrop-blur-xl text-gray-900 dark:text-white transition-all duration-300 ease-apple">
+                <label className="block text-sm font-bold font-display">Order Notes / Custom Requests (Optional)</label>
                 <textarea
                   name="notes"
                   rows={2}
                   value={formData.notes}
                   onChange={handleChange}
                   placeholder="Special instructions, desired color variant preference, or landmark details..."
-                  className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                  className="w-full bg-gray-50/80 dark:bg-white/[0.04] border border-gray-300/80 dark:border-white/[0.1] rounded-xl px-4 py-3 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 transition"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 rounded-xl font-black text-gray-950 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 shadow-xl shadow-amber-500/25 transition transform hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 text-base flex items-center justify-center gap-2"
+                className="apple-btn-primary w-full py-4 rounded-2xl font-black text-gray-950 text-base shadow-xl shadow-amber-500/25 transition-all duration-300 ease-apple hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <span>Processing Order...</span>
@@ -768,9 +774,9 @@ export const Checkout: React.FC = () => {
 
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24 p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-5 shadow-2xl shadow-black/40 text-gray-900 dark:text-white">
-              <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-800">
-                <h2 className="text-lg font-bold">Items in Order ({items.length})</h2>
+            <div className="sticky top-24 p-6 sm:p-8 rounded-3xl apple-glass border border-gray-200/80 dark:border-white/[0.08] space-y-5 shadow-2xl backdrop-blur-xl text-gray-900 dark:text-white transition-all duration-300 ease-apple">
+              <div className="flex items-center justify-between pb-3 border-b border-gray-200/60 dark:border-white/[0.08]">
+                <h2 className="text-lg font-bold font-display">Items in Order ({items.length})</h2>
                 <Link to="/cart" className="text-xs text-amber-500 hover:underline font-semibold">
                   Edit Cart
                 </Link>
@@ -782,13 +788,13 @@ export const Checkout: React.FC = () => {
                   <Link
                     key={item.id}
                     to="/cart"
-                    className="flex items-center gap-3 p-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/60 transition group"
+                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100/60 dark:hover:bg-white/[0.05] transition-all duration-300 ease-apple group"
                     title="Click to edit in Cart"
                   >
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-12 h-12 object-cover rounded-lg bg-gray-100 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 flex-shrink-0"
+                      className="w-12 h-12 object-cover rounded-xl bg-gray-100 dark:bg-gray-950 border border-gray-200/80 dark:border-white/[0.08] flex-shrink-0"
                     />
                     <div className="min-w-0 flex-1">
                       <div className="text-xs font-semibold text-gray-900 dark:text-white truncate group-hover:text-amber-500 transition">
@@ -804,7 +810,7 @@ export const Checkout: React.FC = () => {
               </div>
 
               {/* Price Breakdown */}
-              <div className="space-y-2 text-xs border-t border-gray-200 dark:border-gray-800 pt-4">
+              <div className="space-y-2 text-xs border-t border-gray-200/60 dark:border-white/[0.08] pt-4">
                 <div className="flex justify-between text-gray-600 dark:text-gray-300">
                   <span>Subtotal</span>
                   <span className="font-semibold text-gray-900 dark:text-white">₹{totalPrice}</span>
@@ -819,9 +825,9 @@ export const Checkout: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex justify-between items-baseline pt-2 border-t border-gray-200 dark:border-gray-800">
+              <div className="flex justify-between items-baseline pt-2 border-t border-gray-200/60 dark:border-white/[0.08]">
                 <span className="text-sm font-bold text-gray-900 dark:text-white">Total</span>
-                <span className="text-xl font-extrabold text-amber-500">₹{finalTotal}</span>
+                <span className="text-2xl font-extrabold text-amber-500">₹{finalTotal}</span>
               </div>
 
               <div className="pt-2 text-center">
@@ -838,17 +844,17 @@ export const Checkout: React.FC = () => {
       </div>
       {/* DELIVERY CITIES COVERAGE SELECTION MODAL */}
       {showCitiesModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 w-full max-w-xl rounded-3xl p-6 shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fadeIn">
+          <div className="apple-glass border border-gray-200/80 dark:border-white/[0.08] w-full max-w-xl rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-4 max-h-[85vh] flex flex-col text-gray-900 dark:text-white">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
+                <h3 className="font-bold font-display text-gray-900 dark:text-white text-base flex items-center gap-2">
                   <span>🚚 Deliverable Destinations</span>
-                  <span className="text-xs bg-amber-500/10 text-amber-500 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-xs bg-amber-500/10 text-amber-500 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-bold">
                     {deliveryCities.filter(c => c.active !== false).length} Cities
                   </span>
                 </h3>
-                <p className="text-xs text-gray-500 mt-0.5">Click your city to automatically fill shipping details.</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Click your city to automatically fill shipping details.</p>
               </div>
               <button
                 type="button"
@@ -875,13 +881,13 @@ export const Checkout: React.FC = () => {
                         }));
                         setShowCitiesModal(false);
                       }}
-                      className="p-3 rounded-xl bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-left hover:border-amber-500/50 hover:bg-amber-500/5 transition flex items-center justify-between group"
+                      className="p-3.5 rounded-2xl bg-gray-100/60 dark:bg-white/[0.03] border border-gray-200/60 dark:border-white/[0.06] text-left hover:border-amber-500/50 hover:bg-amber-500/10 transition-all duration-300 ease-apple flex items-center justify-between group"
                     >
                       <div>
-                        <span className="font-bold text-gray-900 dark:text-white group-hover:text-amber-500 block">
+                        <span className="font-bold text-gray-900 dark:text-white group-hover:text-amber-500 block transition">
                           {city.name}
                         </span>
-                        <span className="text-[10px] text-gray-500">{city.state}</span>
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400">{city.state}</span>
                       </div>
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                         {city.estimatedDays || '2-4 Days'}
@@ -891,12 +897,12 @@ export const Checkout: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs">
-              <span className="text-[11px] text-gray-500">Don't see your city? We deliver nationwide via Speed Post.</span>
+            <div className="pt-3 border-t border-gray-200/60 dark:border-white/[0.08] flex items-center justify-between text-xs">
+              <span className="text-[11px] text-gray-500 dark:text-gray-400">Don't see your city? We deliver nationwide via Speed Post.</span>
               <button
                 type="button"
                 onClick={() => setShowCitiesModal(false)}
-                className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold"
+                className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-white/[0.06] hover:bg-gray-200 dark:hover:bg-white/[0.1] text-gray-700 dark:text-gray-300 font-semibold transition"
               >
                 Close
               </button>

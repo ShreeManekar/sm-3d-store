@@ -310,6 +310,12 @@ async function runTests() {
   const authFinance = await testEndpoint('GET', '/api/admin/financial-summary', null, { 'Authorization': `Bearer ${adminToken}` });
   assert(authFinance.status === 200 && authFinance.data && typeof authFinance.data.totalRevenue === 'number', 'GET /api/admin/financial-summary with adminToken returns financial statement');
 
+  // Test review moderation protection
+  const unauthReviewList = await testEndpoint('GET', '/api/reviews');
+  assert(unauthReviewList.status === 200 && Array.isArray(unauthReviewList.data), 'Public GET /api/reviews returns approved reviews');
+  const authReviewList = await testEndpoint('GET', '/api/reviews', null, { 'Authorization': `Bearer ${adminToken}` });
+  assert(authReviewList.status === 200 && Array.isArray(authReviewList.data), 'Admin GET /api/reviews returns full review catalog');
+
   console.log(`\n========================================`);
   console.log(`Summary: ${passed} Passed, ${failed} Failed`);
   console.log(`========================================\n`);

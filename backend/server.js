@@ -893,6 +893,10 @@ const DEFAULT_REVIEWS = [
 app.get('/api/reviews', (req, res) => {
   const db = loadDb();
   const list = (db.reviews && db.reviews.length > 0) ? db.reviews : DEFAULT_REVIEWS;
+  if (!verifyAdminAccess(req)) {
+    const approved = list.filter(r => r.approved !== false && r.status !== 'pending' && r.status !== 'pending_moderation');
+    return res.json(approved);
+  }
   res.json(list);
 });
 

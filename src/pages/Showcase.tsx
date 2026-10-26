@@ -225,26 +225,26 @@ const Showcase: React.FC = () => {
 
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <span className="inline-block py-1 px-3.5 rounded-full text-xs font-bold tracking-wider uppercase bg-amber-500/10 text-amber-500 border border-amber-500/30">
+          <span className="inline-block py-1 px-4 rounded-full text-[11px] font-bold tracking-wider uppercase bg-amber-500/10 text-amber-500 border border-amber-500/25 backdrop-blur-md">
             Real Customer Prints & Testimonials
           </span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-            Precision Prints, <span className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent">Real Results</span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-950 dark:text-white tracking-tight leading-[1.08]">
+            Precision Prints, <span className="apple-gold-gradient">Real Results</span>
           </h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-zinc-400 leading-relaxed font-normal">
             See photos and verified reviews from engineers, hobbyists, architects, and robotics teams who trust SM 3D Store for high-accuracy physical manufacturing.
           </p>
 
           {/* Aggregate Rating Banner */}
-          <div className="inline-flex items-center gap-4 p-3 rounded-2xl bg-[#0b0f17] border border-amber-500/30 shadow-xl shadow-black/80 mt-2">
-            <div className="flex items-center gap-1 text-amber-400">
+          <div className="inline-flex items-center gap-4 p-3.5 px-6 rounded-full apple-glass border border-gray-200/80 dark:border-white/[0.08] shadow-xl mt-2">
+            <div className="flex items-center gap-1 text-amber-500">
               {[...Array(5)].map((_, i) => (
                 <span key={i} className="text-lg">★</span>
               ))}
             </div>
             <div className="text-xs text-left">
-              <span className="font-extrabold text-white text-sm">4.96 / 5.0 Rating</span>
-              <p className="text-[10px] text-gray-400">Over 350+ parts printed with zero delaminations</p>
+              <span className="font-extrabold text-gray-900 dark:text-white text-sm">4.96 / 5.0 Rating</span>
+              <p className="text-[10px] text-gray-500 dark:text-zinc-400">Over 350+ parts printed with zero delaminations</p>
             </div>
           </div>
         </div>
@@ -253,17 +253,17 @@ const Showcase: React.FC = () => {
         <GuaranteeBadges />
 
         {/* Filter & Action Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#0b0f17] border border-amber-500/20 shadow-xl shadow-black/80">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-5 rounded-3xl apple-glass border border-gray-200/80 dark:border-white/[0.08] shadow-xl">
           <div className="flex flex-wrap items-center gap-2">
             {categories.map((cat) => (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 active:scale-95 ${
                   selectedCategory === cat
-                    ? 'bg-amber-500 text-gray-950 shadow-md shadow-amber-500/25'
-                    : 'bg-[#121824] text-gray-300 hover:text-white hover:bg-gray-800 border border-gray-800'
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-gray-950 shadow-md shadow-amber-500/25'
+                    : 'bg-gray-100 dark:bg-black/30 text-gray-700 dark:text-zinc-300 hover:text-amber-500 border border-gray-200/80 dark:border-white/[0.08]'
                 }`}
               >
                 {cat}
@@ -274,7 +274,7 @@ const Showcase: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowSubmitModal(true)}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-gray-950 font-bold text-xs shadow-md shadow-amber-500/20 transition transform active:scale-95 flex items-center gap-1.5 self-start sm:self-auto"
+            className="apple-btn-primary px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:brightness-105 text-gray-950 font-bold text-xs shadow-md shadow-amber-500/20 transition flex items-center gap-1.5 self-start sm:self-auto"
           >
             <span>✍️ Write a Print Review</span>
           </button>
@@ -285,15 +285,15 @@ const Showcase: React.FC = () => {
           {filteredReviews.map((rev) => (
             <div
               key={rev.id}
-              className="rounded-3xl p-6 sm:p-7 bg-[#0b0f17] border border-amber-500/20 shadow-xl shadow-black/90 flex flex-col justify-between space-y-4 hover:border-amber-500/40 transition"
+              className="apple-glass apple-card-hover rounded-3xl p-6 sm:p-7 border border-gray-200/80 dark:border-white/[0.08] shadow-sm hover:shadow-2xl flex flex-col justify-between space-y-4 transition-all duration-500 ease-out"
             >
               <div>
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-extrabold text-white text-base">{rev.customerName}</h3>
+                      <h3 className="font-extrabold text-gray-900 dark:text-white text-base tracking-tight">{rev.customerName}</h3>
                       {rev.verifiedBuyer && (
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold flex items-center gap-1">
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex items-center gap-1">
                           ✓ Verified Buyer
                         </span>
                       )}

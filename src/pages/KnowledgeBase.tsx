@@ -123,13 +123,14 @@ const KnowledgeBase: React.FC = () => {
 
         {/* Title */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <span className="inline-block py-1 px-3.5 rounded-full text-xs font-bold tracking-wider uppercase bg-amber-500/10 text-amber-500 border border-amber-500/30">
+          <span className="inline-flex items-center gap-1.5 py-1 px-3.5 rounded-full text-xs font-semibold tracking-wide uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20 backdrop-blur-md">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
             3D Printing Engineering Knowledge Base
           </span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-            Design for <span className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent">Additive Manufacturing</span> (DFAM)
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-display text-gray-900 dark:text-white leading-[1.08]">
+            Design for <span className="apple-gold-gradient">Additive Manufacturing</span> (DFAM)
           </h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 font-normal leading-relaxed max-w-2xl mx-auto">
             Essential guidelines for tolerances, minimum wall thicknesses, overhangs, watertight meshes, and filament thermal resistance.
           </p>
         </div>
@@ -137,32 +138,32 @@ const KnowledgeBase: React.FC = () => {
         {/* Guarantee Badges */}
         <GuaranteeBadges />
 
-        {/* Search Bar */}
-        <div className="p-4 sm:p-6 rounded-3xl bg-[#0b0f17] border border-amber-500/20 shadow-2xl shadow-black/95">
+        {/* Search Bar & Categories */}
+        <div className="p-6 sm:p-8 rounded-3xl apple-glass border border-gray-200/80 dark:border-white/[0.08] shadow-2xl backdrop-blur-xl transition-all duration-500 ease-apple space-y-5">
           <div className="relative">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search design guidelines, tolerances, materials, threads (e.g. wall thickness, 45 degree, heat)..."
-              className="w-full pl-11 pr-4 py-3 bg-[#121824] border border-gray-700 rounded-2xl text-xs sm:text-sm text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              className="w-full pl-12 pr-4 py-3.5 bg-gray-50/80 dark:bg-white/[0.04] border border-gray-300/80 dark:border-white/[0.1] rounded-2xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 transition-all duration-300"
             />
-            <svg className="w-5 h-5 text-amber-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-amber-500 absolute left-4 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
 
           {/* Category Chips */}
-          <div className="flex flex-wrap gap-2 mt-4">
+          <div className="flex flex-wrap gap-2">
             {categories.map((cat) => (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setActiveCategory(cat)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ease-apple active:scale-95 ${
                   activeCategory === cat
-                    ? 'bg-amber-500 text-gray-950 font-bold shadow-md shadow-amber-500/20'
-                    : 'bg-[#121824] text-gray-300 hover:text-white hover:bg-gray-800 border border-gray-800'
+                    ? 'apple-btn-primary font-bold text-gray-950 shadow-md shadow-amber-500/20'
+                    : 'bg-gray-100/70 dark:bg-white/[0.04] text-gray-700 dark:text-gray-300 hover:text-amber-500 dark:hover:text-white border border-gray-200/60 dark:border-white/[0.08] backdrop-blur-sm'
                 }`}
               >
                 {cat}
@@ -178,10 +179,10 @@ const KnowledgeBase: React.FC = () => {
             return (
               <div
                 key={index}
-                className={`rounded-3xl border transition duration-200 overflow-hidden ${
+                className={`rounded-3xl border transition-all duration-300 ease-apple overflow-hidden apple-glass ${
                   isExpanded
-                    ? 'bg-[#0b0f17] border-amber-500/50 shadow-xl shadow-amber-500/10'
-                    : 'bg-[#0b0f17]/90 border-gray-800/80 hover:border-amber-500/30 shadow-md'
+                    ? 'border-amber-500/50 shadow-xl shadow-amber-500/10'
+                    : 'border-gray-200/80 dark:border-white/[0.08] hover:border-amber-500/40 shadow-sm'
                 }`}
               >
                 <button
@@ -190,17 +191,17 @@ const KnowledgeBase: React.FC = () => {
                   className="w-full p-5 sm:p-6 text-left flex items-start justify-between gap-4 focus:outline-none"
                 >
                   <div>
-                    <span className="text-[10px] font-bold text-amber-400/90 uppercase tracking-widest block mb-1">
+                    <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest block mb-1">
                       {faq.category}
                     </span>
-                    <h3 className="text-sm sm:text-base font-extrabold text-white">{faq.q}</h3>
+                    <h3 className="text-sm sm:text-base font-extrabold font-display text-gray-900 dark:text-white">{faq.q}</h3>
                   </div>
 
                   <span
-                    className={`w-7 h-7 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 transition transform ${
+                    className={`w-7 h-7 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 transition-transform duration-300 ease-apple ${
                       isExpanded
                         ? 'bg-amber-500 text-gray-950 rotate-180 shadow-md shadow-amber-500/30'
-                        : 'bg-[#121824] text-gray-400 border border-gray-700'
+                        : 'bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-white/[0.1]'
                     }`}
                   >
                     ▼
@@ -208,14 +209,14 @@ const KnowledgeBase: React.FC = () => {
                 </button>
 
                 {isExpanded && (
-                  <div className="px-5 sm:px-6 pb-6 pt-1 text-xs sm:text-sm text-gray-300 leading-relaxed border-t border-gray-800/60 space-y-3">
+                  <div className="px-5 sm:px-6 pb-6 pt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed border-t border-gray-200/60 dark:border-white/[0.06] space-y-3">
                     <p>{faq.a}</p>
                     {faq.details && faq.details.length > 0 && (
-                      <div className="p-3.5 rounded-2xl bg-[#121824] border border-gray-800/80 space-y-1 text-xs">
-                        <strong className="text-amber-400 font-bold block mb-1">Engineering Takeaways:</strong>
+                      <div className="p-4 rounded-2xl bg-gray-100/70 dark:bg-white/[0.04] border border-gray-200/60 dark:border-white/[0.08] space-y-1.5 text-xs">
+                        <strong className="text-amber-600 dark:text-amber-400 font-bold block mb-1">Engineering Takeaways:</strong>
                         {faq.details.map((detail, idx) => (
-                          <div key={idx} className="flex items-start gap-2 text-gray-300">
-                            <span className="text-amber-400">•</span>
+                          <div key={idx} className="flex items-start gap-2 text-gray-700 dark:text-gray-300">
+                            <span className="text-amber-500 font-bold">•</span>
                             <span>{detail}</span>
                           </div>
                         ))}
@@ -229,17 +230,17 @@ const KnowledgeBase: React.FC = () => {
         </div>
 
         {/* Bottom CTA Card */}
-        <div className="p-8 rounded-3xl bg-gradient-to-r from-[#0b0f17] to-[#121824] border border-amber-500/30 shadow-2xl shadow-black/95 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="p-8 sm:p-10 rounded-3xl apple-glass apple-card-hover border border-amber-500/30 shadow-2xl backdrop-blur-xl text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6 transition-all duration-500 ease-apple text-gray-900 dark:text-white">
           <div>
-            <h3 className="text-xl font-bold text-white">Have a Unique Geometry or Custom Tolerance?</h3>
-            <p className="text-xs text-gray-400 mt-1 max-w-lg">
+            <h3 className="text-xl sm:text-2xl font-extrabold font-display">Have a Unique Geometry or Custom Tolerance?</h3>
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 max-w-lg leading-relaxed">
               Our engineering team can inspect your CAD file, advise on print orientation, and recommend modular splitting.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
               to="/custom-print"
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-gray-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition"
+              className="apple-btn-primary px-6 py-3 rounded-2xl text-gray-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all duration-300 ease-apple active:scale-95"
             >
               Upload 3D File &rarr;
             </Link>
@@ -247,7 +248,7 @@ const KnowledgeBase: React.FC = () => {
               href="https://wa.me/919284118601?text=Hi%20SM%203D%2C%20I%20have%20a%20technical%20question%20regarding%20my%203D%20model"
               target="_blank"
               rel="noreferrer"
-              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition"
+              className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all duration-300 ease-apple active:scale-95 shadow-md shadow-emerald-600/20"
             >
               Ask on WhatsApp
             </a>

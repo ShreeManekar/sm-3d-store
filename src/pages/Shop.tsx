@@ -159,17 +159,25 @@ const Shop: React.FC = () => {
 
         {/* Header & Breadcrumb */}
         <div className="mb-8">
-          <nav className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-3" aria-label="Breadcrumb">
+          <nav className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-4" aria-label="Breadcrumb">
             <Link to="/" className="hover:text-amber-500 dark:hover:text-amber-400 transition">Home</Link>
             <span>/</span>
-            <span className="text-amber-500 dark:text-amber-400 font-medium">Shop Catalog</span>
+            <span className="text-amber-600 dark:text-amber-400 font-medium">Shop Catalog</span>
           </nav>
-          <span className="text-amber-500 dark:text-amber-400 font-semibold text-sm uppercase tracking-wider">Catalog</span>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-1">
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
+          <div className="space-y-2">
+            <span className="inline-flex items-center gap-1.5 py-1 px-3.5 rounded-full text-xs font-semibold tracking-wide uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20 backdrop-blur-md">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              Additive Production Catalog
+            </span>
+            <h1 className="text-4xl sm:text-5xl font-extrabold font-display tracking-tight text-gray-900 dark:text-white leading-[1.08]">
+              Precision <span className="apple-gold-gradient">3D Prints</span>
+            </h1>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-2">
+            <p className="text-gray-600 dark:text-gray-400 text-sm max-w-xl font-normal leading-relaxed">
               Precision printed on tuned additive manufacturing hardware using high-grade filaments up to 160mm build volume.
             </p>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-semibold shrink-0">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-semibold shrink-0 backdrop-blur-md">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               <span>⚡ Pan-India Express Delivery: 40+ Cities Covered</span>
             </div>
@@ -235,21 +243,21 @@ const Shop: React.FC = () => {
               return (
                 <div
                   key={product.id}
-                  className="group rounded-3xl bg-white dark:bg-[#0b0f17] border border-gray-200/80 dark:border-white/[0.08] overflow-hidden hover:border-amber-500/40 transition-all duration-500 ease-out flex flex-col justify-between shadow-sm hover:shadow-2xl hover:shadow-black/50 hover:-translate-y-1"
+                  className="group rounded-3xl apple-glass apple-card-hover border border-gray-200/80 dark:border-white/[0.08] overflow-hidden hover:border-amber-500/40 transition-all duration-500 ease-apple flex flex-col justify-between shadow-sm hover:shadow-2xl hover:shadow-black/40 hover:-translate-y-1 text-gray-900 dark:text-white"
                 >
                   <div>
-                    <div className="h-56 overflow-hidden bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-2 relative">
+                    <div className="h-56 overflow-hidden bg-gray-100/60 dark:bg-white/[0.02] flex items-center justify-center p-2 relative">
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition duration-500"
+                        className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500 ease-apple"
                         loading="lazy"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = '/assets/images/product_dragon_1786179208256.webp';
                         }}
                       />
                       {qtyInCart > 0 && (
-                        <span className="absolute top-4 right-4 bg-amber-500 text-gray-950 text-xs font-black px-2 py-1 rounded-full shadow-lg shadow-black/40">
+                        <span className="absolute top-4 right-4 bg-amber-500 text-gray-950 text-xs font-black px-2.5 py-1 rounded-full shadow-lg shadow-black/40">
                           {qtyInCart} in cart
                         </span>
                       )}
@@ -258,7 +266,7 @@ const Shop: React.FC = () => {
                       {product.stlUrl && (
                         <button
                           onClick={() => setActive3dProduct(product)}
-                          className="absolute bottom-3 left-3 bg-white/90 dark:bg-gray-900/90 hover:bg-amber-500 hover:text-gray-950 text-amber-500 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-gray-200 dark:border-amber-500/40 shadow-lg backdrop-blur flex items-center gap-1.5 transition"
+                          className="absolute bottom-3 left-3 bg-white/90 dark:bg-gray-900/90 hover:bg-amber-500 hover:text-gray-950 text-amber-500 text-[11px] font-bold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-amber-500/40 shadow-lg backdrop-blur flex items-center gap-1.5 transition-all duration-300 ease-apple"
                           title="Open Interactive 3D Model View"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,19 +278,19 @@ const Shop: React.FC = () => {
                     </div>
                     <div className="p-5">
                       <div className="text-xs font-semibold text-amber-500 mb-1">{product.category}</div>
-                      <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-2">{product.name}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{product.description}</p>
-                      <div className="text-xs text-gray-500">Dimensions: {product.dimensions}</div>
+                      <h3 className="font-bold font-display text-lg text-gray-900 dark:text-white mb-1.5">{product.name}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2 leading-relaxed">{product.description}</p>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Dimensions: {product.dimensions}</div>
                     </div>
                   </div>
 
-                  <div className="p-5 pt-0 border-t border-gray-100 dark:border-gray-800/80 flex items-center justify-between mt-4">
+                  <div className="p-5 pt-0 border-t border-gray-100 dark:border-white/[0.06] flex items-center justify-between mt-4">
                     <span className="text-xl font-extrabold text-amber-500">₹{product.price}</span>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleAddToCart(product, false)}
                         title="Add to cart and keep shopping"
-                        className="px-2.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-amber-500 border border-gray-200 dark:border-amber-500/30 transition transform active:scale-95 flex items-center gap-1"
+                        className="px-3 py-2 rounded-xl text-xs font-semibold bg-gray-100/80 dark:bg-white/[0.05] hover:bg-gray-200 dark:hover:bg-white/[0.1] text-amber-500 border border-gray-200/80 dark:border-amber-500/30 transition-all duration-300 ease-apple active:scale-95 flex items-center gap-1"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -291,7 +299,7 @@ const Shop: React.FC = () => {
                       </button>
                       <button
                         onClick={() => handleAddToCart(product, true)}
-                        className="px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-gray-950 shadow-md shadow-amber-500/20 transition transform active:scale-95"
+                        className="apple-btn-primary px-4 py-2 rounded-xl text-xs font-bold text-gray-950 shadow-md shadow-amber-500/20 transition-all duration-300 ease-apple active:scale-95"
                       >
                         Add to Cart &rarr;
                       </button>
