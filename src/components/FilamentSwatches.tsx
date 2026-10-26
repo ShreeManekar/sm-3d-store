@@ -150,7 +150,7 @@ export const FilamentSwatches: React.FC<{ onSelectSwatch?: (swatch: Swatch) => v
         </div>
 
         {/* Swatches Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
+        <div className="grid grid-cols-2 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-3 mb-8">
           {SWATCHES.map((swatch) => {
             const isSelected = selectedSwatch.id === swatch.id;
             return (

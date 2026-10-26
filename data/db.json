@@ -1155,6 +1155,51 @@
   ],
   "reviews": [
     {
+      "id": "rev_1792998351162",
+      "customerName": "Karan Patel",
+      "designation": "Verified 3D Printing Customer",
+      "rating": 5,
+      "verifiedBuyer": true,
+      "productName": "Mechanical Bevel Gear",
+      "category": "Custom Print",
+      "date": "2026-10-26",
+      "image": "/assets/images/product_dragon_1786179208256.webp",
+      "review": "Smooth print, precise tolerances right off the bed.",
+      "material": "PETG",
+      "printTime": "5h 30m",
+      "weight": "80g"
+    },
+    {
+      "id": "rev_1792998161817",
+      "customerName": "Karan Patel",
+      "designation": "Verified 3D Printing Customer",
+      "rating": 5,
+      "verifiedBuyer": true,
+      "productName": "Mechanical Bevel Gear",
+      "category": "Custom Print",
+      "date": "2026-10-26",
+      "image": "/assets/images/product_dragon_1786179208256.webp",
+      "review": "Smooth print, precise tolerances right off the bed.",
+      "material": "PETG",
+      "printTime": "5h 30m",
+      "weight": "80g"
+    },
+    {
+      "id": "rev_1792996892798",
+      "customerName": "Karan Patel",
+      "designation": "Verified 3D Printing Customer",
+      "rating": 5,
+      "verifiedBuyer": true,
+      "productName": "Mechanical Bevel Gear",
+      "category": "Custom Print",
+      "date": "2026-10-26",
+      "image": "/assets/images/product_dragon_1786179208256.webp",
+      "review": "Smooth print, precise tolerances right off the bed.",
+      "material": "PETG",
+      "printTime": "5h 30m",
+      "weight": "80g"
+    },
+    {
       "id": "rev_1792996658542",
       "customerName": "Karan Patel",
       "designation": "Verified 3D Printing Customer",
@@ -1273,6 +1318,48 @@
       "ndaRequired": true,
       "status": "Received",
       "createdAt": "2026-10-26T06:37:38.543Z"
+    },
+    {
+      "id": "RFQ-892799",
+      "companyName": "Apex Robotics Labs",
+      "contactName": "Sanjay Verma",
+      "email": "sanjay@apexrobotics.in",
+      "phone": "+91 9822012345",
+      "quantity": 100,
+      "material": "Carbon Fiber PETG",
+      "targetDate": "Within 10 Days",
+      "projectNotes": "Need 100 pcs precision mounting brackets.",
+      "ndaRequired": true,
+      "status": "Received",
+      "createdAt": "2026-10-26T06:41:32.799Z"
+    },
+    {
+      "id": "RFQ-161818",
+      "companyName": "Apex Robotics Labs",
+      "contactName": "Sanjay Verma",
+      "email": "sanjay@apexrobotics.in",
+      "phone": "+91 9822012345",
+      "quantity": 100,
+      "material": "Carbon Fiber PETG",
+      "targetDate": "Within 10 Days",
+      "projectNotes": "Need 100 pcs precision mounting brackets.",
+      "ndaRequired": true,
+      "status": "Received",
+      "createdAt": "2026-10-26T07:02:41.818Z"
+    },
+    {
+      "id": "RFQ-351163",
+      "companyName": "Apex Robotics Labs",
+      "contactName": "Sanjay Verma",
+      "email": "sanjay@apexrobotics.in",
+      "phone": "+91 9822012345",
+      "quantity": 100,
+      "material": "Carbon Fiber PETG",
+      "targetDate": "Within 10 Days",
+      "projectNotes": "Need 100 pcs precision mounting brackets.",
+      "ndaRequired": true,
+      "status": "Received",
+      "createdAt": "2026-10-26T07:05:51.163Z"
     }
   ]
 }

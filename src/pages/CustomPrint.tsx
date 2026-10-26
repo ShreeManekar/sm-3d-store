@@ -50,6 +50,13 @@ const POST_PROCESSING_OPTIONS = [
   { id: 'inserts', name: 'Brass Threaded Heat-Set Inserts (+₹120)', fee: 120 },
 ];
 
+const ORIENTATION_OPTIONS = [
+  { id: 'auto', name: 'Auto-Optimal (Min. Supports & Fast)', factor: 1.0, desc: 'Optimized slicing trajectory with lowest support scarring' },
+  { id: 'flat', name: 'Flat on Bed (Max XY Plane Strength)', factor: 0.95, desc: 'Maximum layer bond tensile shear strength along mechanical plane' },
+  { id: 'vertical', name: 'Vertical Upright (Finest Z Details)', factor: 1.15, desc: 'Optimal cylindrical resolution and fine vertical features' },
+  { id: '45deg', name: '45° Inclined (Balanced Shear Resistance)', factor: 1.08, desc: 'Avoids perpendicular cleavage plane; ideal for structural brackets' },
+];
+
 export const CustomPrint: React.FC = () => {
   const { currentUser } = useAuth();
   const { addToCart } = useCart();
@@ -76,6 +83,7 @@ export const CustomPrint: React.FC = () => {
   const [infill, setInfill] = useState(20);
   const [layerHeight, setLayerHeight] = useState<number>(0.20);
   const [supports, setSupports] = useState<string>('None');
+  const [orientation, setOrientation] = useState<string>('auto');
   const [postProcessing, setPostProcessing] = useState<string>('none');
   const [isRushOrder, setIsRushOrder] = useState<boolean>(false);
   const [description, setDescription] = useState('');
@@ -114,18 +122,24 @@ export const CustomPrint: React.FC = () => {
 
   // Handle file upload (strictly .stl and .3mf files up to 100MB)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError(null);
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size === 0) {
+      setError('The selected 3D model file is empty (0 bytes). Please select a valid .stl or .3mf file.');
+      return;
+    }
+
     const lower = file.name.toLowerCase();
     if (!lower.endsWith('.stl') && !lower.endsWith('.3mf')) {
-      alert('Only .stl and .3mf 3D model files are accepted. Please choose a valid file.');
+      setError('Only .stl and .3mf 3D model files are accepted. Please choose a valid file.');
       return;
     }
 
     const MAX_SIZE = 100 * 1024 * 1024; // 100MB
     if (file.size > MAX_SIZE) {
-      alert(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the maximum allowed 100MB capacity.`);
+      setError(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the maximum allowed 100MB capacity.`);
       return;
     }
 
@@ -178,20 +192,22 @@ export const CustomPrint: React.FC = () => {
 
   const estimatedPrintTime = useMemo(() => {
     const resOption = RESOLUTION_OPTIONS.find((r) => r.value === layerHeight) || RESOLUTION_OPTIONS[2];
+    const orientationOpt = ORIENTATION_OPTIONS.find((o) => o.id === orientation) || ORIENTATION_OPTIONS[0];
     const supportFactor = supports === 'None' ? 1.0 : 1.25;
     const totalMinutes = Math.round(
-      (calculatedWeightGrams * 4.2 * resOption.multiplier * activeMat.speedFactor * supportFactor) + 20
+      (calculatedWeightGrams * 4.2 * resOption.multiplier * activeMat.speedFactor * supportFactor * orientationOpt.factor) + 20
     );
     const hours = Math.floor(totalMinutes / 60);
     const mins = totalMinutes % 60;
     return `${hours}h ${mins}m`;
-  }, [calculatedWeightGrams, layerHeight, activeMat, supports]);
+  }, [calculatedWeightGrams, layerHeight, activeMat, supports, orientation]);
 
   // Dynamic live pricing formula
   const calculatedPricing = useMemo(() => {
     const rawMaterialCost = calculatedWeightGrams * activeMat.costPerGram;
     const resOption = RESOLUTION_OPTIONS.find((r) => r.value === layerHeight) || RESOLUTION_OPTIONS[2];
-    const machineRuntimeHours = Math.max(1, (calculatedWeightGrams * 4.2 * resOption.multiplier * activeMat.speedFactor) / 60);
+    const orientationOpt = ORIENTATION_OPTIONS.find((o) => o.id === orientation) || ORIENTATION_OPTIONS[0];
+    const machineRuntimeHours = Math.max(1, (calculatedWeightGrams * 4.2 * resOption.multiplier * activeMat.speedFactor * orientationOpt.factor) / 60);
     const machineCost = machineRuntimeHours * 35; // ₹35 per print hour
     const selectedPost = POST_PROCESSING_OPTIONS.find((p) => p.id === postProcessing);
     const postProcessingFee = selectedPost ? selectedPost.fee : 0;
@@ -207,16 +223,17 @@ export const CustomPrint: React.FC = () => {
       rushFee,
       finalPrice,
     };
-  }, [calculatedWeightGrams, activeMat, layerHeight, postProcessing, isRushOrder]);
+  }, [calculatedWeightGrams, activeMat, layerHeight, postProcessing, isRushOrder, orientation]);
 
   // Add Custom Print directly to Cart
   const handleAddToCart = () => {
+    const orientationOpt = ORIENTATION_OPTIONS.find((o) => o.id === orientation) || ORIENTATION_OPTIONS[0];
     const customItem = {
       id: `custom_${Date.now()}`,
       name: `Custom 3D Print (${selectedFile ? selectedFile.name.replace(/\.[^/.]+$/, '') : 'Precision Model'})`,
       price: calculatedPricing.finalPrice,
       category: 'Custom Print',
-      description: `${activeMat.name} • ${color} • ${infill}% Infill • ${layerHeight}mm • ${dimL}×${dimW}×${dimH}mm${isRushOrder ? ' [24-48h Rush Dispatch]' : ''}`,
+      description: `${activeMat.name} • ${color} • ${infill}% Infill • ${layerHeight}mm • ${orientationOpt.name} • ${dimL}×${dimW}×${dimH}mm${isRushOrder ? ' [24-48h Rush Dispatch]' : ''}`,
       image: '/assets/images/hero_3d_printer_1786179196218.webp',
       dimensions: `${dimL} × ${dimW} × ${dimH} mm`,
     };
@@ -287,6 +304,7 @@ export const CustomPrint: React.FC = () => {
         desiredColor: color,
         infillDensity: `${infill}%`,
         layerHeight: `${layerHeight}mm`,
+        orientation: ORIENTATION_OPTIONS.find((o) => o.id === orientation)?.name || orientation,
         supportType: supports,
         postProcessing,
         isRushOrder,
@@ -393,6 +411,7 @@ export const CustomPrint: React.FC = () => {
                   height={380}
                   maxBuildDimension={160}
                   onDimensionsCalculated={handleDimensionsCalculated}
+                  onError={(msg) => setError(msg)}
                 />
 
                 {/* File Upload Selector */}
@@ -631,6 +650,32 @@ export const CustomPrint: React.FC = () => {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Print Orientation */}
+                <div>
+                  <div className="flex justify-between items-center mb-1 text-xs">
+                    <label className="font-semibold text-gray-300">Print Orientation</label>
+                    <span className="text-[10px] text-amber-400 font-semibold">
+                      {ORIENTATION_OPTIONS.find((o) => o.id === orientation)?.factor === 1.0
+                        ? 'Standard Alignment'
+                        : `${(ORIENTATION_OPTIONS.find((o) => o.id === orientation)?.factor || 1.0) < 1.0 ? 'Cost & Speed Optimized' : 'Precision Oriented'}`}
+                    </span>
+                  </div>
+                  <select
+                    value={orientation}
+                    onChange={(e) => setOrientation(e.target.value)}
+                    className="w-full bg-[#121824] border border-gray-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-amber-400"
+                  >
+                    {ORIENTATION_OPTIONS.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-gray-400 mt-1">
+                    {ORIENTATION_OPTIONS.find((o) => o.id === orientation)?.desc}
+                  </p>
                 </div>
 
                 {/* Support Structures */}

@@ -457,7 +457,7 @@ export const Account: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
               ) : (
-                <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                 </svg>
               )}
@@ -476,7 +476,7 @@ export const Account: React.FC = () => {
 
         {/* Administrator Quick Action Banner (Shown if user is admin) */}
         {isAdmin && (
-          <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-50 dark:from-purple-900/40 via-blue-50 dark:via-blue-900/30 to-gray-50 dark:to-gray-900 border border-purple-200 dark:border-purple-500/40 shadow-xl">
+          <div className="p-6 rounded-3xl bg-gradient-to-r from-amber-500/10 dark:from-amber-950/40 via-yellow-500/10 dark:via-yellow-900/20 to-gray-50 dark:to-gray-900 border border-amber-500/30 shadow-xl">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>
                 <span className="text-purple-600 dark:text-purple-400 text-xs font-bold uppercase tracking-wider">Administrator Access</span>
@@ -570,7 +570,7 @@ export const Account: React.FC = () => {
                     <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
                       ord.fulfillmentStatus === 'Delivered'
                         ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30'
-                        : 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-500/30'
+                        : 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/30'
                     }`}>
                       {ord.fulfillmentStatus || 'Processing'}
                     </span>
@@ -630,7 +630,7 @@ export const Account: React.FC = () => {
                       co.status === 'Quoted'
                         ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-500/30'
                         : co.status === 'In Production'
-                        ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-500/30'
+                        ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/30'
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700'
                     }`}>
                       {co.status || 'Requested'}

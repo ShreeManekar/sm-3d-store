@@ -24,6 +24,7 @@ interface StlViewerProps {
   noBuildLimit?: boolean;
   allowScaleAdjustment?: boolean;
   initialScale?: number;
+  onError?: (errorMessage: string) => void;
 }
 
 export const is3mfBuffer = (buffer: ArrayBuffer): boolean => {
@@ -109,10 +110,17 @@ export const parseStlBuffer = (buffer: ArrayBuffer): THREE.BufferGeometry => {
  * 3. Positions the bottom of the bounding box flush on top of the build plate surface (Y = 0)
  */
 export const alignGeometryToBuildPlate = (geometry: THREE.BufferGeometry): THREE.Box3 => {
+  const position = geometry.getAttribute('position');
+  if (!position || position.count === 0) {
+    throw new Error('3D model contains no valid triangle vertices');
+  }
   geometry.rotateX(-Math.PI / 2);
   geometry.computeVertexNormals();
   geometry.computeBoundingBox();
   const bbox = geometry.boundingBox || new THREE.Box3();
+  if (bbox.isEmpty() || !isFinite(bbox.min.x) || !isFinite(bbox.max.x)) {
+    throw new Error('3D model bounding geometry is invalid or empty');
+  }
   const centerX = (bbox.min.x + bbox.max.x) / 2;
   const bottomY = bbox.min.y;
   const centerZ = (bbox.min.z + bbox.max.z) / 2;
@@ -131,6 +139,9 @@ export const alignObjectToBuildPlate = (object: THREE.Object3D): THREE.Box3 => {
   object.rotation.x = -Math.PI / 2;
   object.updateMatrixWorld(true);
   const bbox = new THREE.Box3().setFromObject(object);
+  if (bbox.isEmpty() || !isFinite(bbox.min.x) || !isFinite(bbox.max.x)) {
+    throw new Error('3D model bounding geometry is invalid or empty');
+  }
   const centerX = (bbox.min.x + bbox.max.x) / 2;
   const bottomY = bbox.min.y;
   const centerZ = (bbox.min.z + bbox.max.z) / 2;
@@ -151,6 +162,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
   noBuildLimit = false,
   allowScaleAdjustment = true,
   initialScale = 1.0,
+  onError,
 }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -403,10 +415,12 @@ export const StlViewer: React.FC<StlViewerProps> = ({
       setLoading(false);
     } catch (err: any) {
       console.error('Error loading 3D model:', err);
-      setError(err.message || 'Failed to parse 3D model file');
+      const errMsg = err.message || 'Failed to parse 3D model file';
+      setError(errMsg);
+      if (onError) onError(errMsg);
       setLoading(false);
     }
-  }, [frameModelInView, maxBuildDimension, meshColor, modelScale, noBuildLimit, onDimensionsCalculated, updateBuildPlate, wireframe]);
+  }, [frameModelInView, maxBuildDimension, meshColor, modelScale, noBuildLimit, onDimensionsCalculated, onError, updateBuildPlate, wireframe]);
 
   // Handle color change across mesh and group
   useEffect(() => {

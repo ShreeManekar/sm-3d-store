@@ -82,10 +82,63 @@ const FALLBACK_REVIEWS: ReviewItem[] = [
   },
 ];
 
+interface BeforeAfterItem {
+  id: string;
+  title: string;
+  material: string;
+  beforeLabel: string;
+  afterLabel: string;
+  beforeImg: string;
+  afterImg: string;
+  technique: string;
+  description: string;
+}
+
+const BEFORE_AFTER_SHOWCASE: BeforeAfterItem[] = [
+  {
+    id: 'ba_1',
+    title: 'Planetary Gearbox Reduction Mechanism',
+    material: 'High-Strength PETG',
+    beforeLabel: 'Raw 0.20mm Layer Extrusion',
+    afterLabel: 'Ultrasonic Cleaned & PTFE Lubricated',
+    beforeImg: '/assets/images/product_gearbox_1786179220985.webp',
+    afterImg: '/assets/images/product_dragon_1786179208256.webp',
+    technique: 'Support release + ultrasonic cleaning + PTFE dry-film lubricant',
+    description: 'Print-in-place planetary reduction gears smoothed to effortless zero-backlash rotation with silky mechanical glide.'
+  },
+  {
+    id: 'ba_2',
+    title: 'Parametric Hexagon Planter & Basin',
+    material: 'Aztec Silk Gold PLA+',
+    beforeLabel: 'Standard Sliced Shell',
+    afterLabel: 'Vapor Smoothed & Hydro-Tested',
+    beforeImg: '/assets/images/product_planter_1786179235105.webp',
+    afterImg: '/assets/images/product_headphone_stand_1786179253396.webp',
+    technique: 'Sub-micron chemical smoothing + 100% watertight reservoir pressure test',
+    description: 'Satin silk finish sealed for continuous water contact without internal seepage or micro-porosity leaks.'
+  },
+  {
+    id: 'ba_3',
+    title: 'Ergonomic Studio Headphone Stand',
+    material: 'Stealth Jet Black PETG',
+    beforeLabel: 'Raw 3D Extrusion',
+    afterLabel: 'Matte Bead-Blasted + Threaded Inserts',
+    beforeImg: '/assets/images/product_headphone_stand_1786179253396.webp',
+    afterImg: '/assets/images/hero_3d_printer_1786179196218.webp',
+    technique: 'Micro-bead textured blast + M4 brass heat-set threaded inserts',
+    description: 'Velvet matte finish eliminating visible layer strata, paired with factory-spec metal threading for repeated clamping.'
+  }
+];
+
 const Showcase: React.FC = () => {
   const [reviews, setReviews] = useState<ReviewItem[]>(FALLBACK_REVIEWS);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [showSubmitModal, setShowSubmitModal] = useState<boolean>(false);
+  const [activeBaTabs, setActiveBaTabs] = useState<{ [key: string]: 'before' | 'after' }>({
+    ba_1: 'after',
+    ba_2: 'after',
+    ba_3: 'after',
+  });
 
   // Review submission state
   const [customerName, setCustomerName] = useState('');
@@ -284,6 +337,89 @@ const Showcase: React.FC = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Before & After Post-Processing Showcase */}
+        <div className="space-y-6 pt-6">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="inline-block py-0.5 px-3 rounded-full text-[11px] font-bold tracking-wider uppercase bg-amber-500/10 text-amber-400 border border-amber-500/30">
+              Interactive Surface Transformations
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+              Before & After <span className="bg-gradient-to-r from-amber-400 to-yellow-500 bg-clip-text text-transparent">Post-Processing Quality</span>
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-400">
+              Toggle between raw as-printed physical geometry and our hand-finished, chemical-smoothed, or bead-blasted end-use parts.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {BEFORE_AFTER_SHOWCASE.map((item) => {
+              const currentTab = activeBaTabs[item.id] || 'after';
+              const currentImg = currentTab === 'before' ? item.beforeImg : item.afterImg;
+              const currentLabel = currentTab === 'before' ? item.beforeLabel : item.afterLabel;
+
+              return (
+                <div
+                  key={item.id}
+                  className="rounded-3xl bg-[#0b0f17] border border-amber-500/20 p-5 shadow-2xl shadow-black/90 space-y-4 flex flex-col justify-between hover:border-amber-500/40 transition"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold">
+                        {item.material}
+                      </span>
+                      {/* Interactive Before / After toggle */}
+                      <div className="flex items-center bg-[#121824] p-1 rounded-xl border border-gray-800 text-[10px] font-bold">
+                        <button
+                          type="button"
+                          onClick={() => setActiveBaTabs({ ...activeBaTabs, [item.id]: 'before' })}
+                          className={`px-2.5 py-1 rounded-lg transition ${
+                            currentTab === 'before'
+                              ? 'bg-amber-500 text-gray-950 shadow-sm'
+                              : 'text-gray-400 hover:text-white'
+                          }`}
+                        >
+                          Raw
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveBaTabs({ ...activeBaTabs, [item.id]: 'after' })}
+                          className={`px-2.5 py-1 rounded-lg transition ${
+                            currentTab === 'after'
+                              ? 'bg-amber-500 text-gray-950 shadow-sm'
+                              : 'text-gray-400 hover:text-white'
+                          }`}
+                        >
+                          Finished
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-black/60 border border-gray-800 group">
+                      <img
+                        src={currentImg}
+                        alt={item.title}
+                        className="w-full h-full object-cover transition duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute bottom-2 left-2 right-2 px-3 py-1.5 rounded-xl bg-[#080b11]/85 backdrop-blur-md border border-amber-500/30 flex items-center justify-between text-[11px]">
+                        <span className="font-semibold text-gray-200">{currentLabel}</span>
+                        <span className="text-amber-400 font-bold text-[10px] uppercase tracking-wider">{currentTab}</span>
+                      </div>
+                    </div>
+
+                    <h3 className="font-bold text-white text-sm">{item.title}</h3>
+                    <p className="text-xs text-gray-400 leading-relaxed">{item.description}</p>
+                  </div>
+
+                  <div className="pt-3 border-t border-gray-800/80 text-[10px] text-gray-400 flex items-center gap-1.5">
+                    <span className="text-amber-400 font-bold">⚙️ Process:</span>
+                    <span>{item.technique}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Submit Review Modal */}
