@@ -36,47 +36,50 @@ export const is3mfBuffer = (buffer: ArrayBuffer): boolean => {
   return b[0] === 0x50 && b[1] === 0x4B && (b[2] === 0x03 || b[2] === 0x05) && (b[3] === 0x04 || b[3] === 0x06);
 };
 
-export const parseStlBuffer = (buffer: ArrayBuffer): THREE.BufferGeometry => {
-  if (!buffer || buffer.byteLength < 84) {
+export const decodeBufferIfDataUri = (buffer: ArrayBuffer): ArrayBuffer => {
+  if (!buffer || buffer.byteLength < 10) return buffer;
+  const header = new Uint8Array(buffer, 0, Math.min(buffer.byteLength, 128));
+  let headerStr = '';
+  for (let i = 0; i < header.length; i++) {
+    headerStr += String.fromCharCode(header[i]);
+  }
+  if (headerStr.startsWith('data:') && headerStr.includes('base64,')) {
+    try {
+      const fullStr = new TextDecoder().decode(buffer);
+      const b64Idx = fullStr.indexOf('base64,');
+      if (b64Idx !== -1) {
+        const b64 = fullStr.slice(b64Idx + 7).trim();
+        const binaryStr = typeof atob === 'function' ? atob(b64) : Buffer.from(b64, 'base64').toString('binary');
+        const len = binaryStr.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binaryStr.charCodeAt(i);
+        }
+        return bytes.buffer;
+      }
+    } catch (_) {
+      // fallback to original buffer
+    }
+  }
+  return buffer;
+};
+
+export const parseStlBuffer = (rawBuffer: ArrayBuffer): THREE.BufferGeometry => {
+  if (!rawBuffer || rawBuffer.byteLength < 84) {
     throw new Error('Invalid or incomplete STL file data');
   }
 
+  const buffer = decodeBufferIfDataUri(rawBuffer);
   const geometry = new THREE.BufferGeometry();
 
-  // Test if ASCII
-  const headerBytes = new Uint8Array(buffer, 0, Math.min(buffer.byteLength, 80));
-  const headerText = new TextDecoder().decode(headerBytes);
-  const isAscii = headerText.trim().startsWith('solid') && headerText.includes('facet');
+  // Test if Binary STL (DataView triangle count matches exact binary length: 84 + 50 * N)
+  const dataView = new DataView(buffer);
+  const rawTriangles = dataView.getUint32(80, true);
+  const expectedBinaryBytes = 84 + rawTriangles * 50;
+  const isBinary = expectedBinaryBytes === buffer.byteLength;
 
-  if (isAscii) {
-    const text = new TextDecoder().decode(buffer);
-    const lines = text.split('\n');
-    const vertices: number[] = [];
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (line.startsWith('vertex ')) {
-        const parts = line.split(/\s+/);
-        if (parts.length >= 4) {
-          const x = parseFloat(parts[1]);
-          const y = parseFloat(parts[2]);
-          const z = parseFloat(parts[3]);
-          if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
-            vertices.push(x, y, z);
-          }
-        }
-      }
-    }
-    if (vertices.length === 0) throw new Error('No ASCII STL vertices found');
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    geometry.computeVertexNormals();
-  } else {
-    // Binary STL
-    const dataView = new DataView(buffer);
-    const rawTriangles = dataView.getUint32(80, true);
-    const maxPossibleTriangles = Math.floor((buffer.byteLength - 84) / 50);
-    const numTriangles = Math.min(rawTriangles, maxPossibleTriangles);
-    if (numTriangles <= 0) throw new Error('Binary STL has 0 triangles');
-
+  if (isBinary && rawTriangles > 0) {
+    const numTriangles = rawTriangles;
     const vertices = new Float32Array(numTriangles * 9);
     const normals = new Float32Array(numTriangles * 9);
     let offset = 84;
@@ -108,11 +111,62 @@ export const parseStlBuffer = (buffer: ArrayBuffer): THREE.BufferGeometry => {
 
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+  } else {
+    // ASCII STL parsing
+    const text = new TextDecoder().decode(buffer);
+    const lines = text.split('\n');
+    const vertices: number[] = [];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line.startsWith('vertex ')) {
+        const parts = line.split(/\s+/);
+        if (parts.length >= 4) {
+          const x = parseFloat(parts[1]);
+          const y = parseFloat(parts[2]);
+          const z = parseFloat(parts[3]);
+          if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
+            vertices.push(x, y, z);
+          }
+        }
+      }
+    }
+    if (vertices.length === 0) {
+      // Clamped binary fallback if file has arbitrary header
+      const maxPossibleTriangles = Math.floor((buffer.byteLength - 84) / 50);
+      const numTriangles = Math.min(rawTriangles, maxPossibleTriangles);
+      if (numTriangles <= 0) throw new Error('No valid 3D model vertices found in STL');
+
+      const verticesFallback = new Float32Array(numTriangles * 9);
+      const normalsFallback = new Float32Array(numTriangles * 9);
+      let offset = 84;
+      for (let i = 0; i < numTriangles; i++) {
+        if (offset + 50 > buffer.byteLength) break;
+        const nx = dataView.getFloat32(offset, true) || 0;
+        const ny = dataView.getFloat32(offset + 4, true) || 0;
+        const nz = dataView.getFloat32(offset + 8, true) || 0;
+        offset += 12;
+        for (let j = 0; j < 3; j++) {
+          const idx = i * 9 + j * 3;
+          verticesFallback[idx] = dataView.getFloat32(offset, true) || 0;
+          verticesFallback[idx + 1] = dataView.getFloat32(offset + 4, true) || 0;
+          verticesFallback[idx + 2] = dataView.getFloat32(offset + 8, true) || 0;
+          offset += 12;
+          normalsFallback[idx] = nx;
+          normalsFallback[idx + 1] = ny;
+          normalsFallback[idx + 2] = nz;
+        }
+        offset += 2;
+      }
+      geometry.setAttribute('position', new THREE.BufferAttribute(verticesFallback, 3));
+      geometry.setAttribute('normal', new THREE.BufferAttribute(normalsFallback, 3));
+    } else {
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      geometry.computeVertexNormals();
+    }
   }
 
   geometry.computeBoundingBox();
   geometry.computeBoundingSphere();
-  geometry.computeVertexNormals();
   return geometry;
 };
 
@@ -455,30 +509,85 @@ export const StlViewer: React.FC<StlViewerProps> = ({
   }, [height]);
 
   /**
+   * Instantiates a parsed or cached model into the Three.js scene
+   */
+  const applyCachedModel = useCallback((cached: CachedModel) => {
+    // Clean existing children from modelGroup without disposing cached geometries!
+    if (modelGroupRef.current) {
+      while (modelGroupRef.current.children.length > 0) {
+        const child = modelGroupRef.current.children[0] as any;
+        if (child.geometry && !(child.geometry as any).__isCached) {
+          child.geometry.dispose();
+        }
+        if (child.material) {
+          if (Array.isArray(child.material)) child.material.forEach((m: any) => m.dispose());
+          else child.material.dispose();
+        }
+        modelGroupRef.current.remove(child);
+      }
+    }
+
+    rawBoundingBoxRef.current = cached.rawBbox.clone();
+    baseDimsRef.current = { ...cached.baseDims };
+
+    const curScale = modelScaleRef.current;
+    const scaledLen = Math.round(cached.baseDims.length * curScale);
+    const scaledWid = Math.round(cached.baseDims.width * curScale);
+    const scaledHgt = Math.round(cached.baseDims.height * curScale);
+    const exceeds = !noBuildLimit && (scaledLen > maxBuildDimension || scaledWid > maxBuildDimension || scaledHgt > maxBuildDimension);
+
+    const calculatedDims: ModelDimensions = {
+      length: Math.max(1, scaledLen),
+      width: Math.max(1, scaledWid),
+      height: Math.max(1, scaledHgt),
+      exceedsLimit: exceeds,
+    };
+    setDimensions(calculatedDims);
+    onDimensionsCalculatedRef.current?.(calculatedDims);
+
+    // Adaptive build plate size (no 160mm limit)
+    const footprint = Math.max(scaledLen, scaledWid);
+    let effectivePlate = maxBuildDimension || 160;
+    if (noBuildLimit || footprint > effectivePlate) {
+      effectivePlate = Math.max(160, Math.ceil((footprint * 1.35) / 20) * 20);
+    }
+    setGridDimension(effectivePlate);
+    updateBuildPlate(effectivePlate);
+
+    if (modelGroupRef.current) {
+      modelGroupRef.current.scale.set(curScale, curScale, curScale);
+      if (cached.object) {
+        const clonedObj = cached.object.clone();
+        clonedObj.traverse((child: any) => {
+          if (child.isMesh) {
+            child.material = createStudioMaterial(meshColorRef.current, wireframeRef.current);
+          }
+        });
+        modelGroupRef.current.add(clonedObj);
+      } else if (cached.geometry) {
+        const mat = createStudioMaterial(meshColorRef.current, wireframeRef.current);
+        const mesh = new THREE.Mesh(cached.geometry, mat);
+        modelGroupRef.current.add(mesh);
+      }
+    }
+
+    frameModelInView(cached.rawBbox, curScale);
+    setLoading(false);
+  }, [createStudioMaterial, frameModelInView, maxBuildDimension, noBuildLimit, updateBuildPlate]);
+
+  /**
    * Fast Model Loader & Parser with In-Memory Caching
    */
-  const loadModelData = useCallback(async (buffer: ArrayBuffer, cacheKey: string, nameHint?: string) => {
+  const loadModelData = useCallback(async (rawBuffer: ArrayBuffer, cacheKey: string, nameHint?: string) => {
     try {
       setLoading(true);
       setError(null);
-
-      // Clean existing children from modelGroup
-      if (modelGroupRef.current) {
-        while (modelGroupRef.current.children.length > 0) {
-          const child = modelGroupRef.current.children[0] as any;
-          if (child.geometry) child.geometry.dispose();
-          if (child.material) {
-            if (Array.isArray(child.material)) child.material.forEach((m: any) => m.dispose());
-            else child.material.dispose();
-          }
-          modelGroupRef.current.remove(child);
-        }
-      }
 
       // Check Cache
       let cached = modelCache.get(cacheKey);
 
       if (!cached) {
+        const buffer = decodeBufferIfDataUri(rawBuffer);
         const lowerName = (nameHint || fileName || stlUrl || '').toLowerCase();
         const is3mf = lowerName.endsWith('.3mf') || is3mfBuffer(buffer);
         const isStep = lowerName.endsWith('.step') || lowerName.endsWith('.stp');
@@ -488,6 +597,9 @@ export const StlViewer: React.FC<StlViewerProps> = ({
         if (is3mf) {
           const loader = new ThreeMFLoader();
           const group = loader.parse(buffer) as THREE.Group;
+          group.traverse((c: any) => {
+            if (c.geometry) (c.geometry as any).__isCached = true;
+          });
           const finalBox = alignObjectToBuildPlate(group);
           const lenX = Math.round(Math.abs(finalBox.max.x - finalBox.min.x));
           const hgtY = Math.round(Math.abs(finalBox.max.y - finalBox.min.y));
@@ -503,6 +615,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
           const stepLength = 60;
           const stepHeight = 40;
           const boxGeo = new THREE.BoxGeometry(stepWidth, stepHeight, stepLength);
+          (boxGeo as any).__isCached = true;
           const cadBbox = new THREE.Box3(
             new THREE.Vector3(-stepWidth / 2, 0, -stepLength / 2),
             new THREE.Vector3(stepWidth / 2, stepHeight, stepLength / 2)
@@ -514,11 +627,13 @@ export const StlViewer: React.FC<StlViewerProps> = ({
           };
           modelCache.set(cacheKey, cached);
         } else if (isObj || (!isStl && !is3mf)) {
-          let parsedGeo: THREE.BufferGeometry | null = null;
           try {
             const textFull = new TextDecoder().decode(buffer);
             const objLoader = new OBJLoader();
             const group = objLoader.parse(textFull) as THREE.Group;
+            group.traverse((c: any) => {
+              if (c.geometry) (c.geometry as any).__isCached = true;
+            });
             const finalBox = alignObjectToBuildPlate(group);
             const lenX = Math.round(Math.abs(finalBox.max.x - finalBox.min.x));
             const hgtY = Math.round(Math.abs(finalBox.max.y - finalBox.min.y));
@@ -543,6 +658,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
           } catch (_) {
             geometry = parseStlBuffer(buffer);
           }
+          (geometry as any).__isCached = true;
           const finalBox = alignGeometryToBuildPlate(geometry);
           const lenX = Math.round(Math.abs(finalBox.max.x - finalBox.min.x));
           const hgtY = Math.round(Math.abs(finalBox.max.y - finalBox.min.y));
@@ -556,54 +672,7 @@ export const StlViewer: React.FC<StlViewerProps> = ({
         }
       }
 
-      // Model is parsed/cached: instantiate in scene
-      rawBoundingBoxRef.current = cached.rawBbox.clone();
-      baseDimsRef.current = { ...cached.baseDims };
-
-      const curScale = modelScaleRef.current;
-      const scaledLen = Math.round(cached.baseDims.length * curScale);
-      const scaledWid = Math.round(cached.baseDims.width * curScale);
-      const scaledHgt = Math.round(cached.baseDims.height * curScale);
-      const exceeds = !noBuildLimit && (scaledLen > maxBuildDimension || scaledWid > maxBuildDimension || scaledHgt > maxBuildDimension);
-
-      const calculatedDims: ModelDimensions = {
-        length: Math.max(1, scaledLen),
-        width: Math.max(1, scaledWid),
-        height: Math.max(1, scaledHgt),
-        exceedsLimit: exceeds,
-      };
-      setDimensions(calculatedDims);
-      onDimensionsCalculatedRef.current?.(calculatedDims);
-
-      // Adaptive build plate size (no 160mm limit)
-      const footprint = Math.max(scaledLen, scaledWid);
-      let effectivePlate = maxBuildDimension || 160;
-      if (noBuildLimit || footprint > effectivePlate) {
-        effectivePlate = Math.max(160, Math.ceil((footprint * 1.35) / 20) * 20);
-      }
-      setGridDimension(effectivePlate);
-      updateBuildPlate(effectivePlate);
-
-      if (modelGroupRef.current) {
-        modelGroupRef.current.scale.set(curScale, curScale, curScale);
-        if (cached.object) {
-          const clonedObj = cached.object.clone();
-          // Apply studio material if needed
-          clonedObj.traverse((child: any) => {
-            if (child.isMesh) {
-              child.material = createStudioMaterial(meshColorRef.current, wireframeRef.current);
-            }
-          });
-          modelGroupRef.current.add(clonedObj);
-        } else if (cached.geometry) {
-          const mat = createStudioMaterial(meshColorRef.current, wireframeRef.current);
-          const mesh = new THREE.Mesh(cached.geometry, mat);
-          modelGroupRef.current.add(mesh);
-        }
-      }
-
-      frameModelInView(cached.rawBbox, curScale);
-      setLoading(false);
+      applyCachedModel(cached);
     } catch (err: any) {
       console.error('Error loading 3D model:', err);
       const errMsg = err.message || 'Failed to parse 3D model file';
@@ -611,50 +680,63 @@ export const StlViewer: React.FC<StlViewerProps> = ({
       onErrorRef.current?.(errMsg);
       setLoading(false);
     }
-  }, [createStudioMaterial, fileName, frameModelInView, maxBuildDimension, noBuildLimit, stlUrl, updateBuildPlate]);
+  }, [applyCachedModel, fileName, stlUrl]);
 
-  // Load geometry only when source data (fileBuffer or stlUrl) changes
+  // Load geometry with instant memory cache checking (0ms) and fallback fetch
   useEffect(() => {
     let active = true;
 
     if (fileBuffer) {
       const key = `${fileName || 'upload'}_${fileBuffer.byteLength}`;
-      loadModelData(fileBuffer, key, fileName);
+      if (modelCache.has(key)) {
+        applyCachedModel(modelCache.get(key)!);
+      } else {
+        loadModelData(fileBuffer, key, fileName);
+      }
     } else if (stlUrl) {
-      setLoading(true);
-      fetch(stlUrl)
-        .then((res) => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch ${stlUrl}`);
-          return res.arrayBuffer();
-        })
-        .then((buf) => {
-          if (active) loadModelData(buf, stlUrl, fileName || stlUrl);
-        })
-        .catch((err) => {
-          if (!active) return;
-          console.error(err);
-          setError(`Could not load STL model: ${err.message}`);
-          onErrorRef.current?.(err.message);
-          setLoading(false);
-        });
+      if (modelCache.has(stlUrl)) {
+        // Instantaneous load from memory cache (0ms, no network delay!)
+        applyCachedModel(modelCache.get(stlUrl)!);
+      } else {
+        setLoading(true);
+        fetch(stlUrl)
+          .then((res) => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch ${stlUrl}`);
+            return res.arrayBuffer();
+          })
+          .then((buf) => {
+            if (active) loadModelData(buf, stlUrl, fileName || stlUrl);
+          })
+          .catch((err) => {
+            if (!active) return;
+            console.error(err);
+            setError(`Could not load STL model: ${err.message}`);
+            onErrorRef.current?.(err.message);
+            setLoading(false);
+          });
+      }
     } else {
       // Default sample model
       const sampleUrl = '/assets/models/sample_dragon.stl';
-      fetch(sampleUrl)
-        .then((res) => (res.ok ? res.arrayBuffer() : null))
-        .then((buf) => {
-          if (active && buf) loadModelData(buf, sampleUrl, 'sample_dragon.stl');
-          else if (active) setLoading(false);
-        })
-        .catch(() => {
-          if (active) setLoading(false);
-        });
+      if (modelCache.has(sampleUrl)) {
+        applyCachedModel(modelCache.get(sampleUrl)!);
+      } else {
+        fetch(sampleUrl)
+          .then((res) => (res.ok ? res.arrayBuffer() : null))
+          .then((buf) => {
+            if (active && buf) loadModelData(buf, sampleUrl, 'sample_dragon.stl');
+            else if (active) setLoading(false);
+          })
+          .catch(() => {
+            if (active) setLoading(false);
+          });
+      }
     }
 
     return () => {
       active = false;
     };
-  }, [fileBuffer, stlUrl, fileName, loadModelData]);
+  }, [fileBuffer, stlUrl, fileName, loadModelData, applyCachedModel]);
 
   /**
    * Instantaneous Real-Time Size / Scale Adjustment (Zero re-parse, Zero reload)
