@@ -1160,7 +1160,7 @@ const FAQ_KNOWLEDGE_BASE = [
   {
     category: 'File Guidelines & Formats',
     q: 'What 3D file formats do you accept for custom printing?',
-    a: 'We accept .STL and .3MF files directly through our web interface with support for files up to 100MB. For CAD native files (.STEP, .IGES, or SolidWorks parts), you can request an Enterprise RFQ or share them via WhatsApp.'
+    a: 'We accept .STL, .3MF, .OBJ, and .STEP files directly through our web interface with support for files up to 200MB. For CAD native files (.STEP, .IGES, or SolidWorks parts), you can request an Enterprise RFQ or share them via WhatsApp.'
   },
   {
     category: 'Print Tolerances & Fit',

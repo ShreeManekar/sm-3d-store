@@ -63,7 +63,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [isEditorMode, setIsEditorMode] = useState<boolean>(() => {
-    return localStorage.getItem('sm3d_editor_mode') === 'true';
+    const val = localStorage.getItem('sm3d_editor_mode');
+    return val === null ? true : val === 'true';
   });
 
   const toggleEditorMode = useCallback(() => {

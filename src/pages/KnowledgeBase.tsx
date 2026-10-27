@@ -14,11 +14,11 @@ const DEFAULT_FAQS: FaqItem[] = [
   {
     category: 'File Guidelines & Mesh Integrity',
     q: 'What 3D file formats do you accept for custom printing?',
-    a: 'We accept .STL and .3MF files directly through our automated 3D web inspector with files up to 100MB supported. For native parametric CAD formats (.STEP, .STP, .IGES, or SolidWorks .SLDPRT), you can submit an Enterprise RFQ or share them with us via WhatsApp.',
+    a: 'We accept .STL, .3MF, .OBJ, and .STEP files directly through our automated 3D web inspector with files up to 200MB supported. For native parametric CAD formats (.STEP, .STP, .IGES, or SolidWorks .SLDPRT), you can submit an Enterprise RFQ or share them with us via WhatsApp.',
     details: [
       'STL: Industry standard polygon mesh format.',
       '3MF: Next-generation XML package preserving unit scale, multiple color bodies, and orientation.',
-      'Maximum file size: 100MB per model upload.',
+      'Maximum file size: 200MB per model upload.',
     ],
   },
   {
