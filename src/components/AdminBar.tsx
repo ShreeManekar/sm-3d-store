@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export const AdminBar: React.FC = () => {
-  const { currentUser, isAdmin, isEditorMode, toggleEditorMode } = useAuth();
+  const { currentUser, isAdmin } = useAuth();
 
   if (!isAdmin) return null;
 
@@ -22,26 +22,9 @@ export const AdminBar: React.FC = () => {
           <span className="text-gray-300 text-[11px] hidden sm:inline truncate max-w-[200px]">
             {currentUser?.email}
           </span>
-          <span className="text-gray-400 hidden md:inline">•</span>
-          <span className="text-[11px] font-medium text-amber-300 hidden md:inline">
-            {isEditorMode ? '🎨 In-Page Editor Active' : '👁️ Normal Storefront View'}
-          </span>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Dual Interface Toggle Button */}
-          <button
-            onClick={toggleEditorMode}
-            className={`px-3 py-1 rounded-lg text-[11px] font-semibold transition border ${
-              isEditorMode
-                ? 'bg-purple-600/30 border-purple-400 text-purple-200 hover:bg-purple-600/40'
-                : 'bg-white/10 border-white/20 text-gray-200 hover:bg-white/20'
-            }`}
-            title="Toggle between normal storefront and in-page editing interface"
-          >
-            {isEditorMode ? '✓ Switch to Normal View' : '✏️ Enable Editor Interface'}
-          </button>
-
           <Link
             to="/admin?tab=settings"
             className="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[11px] font-medium transition hidden sm:inline-block border border-gray-700"

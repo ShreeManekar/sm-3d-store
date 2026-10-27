@@ -614,7 +614,8 @@ app.get('/api/delivery-cities', (req, res) => {
   const db = loadDb();
   const rawCities = db.deliveryCities || db.settings?.deliveryCities || [];
   const normalized = rawCities.map(c => {
-    const isAct = c.active !== false && c.isActive !== false;
+    const rawAct = c.active !== undefined ? c.active : c.isActive;
+    const isAct = rawAct !== false && rawAct !== 'false' && rawAct !== 0 && rawAct !== '0';
     const days = c.estimatedDays || c.turnaround || '2-4 Days';
     return {
       ...c,
@@ -1570,7 +1571,8 @@ app.post('/api/delivery-cities', (req, res) => {
     return res.status(409).json({ error: `City "${trimmedName}" already exists in delivery coverage.` });
   }
 
-  const isCityActive = active !== undefined ? Boolean(active) : (isActive !== undefined ? Boolean(isActive) : true);
+  const rawAct = active !== undefined ? active : (isActive !== undefined ? isActive : true);
+  const isCityActive = rawAct !== false && rawAct !== 'false' && rawAct !== 0 && rawAct !== '0';
   const days = (estimatedDays || turnaround || '2-4 Days').trim();
 
   const newCity = {
@@ -1585,6 +1587,7 @@ app.post('/api/delivery-cities', (req, res) => {
   };
 
   db.deliveryCities.push(newCity);
+  if (!db.settings) db.settings = {};
   db.settings.deliveryCities = db.deliveryCities;
   saveDb(db);
 
@@ -1604,6 +1607,9 @@ app.put('/api/settings', (req, res) => {
   db.settings = { ...(db.settings || {}), ...(req.body || {}) };
   if (Array.isArray(req.body.deliveryCities)) {
     db.deliveryCities = req.body.deliveryCities;
+    db.settings.deliveryCities = db.deliveryCities;
+  } else if (Array.isArray(db.deliveryCities)) {
+    db.settings.deliveryCities = db.deliveryCities;
   }
   saveDb(db);
   res.json({ message: 'Settings updated', settings: db.settings });
@@ -1628,16 +1634,17 @@ app.put('/api/delivery-cities/:id', (req, res) => {
     city.turnaround = days;
   }
   if (active !== undefined) {
-    city.active = Boolean(active);
+    city.active = active !== false && active !== 'false' && active !== 0 && active !== '0';
     city.isActive = city.active;
   } else if (isActive !== undefined) {
-    city.active = Boolean(isActive);
+    city.active = isActive !== false && isActive !== 'false' && isActive !== 0 && isActive !== '0';
     city.isActive = city.active;
   }
   if (pincodes !== undefined) city.pincodes = typeof pincodes === 'string' ? pincodes.trim() : city.pincodes;
 
   db.deliveryCities[index] = city;
-  if (db.settings) db.settings.deliveryCities = db.deliveryCities;
+  if (!db.settings) db.settings = {};
+  db.settings.deliveryCities = db.deliveryCities;
   saveDb(db);
 
   const activeCount = db.deliveryCities.filter(c => c.active !== false && c.isActive !== false).length;

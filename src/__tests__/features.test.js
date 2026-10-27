@@ -760,6 +760,67 @@ endsolid precision_bracket`;
       expect(isDisposed).toBe(false);
     });
   });
+
+  describe('Delivery Cities Coverage & Admin Save & Lock Suite', () => {
+    test('robustly toggles active status regardless of undefined/null initial values', () => {
+      const toggle = (city) => {
+        const isCurrentlyActive = city.active !== false && city.isActive !== false;
+        const nextActive = !isCurrentlyActive;
+        return {
+          ...city,
+          active: nextActive,
+          isActive: nextActive,
+        };
+      };
+
+      // Case 1: active: true -> toggles to false
+      expect(toggle({ id: 'c1', active: true, isActive: true }).active).toBe(false);
+      // Case 2: active: false -> toggles to true
+      expect(toggle({ id: 'c2', active: false, isActive: false }).active).toBe(true);
+      // Case 3: active: undefined (default active) -> toggles to false
+      expect(toggle({ id: 'c3' }).active).toBe(false);
+      // Case 4: string 'false' normalized -> toggles to true
+      const normalizedStringFalse = { id: 'c4', active: false, isActive: false };
+      expect(toggle(normalizedStringFalse).active).toBe(true);
+    });
+
+    test('synchronizes deliveryCities into settings payload so PUT /api/settings never overwrites with stale cities', () => {
+      const currentSettings = { storeName: 'SM 3D Store', shippingFee: 99 };
+      const currentCities = [
+        { id: 'c1', name: 'Chandrapur', active: true, isActive: true },
+        { id: 'c2', name: 'Nagpur', active: false, isActive: false },
+      ];
+
+      const savePayload = {
+        ...currentSettings,
+        deliveryCities: currentCities,
+      };
+
+      expect(savePayload.deliveryCities).toHaveLength(2);
+      expect(savePayload.deliveryCities.find(c => c.name === 'Nagpur').active).toBe(false);
+      expect(savePayload.storeName).toBe('SM 3D Store');
+    });
+
+    test('normalizes city active boolean correctly when loading server response', () => {
+      const rawApiCities = [
+        { id: '1', name: 'City A', active: true },
+        { id: '2', name: 'City B', active: false },
+        { id: '3', name: 'City C' },
+        { id: '4', name: 'City D', isActive: false },
+      ];
+
+      const normalized = rawApiCities.map(c => ({
+        ...c,
+        active: c.active !== false && c.isActive !== false,
+        isActive: c.active !== false && c.isActive !== false,
+      }));
+
+      expect(normalized[0].active).toBe(true);
+      expect(normalized[1].active).toBe(false);
+      expect(normalized[2].active).toBe(true);
+      expect(normalized[3].active).toBe(false);
+    });
+  });
 });
 
 

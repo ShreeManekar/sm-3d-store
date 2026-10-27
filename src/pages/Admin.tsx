@@ -157,6 +157,7 @@ export const Admin: React.FC = () => {
   const [rfqSearch, setRfqSearch] = useState('');
   const [reviews, setReviews] = useState<any[]>([]);
   const [financialSummary, setFinancialSummary] = useState<any>(null);
+  const [isSavingLocked, setIsSavingLocked] = useState(false);
 
   // Delivery City Management States
   const [deliveryCitySearch, setDeliveryCitySearch] = useState('');
@@ -226,8 +227,16 @@ export const Admin: React.FC = () => {
       setCustomOrders(Array.isArray(cRes.data) ? cRes.data : []);
       setOrders(Array.isArray(oRes.data) ? oRes.data : []);
       setUsers(Array.isArray(uRes.data) ? uRes.data : []);
-      setSettings(sRes.data || {});
-      setDeliveryCities(Array.isArray(dRes.data?.cities) ? dRes.data.cities : (Array.isArray(dRes.data) ? dRes.data : []));
+      const rawLoadedCities = Array.isArray(dRes.data?.cities) ? dRes.data.cities : (Array.isArray(dRes.data) ? dRes.data : []);
+      const loadedCities = rawLoadedCities.map((c: any) => ({
+        ...c,
+        active: c.active !== false && c.isActive !== false,
+        isActive: c.active !== false && c.isActive !== false,
+      }));
+      setDeliveryCities(loadedCities);
+      const loadedSettings = sRes.data || {};
+      loadedSettings.deliveryCities = loadedCities;
+      setSettings(loadedSettings);
       setRfqs(Array.isArray(rfqRes.data) ? rfqRes.data : []);
       setReviews(Array.isArray(revRes.data) ? revRes.data : []);
       setFinancialSummary(finRes.data || null);
@@ -531,9 +540,10 @@ export const Admin: React.FC = () => {
     e.preventDefault();
     const headers = getAdminHeaders();
     try {
-      await axios.put('/api/settings', settings, { headers });
+      const payload = { ...settings, deliveryCities };
+      await axios.put('/api/settings', payload, { headers });
+      setSettings(payload);
       showToast('Payment credentials and banking details saved successfully');
-      loadAllData();
     } catch (err: any) {
       alert(err.response?.data?.error || 'Failed to save payment settings');
     }
@@ -968,14 +978,35 @@ export const Admin: React.FC = () => {
     showToast('Master dataset exported to Excel!');
   };
 
+  // Save & Lock Changes permanently to backend
+  const handleSaveAndLockChanges = async () => {
+    setIsSavingLocked(true);
+    const headers = getAdminHeaders();
+    try {
+      const payload = {
+        ...settings,
+        deliveryCities: deliveryCities,
+      };
+      await axios.put('/api/settings', payload, { headers });
+      setSettings(payload);
+      showToast('All changes & delivery settings saved & locked permanently!');
+    } catch (err: any) {
+      console.error('Failed to save & lock changes:', err);
+      showToast(err.response?.data?.error || 'Failed to lock changes to server.');
+    } finally {
+      setIsSavingLocked(false);
+    }
+  };
+
   // Save Store Settings
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     const headers = getAdminHeaders();
     try {
-      await axios.put('/api/settings', settings, { headers });
+      const payload = { ...settings, deliveryCities };
+      await axios.put('/api/settings', payload, { headers });
+      setSettings(payload);
       showToast('Settings saved successfully');
-      loadAllData();
     } catch (err: any) {
       alert(err.response?.data?.error || 'Failed to save settings');
     }
@@ -1089,13 +1120,25 @@ export const Admin: React.FC = () => {
     try {
       if (editingCity) {
         const res = await axios.put(`/api/delivery-cities/${editingCity.id}`, cityForm, { headers });
-        setDeliveryCities((prev) =>
-          prev.map((c) => (c.id === editingCity.id ? res.data.city : c))
-        );
+        const updatedCity = {
+          ...res.data.city,
+          active: res.data.city.active !== false && (res.data.city as any).isActive !== false,
+          isActive: res.data.city.active !== false && (res.data.city as any).isActive !== false,
+        };
+        const nextCities = deliveryCities.map((c) => (c.id === editingCity.id ? updatedCity : c));
+        setDeliveryCities(nextCities);
+        setSettings((prev) => ({ ...prev, deliveryCities: nextCities }));
         showToast(`City "${cityForm.name}" updated successfully!`);
       } else {
         const res = await axios.post('/api/delivery-cities', cityForm, { headers });
-        setDeliveryCities((prev) => [...prev, res.data.city]);
+        const newCity = {
+          ...res.data.city,
+          active: res.data.city.active !== false && (res.data.city as any).isActive !== false,
+          isActive: res.data.city.active !== false && (res.data.city as any).isActive !== false,
+        };
+        const nextCities = [...deliveryCities, newCity];
+        setDeliveryCities(nextCities);
+        setSettings((prev) => ({ ...prev, deliveryCities: nextCities }));
         showToast(`City "${cityForm.name}" added to delivery coverage!`);
       }
       setDeliveryCityModalOpen(false);
@@ -1109,12 +1152,15 @@ export const Admin: React.FC = () => {
 
   const handleToggleCityActive = async (city: DeliveryCity) => {
     const headers = getAdminHeaders();
-    const newStatus = !city.active;
+    const isCurrentlyActive = city.active !== false && (city as any).isActive !== false;
+    const newStatus = !isCurrentlyActive;
     try {
-      await axios.put(`/api/delivery-cities/${city.id}`, { active: newStatus }, { headers });
-      setDeliveryCities((prev) =>
-        prev.map((c) => (c.id === city.id ? { ...c, active: newStatus } : c))
+      await axios.put(`/api/delivery-cities/${city.id}`, { active: newStatus, isActive: newStatus }, { headers });
+      const nextCities = deliveryCities.map((c) =>
+        c.id === city.id ? { ...c, active: newStatus, isActive: newStatus } : c
       );
+      setDeliveryCities(nextCities);
+      setSettings((prev) => ({ ...prev, deliveryCities: nextCities }));
       showToast(`${city.name} marked as ${newStatus ? 'Active' : 'Inactive'}.`);
     } catch (err: any) {
       showToast(err.response?.data?.error || 'Failed to update city status.');
@@ -1128,7 +1174,9 @@ export const Admin: React.FC = () => {
     const headers = getAdminHeaders();
     try {
       await axios.delete(`/api/delivery-cities/${id}`, { headers });
-      setDeliveryCities((prev) => prev.filter((c) => c.id !== id));
+      const nextCities = deliveryCities.filter((c) => c.id !== id);
+      setDeliveryCities(nextCities);
+      setSettings((prev) => ({ ...prev, deliveryCities: nextCities }));
       showToast(`City "${name}" removed from delivery coverage.`);
     } catch (err: any) {
       showToast(err.response?.data?.error || 'Failed to remove delivery city.');
@@ -1291,6 +1339,19 @@ export const Admin: React.FC = () => {
 
           <div className="flex items-center gap-2.5">
             <button
+              type="button"
+              onClick={handleSaveAndLockChanges}
+              disabled={isSavingLocked}
+              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition flex items-center gap-1.5 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+              title="Save & Lock all current settings, modifications, and delivery network permanently"
+            >
+              <svg className={`w-4 h-4 ${isSavingLocked ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+              </svg>
+              <span>{isSavingLocked ? 'Saving Changes...' : '💾 Save & Lock Changes'}</span>
+            </button>
+            <button
+              type="button"
               onClick={loadAllData}
               className="p-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition text-xs flex items-center gap-1.5 shadow-sm"
               title="Refresh Data"
@@ -2679,18 +2740,24 @@ export const Admin: React.FC = () => {
                             </span>
                           </td>
                           <td className="py-3.5 px-4">
-                            <button
-                              onClick={() => handleToggleCityActive(city)}
-                              title={city.active !== false ? 'Click to pause delivery' : 'Click to resume delivery'}
-                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition ${
-                                city.active !== false
-                                  ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30'
-                                  : 'bg-gray-200 dark:bg-gray-800 text-gray-500 border border-gray-300 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-700'
-                              }`}
-                            >
-                              <span className={`w-1.5 h-1.5 rounded-full ${city.active !== false ? 'bg-emerald-500' : 'bg-gray-400'}`}></span>
-                              {city.active !== false ? 'Active Delivery' : 'Paused / Inactive'}
-                            </button>
+                            {(() => {
+                              const isAct = city.active !== false && (city as any).isActive !== false;
+                              return (
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleCityActive(city)}
+                                  title={isAct ? 'Click to pause delivery' : 'Click to resume delivery'}
+                                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition ${
+                                    isAct
+                                      ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30'
+                                      : 'bg-gray-200 dark:bg-gray-800 text-gray-500 border border-gray-300 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-700'
+                                  }`}
+                                >
+                                  <span className={`w-1.5 h-1.5 rounded-full ${isAct ? 'bg-emerald-500' : 'bg-gray-400'}`}></span>
+                                  {isAct ? 'Active Delivery' : 'Paused / Inactive'}
+                                </button>
+                              );
+                            })()}
                           </td>
                           <td className="py-3.5 px-4 text-right">
                             <div className="flex items-center justify-end gap-1.5">

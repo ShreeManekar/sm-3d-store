@@ -257,6 +257,18 @@ async function runTests() {
     assert(deleteCityRes.status === 200 && deleteCityRes.data.success, 'DELETE /api/delivery-cities/:id deletes delivery city (200 OK)');
   }
 
+  // 8. Test PUT /api/settings persists and locks delivery configuration
+  const currentSettingsRes = await testEndpoint('GET', '/api/settings');
+  const allCitiesRes = await testEndpoint('GET', '/api/delivery-cities');
+  const modCities = allCitiesRes.data.cities.slice(0, 3).map((c, i) => ({ ...c, active: i !== 1, isActive: i !== 1 }));
+  const saveLockRes = await testEndpoint('PUT', '/api/settings', {
+    ...currentSettingsRes.data,
+    deliveryCities: modCities
+  }, { 'Authorization': `Bearer ${adminToken}` });
+  assert(saveLockRes.status === 200, 'PUT /api/settings successfully persists and locks store settings and delivery network');
+  const verifyCitiesRes = await testEndpoint('GET', '/api/delivery-cities');
+  assert(verifyCitiesRes.data.cities.find(c => c.id === modCities[1].id).active === false, 'Locked delivery city settings persist inactive status without auto-refresh reversion');
+
   console.log('\n--- 17. Materials Matrix Guide ---');
   const materialsRes = await testEndpoint('GET', '/api/materials');
   assert(materialsRes.status === 200 && Array.isArray(materialsRes.data) && materialsRes.data.length >= 5, 'GET /api/materials returns 200 and comprehensive materials guide');
