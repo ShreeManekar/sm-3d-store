@@ -298,7 +298,7 @@ const Home: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1.5 tracking-tight">PLA, PETG, ABS</h3>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1.5 tracking-tight">PLA, PETG, ABS. </h3>
                 <p className="text-xs text-gray-600 dark:text-zinc-400 leading-relaxed">
                   Calibrated PLA, PETG, and ABS for industrial-grade strength, durability, and smooth surface finish.
                 </p>

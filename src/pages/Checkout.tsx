@@ -465,7 +465,7 @@ export const Checkout: React.FC = () => {
                       type="text"
                       name="name"
                       required
-                      placeholder="e.g. Shree Manekar"
+                      placeholder="eg. John Depp"
                       value={formData.name}
                       onChange={handleChange}
                       className="w-full bg-gray-50/80 dark:bg-white/[0.04] border border-gray-300/80 dark:border-white/[0.1] rounded-xl px-4 py-3 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 transition"
