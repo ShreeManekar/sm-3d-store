@@ -79,6 +79,11 @@ const Home: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Delivery coverage modal & stats
+  const isCityActive = (c: any): boolean => {
+    if (!c) return false;
+    const a = c.active !== undefined ? c.active : c.isActive;
+    return a !== false && a !== 'false' && a !== 0 && a !== '0' && a !== 'off' && a !== 'inactive';
+  };
   const [deliveryCities, setDeliveryCities] = useState<DeliveryCity[]>([]);
   const [deliveryCityCount, setDeliveryCityCount] = useState<number>(40);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
@@ -565,14 +570,14 @@ const Home: React.FC = () => {
             {/* City Grid / Directory */}
             <div className="flex-1 overflow-y-auto space-y-3 pr-1">
               <div className="flex items-center justify-between text-xs text-gray-400 font-semibold uppercase tracking-wider">
-                <span>Verified Direct Coverage Hubs ({deliveryCities.filter(c => c.active !== false).length})</span>
+                <span>Verified Direct Coverage Hubs ({deliveryCities.filter(isCityActive).length})</span>
                 <span className="text-[10px] lowercase font-normal">active express hubs</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs">
                 {deliveryCities
                   .filter((c) => {
-                    if (c.active === false) return false;
+                    if (!isCityActive(c)) return false;
                     if (!cityLookupQuery.trim()) return true;
                     const q = cityLookupQuery.toLowerCase().trim();
                     return (

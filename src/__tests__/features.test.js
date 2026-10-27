@@ -820,6 +820,47 @@ endsolid precision_bracket`;
       expect(normalized[2].active).toBe(true);
       expect(normalized[3].active).toBe(false);
     });
+
+    test('isCityActiveHelper accurately handles falsy strings, numbers, and null/undefined without truthy leakage', () => {
+      const isCityActiveHelper = (c) => {
+        if (!c) return false;
+        const raw = c.active !== undefined ? c.active : c.isActive;
+        return raw !== false && raw !== 'false' && raw !== 0 && raw !== '0' && raw !== 'off' && raw !== 'inactive';
+      };
+
+      expect(isCityActiveHelper({ active: true })).toBe(true);
+      expect(isCityActiveHelper({ active: false })).toBe(false);
+      expect(isCityActiveHelper({ active: 'false' })).toBe(false);
+      expect(isCityActiveHelper({ active: 0 })).toBe(false);
+      expect(isCityActiveHelper({ active: '0' })).toBe(false);
+      expect(isCityActiveHelper({ active: 'off' })).toBe(false);
+      expect(isCityActiveHelper({ active: 'inactive' })).toBe(false);
+      expect(isCityActiveHelper({ isActive: false })).toBe(false);
+      expect(isCityActiveHelper({ isActive: 'false' })).toBe(false);
+      expect(isCityActiveHelper({ active: undefined, isActive: false })).toBe(false);
+      expect(isCityActiveHelper(null)).toBe(false);
+      expect(isCityActiveHelper({})).toBe(true); // default active when unset
+    });
+
+    test('fallback loading correctly restores cities from settings payload if delivery-cities request returns empty', () => {
+      const dResData = { cities: [] };
+      const sResData = {
+        deliveryCities: [
+          { id: 'c1', name: 'Pune', active: true },
+          { id: 'c2', name: 'Nagpur', active: false },
+        ]
+      };
+
+      let rawLoadedCities = Array.isArray(dResData?.cities)
+        ? dResData.cities
+        : (Array.isArray(dResData) ? dResData : []);
+      if (rawLoadedCities.length === 0 && Array.isArray(sResData?.deliveryCities) && sResData.deliveryCities.length > 0) {
+        rawLoadedCities = sResData.deliveryCities;
+      }
+
+      expect(rawLoadedCities).toHaveLength(2);
+      expect(rawLoadedCities[1].active).toBe(false);
+    });
   });
 });
 

@@ -330,15 +330,13 @@ function loadDb() {
   if (!Array.isArray(db.orders)) db.orders = [];
   if (!db.settings) db.settings = {};
 
-  // Ensure delivery cities collection exists
-  if (!Array.isArray(db.deliveryCities)) {
-    if (Array.isArray(db.settings.deliveryCities)) {
-      db.deliveryCities = db.settings.deliveryCities;
-    } else {
-      db.deliveryCities = [...DEFAULT_DELIVERY_CITIES];
-    }
-  }
-  if (!Array.isArray(db.settings.deliveryCities)) {
+  // Ensure delivery cities collection exists and stays strictly synchronized
+  if (Array.isArray(db.deliveryCities)) {
+    db.settings.deliveryCities = db.deliveryCities;
+  } else if (Array.isArray(db.settings.deliveryCities)) {
+    db.deliveryCities = db.settings.deliveryCities;
+  } else {
+    db.deliveryCities = [...DEFAULT_DELIVERY_CITIES];
     db.settings.deliveryCities = db.deliveryCities;
   }
 

@@ -123,7 +123,13 @@ export interface DeliveryCity {
   pincodes?: string;
 }
 
-type TabType = 'overview' | 'products' | 'custom' | 'orders' | 'users' | 'payments' | 'settings' | 'delivery' | 'rfqs' | 'reviews' | 'finances';
+export const isCityActiveHelper = (c: DeliveryCity | any): boolean => {
+  if (!c) return false;
+  const raw = c.active !== undefined ? c.active : c.isActive;
+  return raw !== false && raw !== 'false' && raw !== 0 && raw !== '0' && raw !== 'off' && raw !== 'inactive';
+};
+
+export type TabType = 'overview' | 'products' | 'custom' | 'orders' | 'users' | 'payments' | 'settings' | 'delivery' | 'rfqs' | 'reviews' | 'finances';
 
 export const Admin: React.FC = () => {
   const { currentUser, isAdmin, adminLogin, logout, getAdminHeaders } = useAuth();
@@ -227,16 +233,28 @@ export const Admin: React.FC = () => {
       setCustomOrders(Array.isArray(cRes.data) ? cRes.data : []);
       setOrders(Array.isArray(oRes.data) ? oRes.data : []);
       setUsers(Array.isArray(uRes.data) ? uRes.data : []);
-      const rawLoadedCities = Array.isArray(dRes.data?.cities) ? dRes.data.cities : (Array.isArray(dRes.data) ? dRes.data : []);
-      const loadedCities = rawLoadedCities.map((c: any) => ({
-        ...c,
-        active: c.active !== false && c.isActive !== false,
-        isActive: c.active !== false && c.isActive !== false,
-      }));
-      setDeliveryCities(loadedCities);
-      const loadedSettings = sRes.data || {};
-      loadedSettings.deliveryCities = loadedCities;
-      setSettings(loadedSettings);
+      let rawLoadedCities = Array.isArray(dRes.data?.cities)
+        ? dRes.data.cities
+        : (Array.isArray(dRes.data) ? dRes.data : []);
+      if (rawLoadedCities.length === 0 && Array.isArray(sRes.data?.deliveryCities) && sRes.data.deliveryCities.length > 0) {
+        rawLoadedCities = sRes.data.deliveryCities;
+      }
+      if (rawLoadedCities.length > 0) {
+        const loadedCities = rawLoadedCities.map((c: any) => {
+          const act = isCityActiveHelper(c);
+          return {
+            ...c,
+            active: act,
+            isActive: act,
+          };
+        });
+        setDeliveryCities(loadedCities);
+        const loadedSettings = sRes.data || {};
+        loadedSettings.deliveryCities = loadedCities;
+        setSettings(loadedSettings);
+      } else if (sRes.data && Object.keys(sRes.data).length > 0) {
+        setSettings((prev) => ({ ...sRes.data, deliveryCities: prev.deliveryCities || [] }));
+      }
       setRfqs(Array.isArray(rfqRes.data) ? rfqRes.data : []);
       setReviews(Array.isArray(revRes.data) ? revRes.data : []);
       setFinancialSummary(finRes.data || null);
@@ -524,8 +542,9 @@ export const Admin: React.FC = () => {
     const updated = [...existing, name];
     const headers = getAdminHeaders();
     try {
-      await axios.put('/api/settings', { ...settings, availableFilaments: updated }, { headers });
-      setSettings((prev) => ({ ...prev, availableFilaments: updated }));
+      const payload = { ...settings, deliveryCities, availableFilaments: updated };
+      await axios.put('/api/settings', payload, { headers });
+      setSettings(payload);
       setEditingProduct((prev) => (prev ? { ...prev, material: name } : null));
       setShowAddFilamentModal(false);
       setNewFilamentName('');
@@ -978,6 +997,12 @@ export const Admin: React.FC = () => {
     showToast('Master dataset exported to Excel!');
   };
 
+  // Manual refresh of admin & storefront state
+  const handleManualRefresh = async () => {
+    await loadAllData();
+    showToast('Storefront & Admin data refreshed');
+  };
+
   // Save & Lock Changes permanently to backend
   const handleSaveAndLockChanges = async () => {
     setIsSavingLocked(true);
@@ -1103,7 +1128,7 @@ export const Admin: React.FC = () => {
       name: city.name,
       state: city.state || '',
       estimatedDays: city.estimatedDays || '2-4 Days',
-      active: city.active !== false,
+      active: isCityActiveHelper(city),
       pincodes: city.pincodes || ''
     });
     setDeliveryCityModalOpen(true);
@@ -1120,10 +1145,11 @@ export const Admin: React.FC = () => {
     try {
       if (editingCity) {
         const res = await axios.put(`/api/delivery-cities/${editingCity.id}`, cityForm, { headers });
+        const act = isCityActiveHelper(res.data.city);
         const updatedCity = {
           ...res.data.city,
-          active: res.data.city.active !== false && (res.data.city as any).isActive !== false,
-          isActive: res.data.city.active !== false && (res.data.city as any).isActive !== false,
+          active: act,
+          isActive: act,
         };
         const nextCities = deliveryCities.map((c) => (c.id === editingCity.id ? updatedCity : c));
         setDeliveryCities(nextCities);
@@ -1131,10 +1157,11 @@ export const Admin: React.FC = () => {
         showToast(`City "${cityForm.name}" updated successfully!`);
       } else {
         const res = await axios.post('/api/delivery-cities', cityForm, { headers });
+        const act = isCityActiveHelper(res.data.city);
         const newCity = {
           ...res.data.city,
-          active: res.data.city.active !== false && (res.data.city as any).isActive !== false,
-          isActive: res.data.city.active !== false && (res.data.city as any).isActive !== false,
+          active: act,
+          isActive: act,
         };
         const nextCities = [...deliveryCities, newCity];
         setDeliveryCities(nextCities);
@@ -1152,7 +1179,7 @@ export const Admin: React.FC = () => {
 
   const handleToggleCityActive = async (city: DeliveryCity) => {
     const headers = getAdminHeaders();
-    const isCurrentlyActive = city.active !== false && (city as any).isActive !== false;
+    const isCurrentlyActive = isCityActiveHelper(city);
     const newStatus = !isCurrentlyActive;
     try {
       await axios.put(`/api/delivery-cities/${city.id}`, { active: newStatus, isActive: newStatus }, { headers });
@@ -1352,7 +1379,7 @@ export const Admin: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={loadAllData}
+              onClick={handleManualRefresh}
               className="p-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition text-xs flex items-center gap-1.5 shadow-sm"
               title="Refresh Data"
             >
@@ -1424,7 +1451,7 @@ export const Admin: React.FC = () => {
               )}
               {tab.id === 'delivery' && (
                 <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-gray-950 font-extrabold text-[10px] flex items-center justify-center shadow">
-                  {deliveryCities.filter(c => c.active !== false).length}
+                  {deliveryCities.filter(isCityActiveHelper).length}
                 </span>
               )}
             </button>
@@ -1495,7 +1522,7 @@ export const Admin: React.FC = () => {
                 <div>
                   <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Delivery Coverage</span>
                   <div className="text-2xl font-extrabold text-amber-500 dark:text-amber-400">
-                    {deliveryCities.filter(c => c.active !== false).length} <span className="text-xs font-semibold text-gray-500">Cities</span>
+                    {deliveryCities.filter(isCityActiveHelper).length} <span className="text-xs font-semibold text-gray-500">Cities</span>
                   </div>
                 </div>
               </div>
@@ -1560,7 +1587,7 @@ export const Admin: React.FC = () => {
                     <span>Delivery Cities Network</span>
                   </div>
                   <span className="font-bold text-[10px] bg-amber-500/20 text-amber-500 dark:text-amber-400 px-2 py-0.5 rounded-full">
-                    {deliveryCities.filter(c => c.active !== false).length} Active
+                    {deliveryCities.filter(isCityActiveHelper).length} Active
                   </span>
                 </button>
                 <button
@@ -2576,7 +2603,7 @@ export const Admin: React.FC = () => {
                 <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <span>🚚 Nationwide Delivery Coverage Network</span>
                   <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/30">
-                    {deliveryCities.filter(c => c.active !== false).length} Active Cities
+                    {deliveryCities.filter(isCityActiveHelper).length} Active Cities
                   </span>
                 </h3>
                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
@@ -2604,7 +2631,7 @@ export const Admin: React.FC = () => {
                   <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <span>🚚 Nationwide Delivery & Shipping Coverage</span>
                     <span className="text-xs bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-semibold">
-                      {deliveryCities.filter(c => c.active !== false).length} Active Destinations
+                      {deliveryCities.filter(isCityActiveHelper).length} Active Destinations
                     </span>
                   </h2>
                   <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
@@ -2630,7 +2657,7 @@ export const Admin: React.FC = () => {
                 <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-950/60 border border-gray-200 dark:border-gray-800">
                   <span className="text-gray-500 block text-[11px]">Active Delivering</span>
                   <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
-                    {deliveryCities.filter(c => c.active !== false).length} Cities
+                    {deliveryCities.filter(isCityActiveHelper).length} Cities
                   </span>
                 </div>
                 <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-950/60 border border-gray-200 dark:border-gray-800">
@@ -2741,7 +2768,7 @@ export const Admin: React.FC = () => {
                           </td>
                           <td className="py-3.5 px-4">
                             {(() => {
-                              const isAct = city.active !== false && (city as any).isActive !== false;
+                              const isAct = isCityActiveHelper(city);
                               return (
                                 <button
                                   type="button"
