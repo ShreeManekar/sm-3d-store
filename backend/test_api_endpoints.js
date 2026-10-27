@@ -1,10 +1,49 @@
-const { Socket } = require('net');
-const http = require('http');
+const os = require('os');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const app = require('./server');
 
-const DB_FILE = path.resolve(__dirname, '../data/db.json');
+// 1. Configure isolated temporary test database BEFORE requiring server
+const tempTestDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sm3d_node_test_'));
+const tempTestDb = path.join(tempTestDir, 'db.json');
+process.env.TESTING = '1';
+process.env.DB_FILE = tempTestDb;
+
+// Provide test fixture with initial test products including prod_1/dragon
+const LIVE_DB_FILE = path.resolve(__dirname, '../data/db.json');
+let initialFixture;
+try {
+  initialFixture = JSON.parse(fs.readFileSync(LIVE_DB_FILE, 'utf-8'));
+} catch (_) {
+  initialFixture = {};
+}
+// Ensure fixture has dragon product for testing search and orders
+if (!Array.isArray(initialFixture.products)) initialFixture.products = [];
+if (!initialFixture.products.some(p => (p.name || '').toLowerCase().includes('dragon'))) {
+  initialFixture.products.unshift({
+    id: 'prod_1',
+    sku: 'SM3D-DRG-01',
+    name: 'Articulated Crystal Dragon',
+    category: 'Miniatures',
+    description: 'Flexible, multi-jointed articulated crystal dragon printed in high-gloss iridescent silk PLA. Smooth motion without assembly needed.',
+    dimensions: '150 x 80 x 40',
+    dimensionsObj: { length: 150, width: 80, height: 40 },
+    material: 'PLA',
+    colors: ['Solid skin'],
+    price: 799,
+    stock: 10,
+    lowStockThreshold: 5,
+    image: '/assets/images/product_dragon_1786179208256.webp',
+    images: ['/assets/images/product_dragon_1786179208256.webp'],
+    featured: true,
+    stlUrl: '/assets/models/sample_dragon.stl'
+  });
+}
+fs.writeFileSync(tempTestDb, JSON.stringify(initialFixture, null, 2), 'utf-8');
+
+const { Socket } = require('net');
+const http = require('http');
+const app = require('./server');
 
 function testEndpoint(method, path, body, headers = {}) {
   return new Promise((resolve) => {
@@ -41,7 +80,6 @@ function testEndpoint(method, path, body, headers = {}) {
 }
 
 async function runTests() {
-  const dbBackup = fs.readFileSync(DB_FILE, 'utf-8');
   let passed = 0;
   let failed = 0;
 
@@ -393,15 +431,12 @@ async function runTests() {
     assert(updateRes.status === 200 && (updateRes.data.order.paymentMethod === opt || updateRes.data.order.paymentStatus === opt), `PUT /api/orders/:id/status successfully updates order payment to "${opt}"`);
   }
 
-  // Restore database snapshot
+  // Clean up isolated temporary test database
   try {
-    fs.writeFileSync(DB_FILE, dbBackup, 'utf-8');
-    const PARENT_DB = path.resolve(__dirname, '../../data/db.json');
-    if (fs.existsSync(PARENT_DB)) {
-      fs.writeFileSync(PARENT_DB, dbBackup, 'utf-8');
-    }
+    if (fs.existsSync(tempTestDb)) fs.unlinkSync(tempTestDb);
+    if (fs.existsSync(tempTestDir)) fs.rmdirSync(tempTestDir);
   } catch (err) {
-    console.error('Failed to restore dbBackup', err);
+    console.error('Failed to cleanup temp test db', err);
   }
 
   console.log(`\n========================================`);

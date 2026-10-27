@@ -7,40 +7,22 @@ import { ProductCard } from '../components/ProductCard';
 
 const DEFAULT_FEATURED: ProductItem[] = [
   {
-    id: 'prod_1',
-    name: 'Articulated Crystal Dragon',
-    price: 749,
-    category: 'Art & Figures',
-    description: 'Flexible print-in-place dragon with moving articulated joints in Aztec Gold.',
-    image: '/assets/images/product_dragon_1786179208256.webp',
-    dimensions: '150 × 45 × 30 mm',
+    id: 'prod_1786183436046',
+    name: 'Dummy 13',
+    price: 199,
+    category: 'Miniatures',
+    description: 'DIY White Dummy 13 Action Figure with articulated joints and accessories.',
+    image: '/uploads/prod_1792667044370_IMG_6917.webp',
+    dimensions: '150 × 50 × 100 mm',
   },
   {
-    id: 'prod_2',
-    name: 'Planetary Gearbox Toy',
-    price: 399,
-    category: 'Engineering & Gadgets',
-    description: 'Mechanical desk fidget with smooth 5:1 gear reduction and tight tolerances.',
-    image: '/assets/images/product_gearbox_1786179220985.webp',
-    dimensions: '75 × 75 × 22 mm',
-  },
-  {
-    id: 'prod_3',
-    name: 'Geometric Hex Planter',
-    price: 449,
-    category: 'Home & Decor',
-    description: 'Modern succulent pot with hidden internal drainage reservoir.',
-    image: '/assets/images/product_planter_1786179235105.webp',
-    dimensions: '90 × 90 × 85 mm',
-  },
-  {
-    id: 'prod_4',
-    name: 'Minimalist Headphone Stand',
-    price: 699,
-    category: 'Desk Accessories',
-    description: 'Ergonomic curved desk stand with cable organizer channel in matte black.',
-    image: '/assets/images/product_headphone_stand_1786179253396.webp',
-    dimensions: '140 × 120 × 240 mm',
+    id: 'prod_1786183434235',
+    name: 'Modern Lamp',
+    price: 499,
+    category: 'Decorative',
+    description: 'Minimalist 3D printed architectural desk lamp with flare shade.',
+    image: '/uploads/prod_1786183434235_tempImageF3uTwb.png',
+    dimensions: '100 × 100 × 100 mm',
   },
 ];
 
@@ -101,8 +83,8 @@ const Home: React.FC = () => {
       .get('/api/products')
       .then((res) => {
         if (!isMounted) return;
-        if (Array.isArray(res.data)) {
-          const loaded: ProductItem[] = res.data.slice(0, 4).map((p: any) => ({
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          const loaded: ProductItem[] = res.data.slice(0, 8).map((p: any) => ({
             id: p.id,
             name: p.name,
             price: Number(p.price) || 0,

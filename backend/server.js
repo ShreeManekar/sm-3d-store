@@ -114,90 +114,13 @@ function getDefaultDb() {
     },
     products: [
       {
-        id: 'prod_1',
-        sku: 'SM3D-DRG-01',
-        name: 'Articulated Crystal Dragon',
-        category: 'Miniatures',
-        description: 'Flexible, multi-jointed articulated crystal dragon printed in high-gloss iridescent silk PLA. Smooth motion without assembly needed.',
-        dimensions: '150 x 80 x 40',
-        dimensionsObj: { length: 150, width: 80, height: 40 },
-        material: 'PLA',
-        colors: ['Solid skin'],
-        price: 799,
-        stock: 10,
-        lowStockThreshold: 5,
-        image: '/assets/images/product_dragon_1786179208256.webp',
-        images: [
-          '/assets/images/product_dragon_1786179208256.webp',
-          '/assets/images/hero_3d_printer_1786179196218.webp'
-        ],
-        featured: true,
-        stlUrl: '/assets/models/sample_dragon.stl'
-      },
-      {
-        id: 'prod_2',
-        sku: 'SM3D-GEAR-02',
-        name: 'Heavy-Duty Planetary Gearbox System',
-        category: 'Functional Parts',
-        description: 'Precision engineering 3D printed planetary gear system with a 5:1 reduction ratio. Printed in carbon-fiber reinforced PETG for high torque endurance.',
-        dimensions: '120 x 120 x 55',
-        dimensionsObj: { length: 120, width: 120, height: 55 },
-        material: 'CF-PETG',
-        colors: ['Matte Carbon Black', 'Industrial Orange'],
-        price: 1299,
-        stock: 1,
-        lowStockThreshold: 3,
-        image: '/assets/images/product_gearbox_1786179220985.webp',
-        images: [
-          '/assets/images/product_gearbox_1786179220985.webp',
-          '/assets/images/hero_3d_printer_1786179196218.webp'
-        ],
-        featured: true,
-        stlUrl: '/assets/models/sample_gearbox.stl'
-      },
-      {
-        id: 'prod_3',
-        sku: 'SM3D-PLT-03',
-        name: 'Low-Poly Geometric Architectural Planter',
-        category: 'Decorative',
-        description: 'Minimalist low-poly geometric planter pot with built-in drainage tray. Marble PLA texture with smooth matte aesthetic finish.',
-        dimensions: '110 x 110 x 100',
-        dimensionsObj: { length: 110, width: 110, height: 100 },
-        material: 'Marble PLA',
-        colors: ['Granite Marble White', 'Slate Grey', 'Terracotta Red'],
-        price: 549,
-        stock: 1,
-        lowStockThreshold: 5,
-        image: '/assets/images/product_planter_1786179235105.webp',
-        images: ['/assets/images/product_planter_1786179235105.webp'],
-        featured: true
-      },
-      {
-        id: 'prod_4',
-        sku: 'SM3D-HPD-04',
-        name: 'Cyberpunk Neon Ergonomic Headphone Stand',
-        category: 'Enclosures',
-        description: 'Sculptural desk headphone holder printed in ultra-tough semi-translucent dark resin. Cable management slot included.',
-        dimensions: '140 x 110 x 240',
-        dimensionsObj: { length: 140, width: 110, height: 240 },
-        material: 'PETG',
-        colors: ['White'],
-        price: 1499,
-        stock: 5,
-        lowStockThreshold: 5,
-        image: '/assets/images/product_headphone_stand_1786179253396.webp',
-        images: ['/assets/images/product_headphone_stand_1786179253396.webp'],
-        featured: true,
-        stlUrl: ''
-      },
-      {
         id: 'prod_1786183436046',
         sku: 'SM3D-003',
         name: 'Dummy 13',
         category: 'Miniatures',
         description: 'DIY White Dummy 13 Action Figure',
         dimensions: '150 x 50',
-        dimensionsObj: { length: 100, width: 100, height: 100 },
+        dimensionsObj: { length: 150, width: 50, height: 100 },
         material: 'PETG',
         colors: ['Pure White'],
         price: 199,
@@ -205,10 +128,32 @@ function getDefaultDb() {
         lowStockThreshold: 5,
         image: '/uploads/prod_1792667044370_IMG_6917.webp',
         featured: true,
-        stlUrl: 'NA',
+        stlUrl: '',
         images: [
           '/uploads/prod_1792667044370_IMG_6917.webp',
-          '/uploads/prod_1792667050180_IMG_6916.webp'
+          '/uploads/prod_1792667050180_IMG_6916.webp',
+          '/uploads/prod_1792666605550_IMG_6792.jpeg'
+        ]
+      },
+      {
+        id: 'prod_1786183434235',
+        sku: 'SM3D-004',
+        name: 'Modern Lamp',
+        category: 'Decorative',
+        description: 'Minimalist 3D printed architectural desk lamp with flare shade.',
+        dimensions: '100 x 100 x 100',
+        dimensionsObj: { length: 100, width: 100, height: 100 },
+        material: 'PLA',
+        colors: ['IVORY'],
+        price: 499,
+        stock: 1,
+        lowStockThreshold: 5,
+        image: '/uploads/prod_1786183434235_tempImageF3uTwb.png',
+        featured: true,
+        stlUrl: '',
+        images: [
+          '/uploads/prod_1786183434235_tempImageF3uTwb.png',
+          '/uploads/prod_1786183767380_Screenshot2026-08-08at2.28.19PM.png'
         ]
       }
     ],
@@ -309,11 +254,16 @@ function getDefaultDb() {
   };
 }
 
+function getDbFile() {
+  return process.env.DB_FILE || DB_FILE;
+}
+
 function loadDb() {
+  const dbPath = getDbFile();
   let db;
   try {
-    if (fs.existsSync(DB_FILE)) {
-      db = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+    if (fs.existsSync(dbPath)) {
+      db = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
     }
   } catch (e) {
     console.error('Failed to load db.json, using default database:', e.message);
@@ -368,13 +318,16 @@ function loadDb() {
 
 function saveDb(data) {
   try {
-    fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
-    const PARENT_DB = path.resolve(__dirname, '../../data/db.json');
-    if (fs.existsSync(path.dirname(PARENT_DB))) {
-      try {
-        fs.writeFileSync(PARENT_DB, JSON.stringify(data, null, 2), 'utf-8');
-      } catch (_) {}
+    const dbPath = getDbFile();
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf-8');
+    if (!process.env.TESTING) {
+      const PARENT_DB = path.resolve(__dirname, '../../data/db.json');
+      if (fs.existsSync(path.dirname(PARENT_DB))) {
+        try {
+          fs.writeFileSync(PARENT_DB, JSON.stringify(data, null, 2), 'utf-8');
+        } catch (_) {}
+      }
     }
   } catch (e) {
     console.error('Failed to save db.json:', e.message);
