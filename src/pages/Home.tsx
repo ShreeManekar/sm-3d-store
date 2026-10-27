@@ -211,7 +211,7 @@ const Home: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   to="/custom-print"
-                  className="apple-btn-primary inline-flex justify-center items-center px-7 py-4 rounded-full font-bold text-gray-950 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:brightness-105 shadow-xl shadow-amber-500/25 transition-all duration-300"
+                  className="apple-btn-primary inline-flex justify-center items-center px-7 py-4 rounded-full font-bold text-gray-950 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 shadow-xl shadow-amber-500/25 transition-all duration-300 active:scale-95"
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -221,7 +221,7 @@ const Home: React.FC = () => {
 
                 <Link
                   to="/shop"
-                  className="apple-btn-primary inline-flex justify-center items-center px-7 py-4 rounded-full font-semibold text-gray-900 dark:text-zinc-200 apple-glass hover:border-amber-500/40 hover:text-amber-500 transition-all duration-300 shadow-md"
+                  className="inline-flex justify-center items-center px-7 py-4 rounded-full font-semibold text-gray-900 dark:text-zinc-200 apple-glass hover:border-amber-500/40 hover:text-amber-500 transition-all duration-300 shadow-md active:scale-95"
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -364,7 +364,7 @@ const Home: React.FC = () => {
               </p>
               <Link
                 to="/custom-print"
-                className="apple-btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-gray-950 font-bold text-xs shadow-md shadow-amber-500/20 hover:brightness-105 transition"
+                className="apple-btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 text-gray-950 font-bold text-xs shadow-md shadow-amber-500/20 transition active:scale-95"
               >
                 <span>Upload Custom 3D Model</span>
                 <span>&rarr;</span>
@@ -426,7 +426,7 @@ const Home: React.FC = () => {
                   </div>
                   <Link
                     to={`/rfq?qty=${bulkQty}`}
-                    className="apple-btn-primary px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-105 text-gray-950 font-bold text-xs transition shadow-md shadow-amber-500/20"
+                    className="apple-btn-primary px-4 py-2 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 text-gray-950 font-bold text-xs transition shadow-md shadow-amber-500/20 active:scale-95"
                   >
                     Request Enterprise Quote &rarr;
                   </Link>

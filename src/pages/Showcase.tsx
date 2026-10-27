@@ -274,7 +274,7 @@ const Showcase: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowSubmitModal(true)}
-            className="apple-btn-primary px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:brightness-105 text-gray-950 font-bold text-xs shadow-md shadow-amber-500/20 transition flex items-center gap-1.5 self-start sm:self-auto"
+            className="apple-btn-primary px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 text-gray-950 font-bold text-xs shadow-md shadow-amber-500/20 transition active:scale-95 flex items-center gap-1.5 self-start sm:self-auto"
           >
             <span>✍️ Write a Print Review</span>
           </button>

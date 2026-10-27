@@ -64,14 +64,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {onAddToCart ? (
             <button
               onClick={onAddToCart}
-              className="px-4 py-2 rounded-full text-xs font-bold bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:brightness-105 active:scale-95 text-gray-950 shadow-md shadow-amber-500/20 transition-all duration-300 ease-out"
+              className="px-4 py-2 rounded-full text-xs font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 active:scale-95 text-gray-950 shadow-md shadow-amber-500/20 transition-all duration-300 ease-out"
             >
               Add to Cart
             </button>
           ) : (
             <Link
               to="/shop"
-              className="px-4 py-2 rounded-full text-xs font-bold bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:brightness-105 active:scale-95 text-gray-950 shadow-md shadow-amber-500/20 transition-all duration-300 ease-out"
+              className="px-4 py-2 rounded-full text-xs font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 active:scale-95 text-gray-950 shadow-md shadow-amber-500/20 transition-all duration-300 ease-out"
             >
               Shop Now
             </Link>

@@ -203,7 +203,7 @@ const EnterpriseRFQ: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSubmittedRfq(null)}
-                className="apple-btn-primary px-7 py-3 rounded-2xl text-gray-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all duration-300 ease-apple active:scale-95"
+                className="apple-btn-primary px-7 py-3 rounded-2xl text-gray-950 font-bold text-xs bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 shadow-lg shadow-amber-500/20 transition-all duration-300 ease-apple active:scale-95"
               >
                 Submit Another Inquiry
               </button>
@@ -351,7 +351,7 @@ const EnterpriseRFQ: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="apple-btn-primary px-8 py-3.5 rounded-2xl text-gray-950 font-extrabold text-sm shadow-xl shadow-amber-500/20 transition-all duration-300 ease-apple active:scale-95 flex items-center gap-2"
+                  className="apple-btn-primary px-8 py-3.5 rounded-2xl text-gray-950 font-extrabold text-sm bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 shadow-xl shadow-amber-500/20 transition-all duration-300 ease-apple active:scale-95 flex items-center gap-2"
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-gray-950 border-t-transparent rounded-full animate-spin" />

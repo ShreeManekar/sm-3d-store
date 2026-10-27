@@ -240,7 +240,7 @@ const KnowledgeBase: React.FC = () => {
           <div className="flex flex-wrap gap-3">
             <Link
               to="/custom-print"
-              className="apple-btn-primary px-6 py-3 rounded-2xl text-gray-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all duration-300 ease-apple active:scale-95"
+              className="apple-btn-primary px-6 py-3 rounded-2xl text-gray-950 font-bold text-xs bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 shadow-lg shadow-amber-500/20 transition-all duration-300 ease-apple active:scale-95"
             >
               Upload 3D File &rarr;
             </Link>

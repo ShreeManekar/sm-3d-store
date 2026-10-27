@@ -45,7 +45,7 @@ const Cart: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
                 to="/shop"
-                className="px-6 py-3 rounded-xl font-bold text-gray-950 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 shadow-lg shadow-amber-500/20 transition transform hover:-translate-y-0.5"
+                className="px-6 py-3 rounded-xl font-bold text-gray-950 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 shadow-lg shadow-amber-500/20 transition transform hover:-translate-y-0.5 active:scale-95"
               >
                 Browse 3D Print Catalog
               </Link>
@@ -241,7 +241,7 @@ const Cart: React.FC = () => {
 
                   <button
                     onClick={() => navigate('/checkout')}
-                    className="w-full py-3.5 rounded-xl font-black text-gray-950 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 shadow-lg shadow-amber-500/25 transition transform hover:-translate-y-0.5 active:scale-95 text-center flex items-center justify-center gap-2"
+                    className="w-full py-3.5 rounded-xl font-black text-gray-950 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 shadow-lg shadow-amber-500/25 transition transform hover:-translate-y-0.5 active:scale-95 text-center flex items-center justify-center gap-2"
                   >
                     <span>Proceed to Checkout</span>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

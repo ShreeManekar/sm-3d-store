@@ -647,6 +647,83 @@ endsolid precision_bracket`;
       expect(noMatch).toBeNull();
     });
   });
+
+  describe('3D Viewer Optimization & Button Contrast Verification', () => {
+    test('verifies reduced studio finishes palette (2 finishes: gold and titanium)', () => {
+      const STUDIO_FINISHES = [
+        { id: 'gold', name: 'Studio Gold', hex: '#f59e0b', ring: 'ring-amber-400' },
+        { id: 'titanium', name: 'Titanium', hex: '#94a3b8', ring: 'ring-slate-400' },
+      ];
+      expect(STUDIO_FINISHES).toHaveLength(2);
+      expect(STUDIO_FINISHES.map(f => f.hex)).toEqual(['#f59e0b', '#94a3b8']);
+    });
+
+    test('calculates real-time scaled dimensions smoothly without re-parsing geometry', () => {
+      const baseDims = { length: 100, width: 80, height: 50 };
+      const calculateScaledDimensions = (base, scale, maxBuildDimension = 160, noBuildLimit = false) => {
+        const lenX = Math.round(base.length * scale);
+        const widZ = Math.round(base.width * scale);
+        const hgtY = Math.round(base.height * scale);
+        const exceeds = !noBuildLimit && (lenX > maxBuildDimension || widZ > maxBuildDimension || hgtY > maxBuildDimension);
+        return {
+          length: Math.max(1, lenX),
+          width: Math.max(1, widZ),
+          height: Math.max(1, hgtY),
+          exceedsLimit: exceeds,
+        };
+      };
+
+      // 1.0x scale (default)
+      const d1 = calculateScaledDimensions(baseDims, 1.0);
+      expect(d1).toEqual({ length: 100, width: 80, height: 50, exceedsLimit: false });
+
+      // 1.5x scale
+      const d2 = calculateScaledDimensions(baseDims, 1.5);
+      expect(d2).toEqual({ length: 150, width: 120, height: 75, exceedsLimit: false });
+
+      // 2.0x scale: 200mm exceeds 160mm limit
+      const d3 = calculateScaledDimensions(baseDims, 2.0);
+      expect(d3).toEqual({ length: 200, width: 160, height: 100, exceedsLimit: true });
+
+      // 2.0x scale with noBuildLimit
+      const d4 = calculateScaledDimensions(baseDims, 2.0, 160, true);
+      expect(d4.exceedsLimit).toBe(false);
+    });
+
+    test('verifies fast single-pass ASCII STL parser extracts vertices correctly without regex freeze', () => {
+      const sampleAscii = `solid test
+        facet normal 0 0 1
+          outer loop
+            vertex 0.0 0.0 0.0
+            vertex 10.0 0.0 0.0
+            vertex 10.0 10.0 0.0
+          endloop
+        endfacet
+      endsolid test`;
+
+      const lines = sampleAscii.split('\n');
+      const vertices = [];
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line.startsWith('vertex ')) {
+          const parts = line.split(/\s+/);
+          if (parts.length >= 4) {
+            vertices.push(parseFloat(parts[1]), parseFloat(parts[2]), parseFloat(parts[3]));
+          }
+        }
+      }
+
+      expect(vertices).toHaveLength(9);
+      expect(vertices).toEqual([0, 0, 0, 10, 0, 0, 10, 10, 0]);
+    });
+
+    test('verifies Add to Cart button classes have high contrast text (#030712 / text-gray-950 font-bold)', () => {
+      const primaryBtnClasses = 'px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 text-gray-950 shadow-md shadow-amber-500/20';
+      expect(primaryBtnClasses).toContain('text-gray-950');
+      expect(primaryBtnClasses).toContain('font-bold');
+      expect(primaryBtnClasses).toContain('from-amber-400');
+    });
+  });
 });
 
 

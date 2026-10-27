@@ -331,7 +331,7 @@ const MaterialsGuide: React.FC = () => {
                       e.stopPropagation();
                       handleQuoteInMaterial(mat);
                     }}
-                    className="apple-btn-primary px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-105 text-gray-950 font-bold text-xs shadow-md shadow-amber-500/20 transition"
+                    className="apple-btn-primary px-4 py-2 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 text-gray-950 font-bold text-xs shadow-md shadow-amber-500/20 transition active:scale-95"
                   >
                     Quote in {mat.shortCode} &rarr;
                   </button>

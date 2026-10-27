@@ -348,7 +348,7 @@ export const Checkout: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
                 to="/shop"
-                className="apple-btn-primary px-7 py-3 rounded-2xl font-bold text-gray-950 shadow-lg shadow-amber-500/20 transition-all duration-300 ease-apple active:scale-95"
+                className="apple-btn-primary px-7 py-3 rounded-2xl font-bold text-gray-950 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 shadow-lg shadow-amber-500/20 transition-all duration-300 ease-apple active:scale-95"
               >
                 Continue Shopping
               </Link>
@@ -657,7 +657,7 @@ export const Checkout: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleCopy(activeUpiId, 'UPI ID')}
-                              className="apple-btn-primary px-3 py-1 rounded-lg text-gray-950 font-bold text-[11px] shadow-sm transition-all duration-300 ease-apple active:scale-95"
+                              className="apple-btn-primary px-3 py-1 rounded-lg text-gray-950 font-bold text-[11px] bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 shadow-sm transition-all duration-300 ease-apple active:scale-95"
                             >
                               Copy UPI ID
                             </button>
@@ -777,7 +777,7 @@ export const Checkout: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="apple-btn-primary w-full py-4 rounded-2xl font-black text-gray-950 text-base shadow-xl shadow-amber-500/25 transition-all duration-300 ease-apple hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="apple-btn-primary w-full py-4 rounded-2xl font-black text-gray-950 text-base bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 shadow-xl shadow-amber-500/25 transition-all duration-300 ease-apple hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <span>Processing Order...</span>

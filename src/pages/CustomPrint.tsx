@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -112,7 +112,7 @@ export const CustomPrint: React.FC = () => {
   }, [currentUser, userName, userEmail, userPhone]);
 
   // Handle dimensions calculated from 3D viewer
-  const handleDimensionsCalculated = (dims: ModelDimensions) => {
+  const handleDimensionsCalculated = useCallback((dims: ModelDimensions) => {
     setDimL(dims.length);
     setDimW(dims.width);
     setDimH(dims.height);
@@ -120,7 +120,7 @@ export const CustomPrint: React.FC = () => {
     if (dims.exceedsLimit) {
       setAutoSplit(true);
     }
-  };
+  }, []);
 
   // Handle file upload (supports .stl, .3mf, .obj, .step, .stp files up to 200MB)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -476,13 +476,13 @@ export const CustomPrint: React.FC = () => {
             <div className="flex flex-wrap justify-center gap-3 pt-4">
               <Link
                 to={`/track?orderId=${encodeURIComponent(submittedOrder.id || 'cust_101')}`}
-                className="apple-btn-primary px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-gray-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition"
+                className="apple-btn-primary px-6 py-3 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 text-gray-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition active:scale-95"
               >
                 Track Fabrication Status &rarr;
               </Link>
               <button
                 onClick={() => { setSubmittedOrder(null); setSelectedFile(null); setFileBuffer(null); }}
-                className="apple-btn-primary px-6 py-3 rounded-full apple-glass text-gray-700 dark:text-zinc-300 hover:text-amber-500 text-xs font-semibold border border-gray-200/80 dark:border-white/[0.08] transition"
+                className="px-6 py-3 rounded-full apple-glass text-gray-700 dark:text-zinc-300 hover:text-amber-500 text-xs font-semibold border border-gray-200/80 dark:border-white/[0.08] transition active:scale-95"
               >
                 Configure Another Model
               </button>
@@ -884,10 +884,10 @@ export const CustomPrint: React.FC = () => {
                     type="button"
                     disabled={isUploading}
                     onClick={handleAddToCart}
-                    className={`apple-btn-primary w-full py-4 px-6 rounded-full font-bold text-sm shadow-xl transition flex items-center justify-center gap-2 ${
+                    className={`apple-btn-primary w-full py-4 px-6 rounded-full font-bold text-sm shadow-xl transition-all duration-300 ease-apple active:scale-95 flex items-center justify-center gap-2 ${
                       isUploading
                         ? 'bg-gray-700 text-gray-300 cursor-not-allowed opacity-80'
-                        : 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:brightness-105 text-gray-950 shadow-amber-500/25'
+                        : 'bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 text-gray-950 shadow-amber-500/25'
                     }`}
                   >
                     {isUploading ? (
@@ -896,7 +896,7 @@ export const CustomPrint: React.FC = () => {
                         <span>Uploading 3D Model ({uploadProgress ?? 0}%)...</span>
                       </>
                     ) : (
-                      <span>🛒 Add Custom Print to Cart (₹{calculatedPricing.finalPrice})</span>
+                      <span className="text-gray-950 font-bold">🛒 Add Custom Print to Cart (₹{calculatedPricing.finalPrice})</span>
                     )}
                   </button>
 

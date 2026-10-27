@@ -291,7 +291,7 @@ const Shop: React.FC = () => {
                       <button
                         onClick={() => handleAddToCart(product, false)}
                         title="Add to cart and keep shopping"
-                        className="px-3 py-2 rounded-xl text-xs font-semibold bg-gray-100/80 dark:bg-white/[0.05] hover:bg-gray-200 dark:hover:bg-white/[0.1] text-amber-500 border border-gray-200/80 dark:border-amber-500/30 transition-all duration-300 ease-apple active:scale-95 flex items-center gap-1"
+                        className="px-3 py-2 rounded-xl text-xs font-semibold bg-gray-100/80 dark:bg-white/[0.05] hover:bg-gray-200 dark:hover:bg-white/[0.1] text-amber-600 dark:text-amber-400 border border-gray-200/80 dark:border-amber-500/30 transition-all duration-300 ease-apple active:scale-95 flex items-center gap-1"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -300,7 +300,7 @@ const Shop: React.FC = () => {
                       </button>
                       <button
                         onClick={() => handleAddToCart(product, true)}
-                        className="apple-btn-primary px-4 py-2 rounded-xl text-xs font-bold text-gray-950 shadow-md shadow-amber-500/20 transition-all duration-300 ease-apple active:scale-95"
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 text-gray-950 shadow-md shadow-amber-500/20 transition-all duration-300 ease-apple active:scale-95"
                       >
                         Add to Cart &rarr;
                       </button>
@@ -348,7 +348,7 @@ const Shop: React.FC = () => {
                     handleAddToCart(active3dProduct, false);
                     setActive3dProduct(null);
                   }}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 text-gray-950 font-bold text-xs shadow-lg shadow-amber-500/20 hover:from-amber-400 hover:to-yellow-500 transition"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-yellow-500 text-gray-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition"
                 >
                   Add to Cart
                 </button>
