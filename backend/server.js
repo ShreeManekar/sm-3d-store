@@ -29,48 +29,10 @@ function hashPassword(password, salt) {
   return { hash: h, salt };
 }
 
-// Default delivery cities coverage
+// Default delivery cities coverage (Chandrapur and Nagpur)
 const DEFAULT_DELIVERY_CITIES = [
   { id: 'city_1', name: 'Chandrapur', state: 'Maharashtra', estimatedDays: '1-2 Days', active: true },
-  { id: 'city_2', name: 'Nagpur', state: 'Maharashtra', estimatedDays: '1-2 Days', active: true },
-  { id: 'city_3', name: 'Mumbai', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_4', name: 'Pune', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_5', name: 'Nashik', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_6', name: 'Thane', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_7', name: 'Navi Mumbai', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_8', name: 'Aurangabad (Chhatrapati Sambhajinagar)', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_9', name: 'Amravati', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_10', name: 'Kolhapur', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_11', name: 'Solapur', state: 'Maharashtra', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_12', name: 'Hyderabad', state: 'Telangana', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_13', name: 'Bengaluru', state: 'Karnataka', estimatedDays: '2-4 Days', active: true },
-  { id: 'city_14', name: 'Chennai', state: 'Tamil Nadu', estimatedDays: '2-4 Days', active: true },
-  { id: 'city_15', name: 'New Delhi', state: 'Delhi NCR', estimatedDays: '2-4 Days', active: true },
-  { id: 'city_16', name: 'Noida', state: 'Uttar Pradesh', estimatedDays: '2-4 Days', active: true },
-  { id: 'city_17', name: 'Gurugram', state: 'Haryana', estimatedDays: '2-4 Days', active: true },
-  { id: 'city_18', name: 'Ahmedabad', state: 'Gujarat', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_19', name: 'Surat', state: 'Gujarat', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_20', name: 'Vadodara', state: 'Gujarat', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_21', name: 'Rajkot', state: 'Gujarat', estimatedDays: '3-4 Days', active: true },
-  { id: 'city_22', name: 'Indore', state: 'Madhya Pradesh', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_23', name: 'Bhopal', state: 'Madhya Pradesh', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_24', name: 'Jabalpur', state: 'Madhya Pradesh', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_25', name: 'Raipur', state: 'Chhattisgarh', estimatedDays: '2-3 Days', active: true },
-  { id: 'city_26', name: 'Jaipur', state: 'Rajasthan', estimatedDays: '3-4 Days', active: true },
-  { id: 'city_27', name: 'Kolkata', state: 'West Bengal', estimatedDays: '3-4 Days', active: true },
-  { id: 'city_28', name: 'Lucknow', state: 'Uttar Pradesh', estimatedDays: '3-4 Days', active: true },
-  { id: 'city_29', name: 'Kanpur', state: 'Uttar Pradesh', estimatedDays: '3-4 Days', active: true },
-  { id: 'city_30', name: 'Varanasi', state: 'Uttar Pradesh', estimatedDays: '3-4 Days', active: true },
-  { id: 'city_31', name: 'Chandigarh', state: 'Punjab / Chandigarh', estimatedDays: '3-4 Days', active: true },
-  { id: 'city_32', name: 'Ludhiana', state: 'Punjab', estimatedDays: '3-4 Days', active: true },
-  { id: 'city_33', name: 'Kochi', state: 'Kerala', estimatedDays: '3-4 Days', active: true },
-  { id: 'city_34', name: 'Thiruvananthapuram', state: 'Kerala', estimatedDays: '3-4 Days', active: true },
-  { id: 'city_35', name: 'Coimbatore', state: 'Tamil Nadu', estimatedDays: '3-4 Days', active: true },
-  { id: 'city_36', name: 'Visakhapatnam', state: 'Andhra Pradesh', estimatedDays: '3-4 Days', active: true },
-  { id: 'city_37', name: 'Vijayawada', state: 'Andhra Pradesh', estimatedDays: '3-4 Days', active: true },
-  { id: 'city_38', name: 'Bhubaneswar', state: 'Odisha', estimatedDays: '3-4 Days', active: true },
-  { id: 'city_39', name: 'Patna', state: 'Bihar', estimatedDays: '3-5 Days', active: true },
-  { id: 'city_40', name: 'Dehradun', state: 'Uttarakhand', estimatedDays: '3-5 Days', active: true }
+  { id: 'city_2', name: 'Nagpur', state: 'Maharashtra', estimatedDays: '1-2 Days', active: true }
 ];
 
 // Default initial database in case db.json doesn't exist

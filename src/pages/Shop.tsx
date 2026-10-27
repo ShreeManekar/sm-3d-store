@@ -164,7 +164,7 @@ const Shop: React.FC = () => {
             </p>
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-semibold shrink-0 backdrop-blur-md">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>⚡ Pan-India Express Delivery: 40+ Cities Covered</span>
+              <span>⚡ Direct Hub Express Delivery & Pan-India Shipping</span>
             </div>
           </div>
         </div>

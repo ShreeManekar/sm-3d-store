@@ -253,7 +253,7 @@ async function runTests() {
   console.log('\n--- 16. Delivery Cities Coverage & Management Endpoints ---');
   // 1. Public GET
   const citiesRes = await testEndpoint('GET', '/api/delivery-cities');
-  assert(citiesRes.status === 200 && Array.isArray(citiesRes.data.cities) && citiesRes.data.count >= 40, 'GET /api/delivery-cities returns 200 and 40+ deliverable cities');
+  assert(citiesRes.status === 200 && Array.isArray(citiesRes.data.cities) && citiesRes.data.count >= 2, 'GET /api/delivery-cities returns 200 and deliverable hubs');
 
   // 2. Filter active
   const activeCitiesRes = await testEndpoint('GET', '/api/delivery-cities?active=true');
