@@ -238,7 +238,7 @@ const Shop: React.FC = () => {
                         className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500 ease-apple"
                         loading="lazy"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/assets/images/product_dragon_1786179208256.webp';
+                          (e.target as HTMLImageElement).src = '/assets/images/hero_3d_printer_1786179196218.webp';
                         }}
                       />
                       {qtyInCart > 0 && (

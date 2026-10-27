@@ -83,17 +83,21 @@ const Home: React.FC = () => {
       .get('/api/products')
       .then((res) => {
         if (!isMounted) return;
-        if (Array.isArray(res.data) && res.data.length > 0) {
-          const loaded: ProductItem[] = res.data.slice(0, 8).map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            price: Number(p.price) || 0,
-            category: p.category || 'General',
-            description: p.description || '',
-            image: p.image || p.images?.[0] || '/assets/images/hero_3d_printer_1786179196218.webp',
-            dimensions: typeof p.dimensions === 'string' ? p.dimensions : '100 × 100 × 100 mm',
-          }));
-          setFeaturedProducts(loaded);
+        if (Array.isArray(res.data)) {
+          if (res.data.length > 0) {
+            const loaded: ProductItem[] = res.data.slice(0, 8).map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              price: Number(p.price) || 0,
+              category: p.category || 'General',
+              description: p.description || '',
+              image: p.image || p.images?.[0] || '/assets/images/hero_3d_printer_1786179196218.webp',
+              dimensions: typeof p.dimensions === 'string' ? p.dimensions : '100 × 100 × 100 mm',
+            }));
+            setFeaturedProducts(loaded);
+          } else {
+            setFeaturedProducts([]);
+          }
         }
       })
       .catch(() => {});

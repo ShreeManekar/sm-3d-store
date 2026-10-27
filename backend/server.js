@@ -1360,7 +1360,7 @@ app.post('/api/products', (req, res) => {
   const body = req.body || {};
   let images = body.images || [];
   if (!images.length && body.image) images = [body.image];
-  const primaryImage = images[0] || body.image || '/assets/images/product_dragon_1786179208256.png';
+  const primaryImage = images[0] || body.image || '/assets/images/hero_3d_printer_1786179196218.webp';
 
   const db = loadDb();
   const newProd = {

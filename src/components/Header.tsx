@@ -129,11 +129,11 @@ export const Header: React.FC = () => {
                       className="p-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors duration-200"
                     >
                       <img
-                        src={p.image || '/assets/images/product_dragon_1786179208256.webp'}
+                        src={p.image || '/assets/images/hero_3d_printer_1786179196218.webp'}
                         alt={p.name}
                         className="w-10 h-10 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/assets/images/product_dragon_1786179208256.webp';
+                          (e.target as HTMLImageElement).src = '/assets/images/hero_3d_printer_1786179196218.webp';
                         }}
                       />
                       <div className="flex-1 min-w-0">

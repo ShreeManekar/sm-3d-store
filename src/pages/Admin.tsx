@@ -1708,11 +1708,11 @@ export const Admin: React.FC = () => {
                     <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition">
                       <td className="p-3.5">
                         <img
-                          src={p.image || '/assets/images/product_dragon_1786179208256.webp'}
+                          src={p.image || '/assets/images/hero_3d_printer_1786179196218.webp'}
                           alt={p.name}
                           className="w-11 h-11 object-cover rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-950"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/assets/images/product_dragon_1786179208256.webp';
+                            (e.target as HTMLImageElement).src = '/assets/images/hero_3d_printer_1786179196218.webp';
                           }}
                         />
                       </td>
@@ -2343,7 +2343,7 @@ export const Admin: React.FC = () => {
                                   alt="Payment Proof"
                                   className="w-9 h-9 object-cover rounded-md border border-gray-300 dark:border-gray-700"
                                   onError={(e) => {
-                                    (e.target as HTMLImageElement).src = '/assets/images/product_dragon_1786179208256.webp';
+                                    (e.target as HTMLImageElement).src = '/assets/images/hero_3d_printer_1786179196218.webp';
                                   }}
                                 />
                                 <span className="text-[11px] font-semibold text-purple-700 dark:text-purple-300 pr-1">
@@ -3366,7 +3366,7 @@ export const Admin: React.FC = () => {
                       alt="Product Preview"
                       className="w-14 h-14 object-cover rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-950 flex-shrink-0"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/assets/images/product_dragon_1786179208256.webp';
+                        (e.target as HTMLImageElement).src = '/assets/images/hero_3d_printer_1786179196218.webp';
                       }}
                     />
                   ) : (
